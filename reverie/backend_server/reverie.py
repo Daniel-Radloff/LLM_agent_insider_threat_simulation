@@ -316,6 +316,8 @@ class ReverieServer:
       if check_if_file_exists(curr_env_file):
         # If we have an environment file, it means we have a new perception
         # input to our personas. So we first retrieve it.
+        new_env = {}
+        env_retrieved = False
         try: 
           # Try and save block for robustness of the while loop.
           with open(curr_env_file) as json_file:
