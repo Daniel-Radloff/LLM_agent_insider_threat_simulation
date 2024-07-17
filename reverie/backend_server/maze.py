@@ -109,16 +109,13 @@ class Maze:
     # example format: [['0', '0', ... '25309', '0',...], ['0',...]...]
     # 25309 is the collision bar number right now.
 
-    # Revision Comments:
-    # Its unclear right now if Maze.tiles, which is defined next, makes
-    # Maze.collision_maze redundent or not
-    self.collision_maze = []
+    collision_maze = []
     sector_maze = []
     arena_maze = []
     game_object_maze = []
     spawning_location_maze = []
     for i in range(0, len(collision_maze_raw), self.maze_width): 
-      self.collision_maze += [collision_maze_raw[i:i+self.maze_width]]
+      collision_maze += [collision_maze_raw[i:i+self.maze_width]]
       sector_maze += [sector_maze_raw[i:i+self.maze_width]]
       arena_maze += [arena_maze_raw[i:i+self.maze_width]]
       game_object_maze += [game_object_maze_raw[i:i+self.maze_width]]
@@ -179,7 +176,7 @@ class Maze:
           tile_details["spawning_location"] = slb_dict[spawning_location_maze[i][j]]
         
         tile_details["collision"] = False
-        if self.collision_maze[i][j] != "0": 
+        if collision_maze[i][j] != "0": 
           tile_details["collision"] = True
 
         tile_details["events"] = set()
