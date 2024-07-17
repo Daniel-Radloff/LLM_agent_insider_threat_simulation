@@ -103,7 +103,23 @@ Untracked user generated file that specifies some constants, we won't use API ke
 Weirdly again this files defaults go back into the `environment/frontend_server` directory.
 
 #### maze.py
-
+This is the map. Provides an interface and view for the agent to interact with the map (Maze class).
+##### Maze class
+- `__init__(maze_name)`: reads a bunch of information about the map. Also reads in the map data and initializes all the stuff to interact with the map. It defines a few key attributes:
+    - `name`, `width`, and `height`.
+    - `sq_title_size`: the pixel height/width of a tile, which is kinda weird thing to define in backend.
+    - `special_constraint`: "String description of any relevant special constraints world may have"
+    - `collision_maze`: **Note: refactored** into a local variable
+    - `tiles`: maps co-ordinates to world points and attaches meaningful information to those points'
+    - `address_tiles`: provides the inverse of `tiles`
+- `turn_coordinate_to_tile(px_coordiante)`: 2 parameter tuple of pixel co-ordinates, turn it into game space co-ordinates.
+- `access_tile`: return key-value pairs of information about tile at an x, y position. Uses `Maze.self.tiles`. 
+- `get_tile_path`: return string address of tile from x, y position and level specification (not sure about level specification or what that means or how its used yet?).
+- `get_nearby_tiles`: returns all tiles in view of the agent at a position
+- `add_event_from_tile`: weird name, adds an event tuple to a tile, in the doc string it says event triple? *in the `Maze.__init__`, events had 4 attributes, this is sus!* (it is most likely 4 parameters)
+- `remove_event_from_tile`: removes an event associated with a tile
+- `turn_event_from_tile_idle`: sets an event to null.
+- `remove_subject_events_from_tile`: I have no idea.
 #### reverie.py
 
 #### path_finder.py
