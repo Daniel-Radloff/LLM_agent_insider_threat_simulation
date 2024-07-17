@@ -21,17 +21,17 @@ class Maze:
     self.maze_name = maze_name
     # Reading in the meta information about the world. If you want tp see the
     # example variables, check out the maze_meta_info.json file. 
-    meta_info = json.load(open(f"{env_matrix}/maze_meta_info.json"))
-    # <maze_width> and <maze_height> denote the number of tiles make up the 
-    # height and width of the map. 
-    self.maze_width = int(meta_info["maze_width"])
-    self.maze_height = int(meta_info["maze_height"])
-    # <sq_tile_size> denotes the pixel height/width of a tile. 
-    self.sq_tile_size = int(meta_info["sq_tile_size"])
-    # <special_constraint> is a string description of any relevant special 
-    # constraints the world might have. 
-    # e.g., "planning to stay at home all day and never go out of her home"
-    self.special_constraint = meta_info["special_constraint"]
+    with json.load(open(f"{env_matrix}/maze_meta_info.json")) as meta_info:
+      # <maze_width> and <maze_height> denote the number of tiles make up the 
+        # height and width of the map. 
+      self.maze_width = int(meta_info["maze_width"])
+      self.maze_height = int(meta_info["maze_height"])
+        # <sq_tile_size> denotes the pixel height/width of a tile. 
+      self.sq_tile_size = int(meta_info["sq_tile_size"])
+        # <special_constraint> is a string description of any relevant special 
+        # constraints the world might have. 
+        # e.g., "planning to stay at home all day and never go out of her home"
+      self.special_constraint = meta_info["special_constraint"]
 
     # READING IN SPECIAL BLOCKS
     # Special blocks are those that are colored in the Tiled map. 
@@ -117,13 +117,12 @@ class Maze:
     arena_maze = []
     game_object_maze = []
     spawning_location_maze = []
-    for i in range(0, len(collision_maze_raw), meta_info["maze_width"]): 
-      tw = meta_info["maze_width"]
-      self.collision_maze += [collision_maze_raw[i:i+tw]]
-      sector_maze += [sector_maze_raw[i:i+tw]]
-      arena_maze += [arena_maze_raw[i:i+tw]]
-      game_object_maze += [game_object_maze_raw[i:i+tw]]
-      spawning_location_maze += [spawning_location_maze_raw[i:i+tw]]
+    for i in range(0, len(collision_maze_raw), self.maze_width): 
+      self.collision_maze += [collision_maze_raw[i:i+self.maze_width]]
+      sector_maze += [sector_maze_raw[i:i+self.maze_width]]
+      arena_maze += [arena_maze_raw[i:i+self.maze_width]]
+      game_object_maze += [game_object_maze_raw[i:i+self.maze_width]]
+      spawning_location_maze += [spawning_location_maze_raw[i:i+self.maze_width]]
 
     # Once we are done loading in the maze, we now set up self.tiles. This is
     # a matrix accessed by row:col where each access point is a dictionary
@@ -215,25 +214,25 @@ class Maze:
       for j in range(self.maze_width): 
         addresses = []
         if self.tiles[i][j]["sector"]: 
-            addresses.append(":".join([
-                f'{self.tiles[i][j]["world"]}:',
-                f'{self.tiles[i][j]["sector"]}'
-                ]))
+          addresses.append(":".join([
+            f'{self.tiles[i][j]["world"]}:',
+            f'{self.tiles[i][j]["sector"]}'
+            ]))
         if self.tiles[i][j]["arena"]: 
-            addresses.append(":".join([
-                f'{self.tiles[i][j]["world"]}:',
-                f'{self.tiles[i][j]["sector"]}:',
-                f'{self.tiles[i][j]["arena"]}'
-                ]))
+          addresses.append(":".join([
+            f'{self.tiles[i][j]["world"]}:',
+            f'{self.tiles[i][j]["sector"]}:',
+            f'{self.tiles[i][j]["arena"]}'
+            ]))
         if self.tiles[i][j]["game_object"]: 
-            addresses.append(":".join([
-                f'{self.tiles[i][j]["world"]}:',
-                f'{self.tiles[i][j]["sector"]}:',
-                f'{self.tiles[i][j]["arena"]}:',
-                f'{self.tiles[i][j]["game_object"]}'
-                ]))
+          addresses.append(":".join([
+            f'{self.tiles[i][j]["world"]}:',
+            f'{self.tiles[i][j]["sector"]}:',
+            f'{self.tiles[i][j]["arena"]}:',
+            f'{self.tiles[i][j]["game_object"]}'
+            ]))
         if self.tiles[i][j]["spawning_location"]: 
-            addresses.append(f'<spawn_loc>{self.tiles[i][j]["spawning_location"]}')
+          addresses.append(f'<spawn_loc>{self.tiles[i][j]["spawning_location"]}')
 
         for add in addresses: 
           if add in self.address_tiles: 
