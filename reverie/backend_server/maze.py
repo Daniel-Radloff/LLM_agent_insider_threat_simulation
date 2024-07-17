@@ -45,6 +45,10 @@ class Maze:
     # Tiled export. Then we basically have the block path: 
     # World, Sector, Arena, Game Object -- again, these paths need to be 
     # unique within an instance of Reverie. 
+
+    # Revision Comments:
+    # Reads in a bunch of specific world objects, in the format of a ID
+    # as a key and a human readiable identifies as the value in a dictionary
     blocks_folder = f"{env_matrix}/special_blocks"
 
     _wb = blocks_folder + "/world_blocks.csv"
@@ -74,6 +78,14 @@ class Maze:
     # [SECTION 3] Reading in the matrices 
     # This is your typical two dimensional matrices. It's made up of 0s and 
     # the number that represents the color block from the blocks folder. 
+
+    # Revision Comments:
+    # The world is represented as a big 2D array, 
+    # if its a 0, then 
+    #   there is nothing in the way,
+    # else
+    #   it is a id that maps to a previously defined special object? 
+    # a default collision block is defined in utils.py.
     maze_folder = f"{env_matrix}/maze"
 
     _cm = maze_folder + "/collision_maze.csv"
@@ -96,6 +108,10 @@ class Maze:
     # identical (e.g., 70 x 40).
     # example format: [['0', '0', ... '25309', '0',...], ['0',...]...]
     # 25309 is the collision bar number right now.
+
+    # Revision Comments:
+    # Its unclear right now if Maze.tiles, which is defined next, makes
+    # Maze.collision_maze redundent or not
     self.collision_maze = []
     sector_maze = []
     arena_maze = []
@@ -124,6 +140,22 @@ class Maze:
     #         'collision': False,
     #         'events': {('double studio:double studio:bedroom 2:bed',
     #                    None, None)}} 
+
+    # Revision Comments:
+    # This defines the main object that we use to interact with the world?
+    # it is a 2D array that indexes into a dictionary, the dictionary is of the form:
+    # tiles[row][col] = {
+    #           "world" : "world name",
+    #           "sector" : "sector name",
+    #           "arena" : "more detailed general position within sector",
+    #           "game_object" : "object",
+    #           "game_object" : "a spawn location identifier?",
+    #           "collision" : boolean: indicates if position is accessable,
+    #           "events" : numpy.set: a set of event tuples, 
+    #                       first item: is a identy specified by the rest of the tiles 
+    #                           properties which is odd? because its redundant.
+    #                       and then defaults to another 3 paramters of type None]
+    #       }
     self.tiles = []
     for i in range(self.maze_height): 
       row = []
@@ -175,28 +207,33 @@ class Maze:
     # self.address_tiles['<spawn_loc>bedroom-2-a'] == {(58, 9)}
     # self.address_tiles['double studio:recreation:pool table'] 
     #   == {(29, 14), (31, 11), (30, 14), (32, 11), ...}, 
+
+    # Review Notes:
+    # This is cool, rewritten to be more pythonic
     self.address_tiles = dict()
     for i in range(self.maze_height):
       for j in range(self.maze_width): 
         addresses = []
         if self.tiles[i][j]["sector"]: 
-          add = f'{self.tiles[i][j]["world"]}:'
-          add += f'{self.tiles[i][j]["sector"]}'
-          addresses += [add]
+            addresses.append(":".join([
+                f'{self.tiles[i][j]["world"]}:',
+                f'{self.tiles[i][j]["sector"]}'
+                ]))
         if self.tiles[i][j]["arena"]: 
-          add = f'{self.tiles[i][j]["world"]}:'
-          add += f'{self.tiles[i][j]["sector"]}:'
-          add += f'{self.tiles[i][j]["arena"]}'
-          addresses += [add]
+            addresses.append(":".join([
+                f'{self.tiles[i][j]["world"]}:',
+                f'{self.tiles[i][j]["sector"]}:',
+                f'{self.tiles[i][j]["arena"]}'
+                ]))
         if self.tiles[i][j]["game_object"]: 
-          add = f'{self.tiles[i][j]["world"]}:'
-          add += f'{self.tiles[i][j]["sector"]}:'
-          add += f'{self.tiles[i][j]["arena"]}:'
-          add += f'{self.tiles[i][j]["game_object"]}'
-          addresses += [add]
+            addresses.append(":".join([
+                f'{self.tiles[i][j]["world"]}:',
+                f'{self.tiles[i][j]["sector"]}:',
+                f'{self.tiles[i][j]["arena"]}:',
+                f'{self.tiles[i][j]["game_object"]}'
+                ]))
         if self.tiles[i][j]["spawning_location"]: 
-          add = f'<spawn_loc>{self.tiles[i][j]["spawning_location"]}'
-          addresses += [add]
+            addresses.append(f'<spawn_loc>{self.tiles[i][j]["spawning_location"]}')
 
         for add in addresses: 
           if add in self.address_tiles: 
@@ -205,6 +242,8 @@ class Maze:
             self.address_tiles[add] = set([(j, i)])
 
 
+    # Review Notes:
+    # Surely this is frontend related?
   def turn_coordinate_to_tile(self, px_coordinate): 
     """
     Turns a pixel coordinate to a tile coordinate. 
@@ -339,6 +378,9 @@ class Maze:
     self.tiles[tile[1]][tile[0]]["events"].add(curr_event)
 
 
+# Review Note:
+# Numpy pitfall? not sure. But the copy is unfortunate for RAM in the context of this project.
+# The effect should be negligable.
   def remove_event_from_tile(self, curr_event, tile):
     """
     Remove an event triple from a tile.  
