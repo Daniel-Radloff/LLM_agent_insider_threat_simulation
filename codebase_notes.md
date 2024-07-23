@@ -68,7 +68,7 @@
     │   ├── reverie.py
     │   ├── test.py
     │   └── utils.py
-    ├── compress_sim_storage.py
+    ├── compr sets an event to null.ess_sim_storage.py
     └── global_methods.py
 ```
 ## Common Files
@@ -104,7 +104,7 @@ Weirdly again this files defaults go back into the `environment/frontend_server`
 
 #### maze.py
 This is the map. Provides an interface and view for the agent to interact with the map (Maze class).
-##### Maze class
+##### Maze Class
 - `__init__(maze_name)`: reads a bunch of information about the map. Also reads in the map data and initializes all the stuff to interact with the map. It defines a few key attributes:
     - `name`, `width`, and `height`.
     - `sq_title_size`: the pixel height/width of a tile, which is kinda weird thing to define in backend.
@@ -121,5 +121,24 @@ This is the map. Provides an interface and view for the agent to interact with t
 - `turn_event_from_tile_idle`: sets an event to null.
 - `remove_subject_events_from_tile`: I have no idea.
 #### reverie.py
-
+This contains the main for the 'backend'. For the program, you give it a base simulation to start from, and then you give it a name of an output to generate.
+The weird thing about this implementation is that the back and forth between the frontend and backend happens through the file system. Not even on some virtual disk. This should most likely be reimplemented into an in memory implementation. Hitting the disk this much is just going to fry my system for the duration of simulations I want to run.
+The frontend stores the state of the world as well? Which is strange. These discrepancies need to be refactored to create more readable and standardized implementation.
+##### Reverie Class
+- `__init__(fork_sim_code,sim_code)`: well documented
+    - `fork_sim_code`, `sim_code`: these reference directory names in the location defined in `utils.fs_storage`.
+    - `start_time`,`curr_time`: is this the virtual start time or other? not sure.
+    - `maze`: the maze class for this simulation
+    - `sec_per_step`: number of seconds each step in game takes.
+    - `step`: number of tiles personas have moved? *(what if multiple and one doesn't?!??!?! not sure.)*
+    - `personas`: all the personas
+    - `personas_tiles`: the game co-ordinates of the personas
+    - `server_sleep`: Used somewhere in the main server loop, I suspect this is so that the disk doesn't get fried.
+- `save`: saves the current state of the simulation (metadata and personas)
+    - first metadata is saved
+    - calls to `Persona.save(save_folder)`
+- `start_path_tester_server`: not entirely sure what this does on a first look, most likely generates some kind of way for the agents to learn the map.
+- `start_server(int_counter)`: `int_counter` stores the number of steps to take for this run.
+- `open_server`: provides an interactive command line for the server.
 #### path_finder.py
+
