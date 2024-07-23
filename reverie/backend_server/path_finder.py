@@ -11,69 +11,73 @@ import numpy as np
 # Removing unused code
 
 # Review Note:
-# Refactoring path_finder function name
-def path_finder_v2(a, start, end, collision_block_char, verbose=False):
-  def make_step(m, k):
-    for i in range(len(m)):
-      for j in range(len(m[i])):
-        if m[i][j] == k:
-          if i>0 and m[i-1][j] == 0 and a[i-1][j] == 0:
-            m[i-1][j] = k + 1
-          if j>0 and m[i][j-1] == 0 and a[i][j-1] == 0:
-            m[i][j-1] = k + 1
-          if i<len(m)-1 and m[i+1][j] == 0 and a[i+1][j] == 0:
-            m[i+1][j] = k + 1
-          if j<len(m[i])-1 and m[i][j+1] == 0 and a[i][j+1] == 0:
-             m[i][j+1] = k + 1
+# this whole function needs to be refactored.
+def path_finder_v2(maze, start, end, collision_block_char, verbose=False):
+# Review Note:
+# m: matrix?
+# k: what we are looking for?
+# maze: path_finder_v2 function parameter
+  def make_step(blind_maze, step_number):
+    for row in range(len(blind_maze)):
+      for col in range(len(blind_maze[row])):
+          # checks if a position is equal to something, and then does a thing?!?!??! 
+          # it checks each direction it can move in and then moves in each one?
+        if blind_maze[row][col] == step_number:
+          if row>0 and blind_maze[row-1][col] == 0 and maze[row-1][col] == 0:
+            blind_maze[row-1][col] = step_number + 1
+          if col>0 and blind_maze[row][col-1] == 0 and maze[row][col-1] == 0:
+            blind_maze[row][col-1] = step_number + 1
+          if row<len(blind_maze)-1 and blind_maze[row+1][col] == 0 and maze[row+1][col] == 0:
+            blind_maze[row+1][col] = step_number + 1
+          if col<len(blind_maze[row])-1 and blind_maze[row][col+1] == 0 and maze[row][col+1] == 0:
+             blind_maze[row][col+1] = step_number + 1
 
   new_maze = []
-  for row in a: 
+  for row in maze: 
     new_row = []
-    for j in row:
-      if j == collision_block_char: 
-        new_row += [1]
+    for block in row:
+      if block == collision_block_char: 
+        new_row.append(1)
       else: 
-        new_row += [0]
-    new_maze += [new_row]
-  a = new_maze
+        new_row.append(0)
+    new_maze.append(new_row)
+  maze = new_maze
 
-  m = []
-  for i in range(len(a)):
-      m.append([])
-      for j in range(len(a[i])):
-          m[-1].append(0)
-  i,j = start
-  m[i][j] = 1 
+  # Review Note: Makes a 0 initialized matrix with same dimentions as passed in matrix
+  blind_maze = []
+  for array in maze:
+      new_array = [0] * len(array)
+      blind_maze.append(new_array)
+  start_x,start_y = start
+  end_x, end_y = end
+  blind_maze[start_x][start_y] = 1 
 
-  k = 0
-  except_handle = 150
-  while m[end[0]][end[1]] == 0:
-      k += 1
-      make_step(m, k)
+  step = 0
+  # Review Note: Removing except_handle becauseits never used
+  while blind_maze[end_x][end_y] == 0:
+      step += 1
+      # Review Note: this seems very sus, because the step and the maze bounry can both be 1
+      make_step(blind_maze, step)
 
-      if except_handle == 0: 
-        break
-      except_handle -= 1 
-
-  i, j = end
-  k = m[i][j]
-  the_path = [(i,j)]
+  k = blind_maze[end_x][end_y]
+  the_path = [(end_x,end_y)]
+  # Re traces the steps in the path from the end. and builds co-ordinates like that.
   while k > 1:
-    if i > 0 and m[i - 1][j] == k-1:
-      i, j = i-1, j
-      the_path.append((i, j))
+    if end_x > 0 and blind_maze[end_x - 1][end_y] == k-1:
+      end_x, end_y = end_x-1, end_y
+      the_path.append((end_x, end_y))
       k-=1
-    elif j > 0 and m[i][j - 1] == k-1:
-      i, j = i, j-1
-      the_path.append((i, j))
+    elif end_y > 0 and blind_maze[end_x][end_y - 1] == k-1:
+      end_x, end_y = end_x, end_y-1
+      the_path.append((end_x, end_y))
       k-=1
-    elif i < len(m) - 1 and m[i + 1][j] == k-1:
-      i, j = i+1, j
-      the_path.append((i, j))
+    elif end_x < len(blind_maze) - 1 and blind_maze[end_x + 1][end_y] == k-1:
+      end_x, end_y = end_x+1, end_y
+      the_path.append((end_x, end_y))
       k-=1
-    elif j < len(m[i]) - 1 and m[i][j + 1] == k-1:
-      i, j = i, j+1
-      the_path.append((i, j))
+    elif end_y < len(blind_maze[end_x]) - 1 and blind_maze[end_x][end_y + 1] == k-1:
+      end_x, end_y = end_x, end_y+1
+      the_path.append((end_x, end_y))
       k -= 1
         
   the_path.reverse()
