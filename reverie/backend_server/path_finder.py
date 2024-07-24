@@ -85,6 +85,8 @@ def path_finder_v2(maze, start, end, collision_block_char, verbose=False):
 
 
 def path_finder(maze, start, end, collision_block_char, verbose=False):
+    # Review Note: I have no idea why these are flipped, might need to go back and check 
+    # my previous naming in the path finder function but it will be rewritten anyways so there is no point
   # EMERGENCY PATCH
   start = (start[1], start[0])
   end = (end[1], end[0])

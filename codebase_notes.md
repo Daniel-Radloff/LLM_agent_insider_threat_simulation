@@ -141,4 +141,7 @@ The frontend stores the state of the world as well? Which is strange. These disc
 - `start_server(int_counter)`: `int_counter` stores the number of steps to take for this run.
 - `open_server`: provides an interactive command line for the server.
 #### path_finder.py
+Most of this file needs to be reimplemented because its very inefficient.
+- `path_finder_v2`: a path finding algorithm.
+- `path_finder`: this is the public facing function, it just moves a few things and then sends it off to the `path_finder_v2` function.
 
