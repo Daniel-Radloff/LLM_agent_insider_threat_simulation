@@ -7,6 +7,7 @@ Description: Defines the core long-term memory module for generative agents.
 Note (May 1, 2023) -- this class is the Memory Stream module in the generative
 agents paper. 
 """
+from os import getxattr
 import sys
 sys.path.append('../../')
 
@@ -156,6 +157,81 @@ class AssociativeMemory:
     with open(out_json+"/embeddings.json", "w") as outfile:
       json.dump(self.embeddings, outfile)
 
+  # Review Note:
+  # There are three functions here that are meant to be either 
+  # refactored into one or refactored into one and then each one 
+  # calls that one function.
+
+  def _add_conceptnode(self, created, expiration, s, p, o, 
+                      description, keywords, poignancy, 
+                      embedding_pair, filling, node_type):
+    # For this refactor, we use getattr a lot because its convenient
+    # All it does is access a attribute.
+    # So: self.kw_strength_event
+    # can be accessed using: getattr(self, "kw_strength_event")
+    # this is convienient cause we can use strings to access 
+    # different keywords
+
+    # Little idle check function
+    def is_idle_check():
+      kw_strength_list = getattr(self, f"kw_strength_{node_type}")
+      if f"{p} {o}" != "is idle":  
+        for kw in keywords: 
+          if kw in kw_strength_list: 
+            kw_strength_list[kw] += 1
+          else: 
+            kw_strength_list[kw] = 1
+
+    # Setting up the node ID and counts.
+    depth = 0
+    if node_type == "chat":
+      check_idle = lambda : None
+    elif node_type == "event":
+      # Event node specific clean up. 
+      check_idle = is_idle_check
+      if "(" in description: 
+        description = (" ".join(description.split()[:3]) 
+                       + " " 
+                       +  description.split("(")[-1][:-1])
+    elif node_type == "thought":
+      depth = 1 
+      check_idle = is_idle_check
+      try: 
+        if filling: 
+          depth += max([self.id_to_node[i].depth for i in filling])
+      except: 
+        pass
+    else:
+      raise NotImplementedError("Invalid node_type")
+
+    node_count = len(self.id_to_node.keys()) + 1
+    type_count = len(getattr(self,f"seq_{node_type}")) + 1 
+    node_id = f"node_{str(node_count)}"
+
+    # Creating the <ConceptNode> object.
+    node = ConceptNode(node_id, node_count, type_count, node_type, depth,
+                       created, expiration, 
+                       s, p, o, 
+                       description, embedding_pair[0], 
+                       poignancy, keywords, filling)
+
+    # Creating various dictionary cache for fast access. 
+    # Review Note:
+    # Slightly sus, but very clean
+    getattr(self, f"seq_{node_type}").insert(0,node)
+    keywords = [i.lower() for i in keywords]
+    for kw in keywords: 
+      kw_list = getattr(self, f"kw_to_{node_type}")
+      if kw in kw_list:
+        kw_list[kw].insert(0,node)
+      else: 
+        kw_list[kw] = [node]
+    self.id_to_node[node_id] = node 
+
+    check_idle()
+    self.embeddings[embedding_pair[0]] = embedding_pair[1]
+
+    return node
 
   def add_event(self, created, expiration, s, p, o, 
                       description, keywords, poignancy, 
