@@ -62,8 +62,12 @@ class AssociativeMemory:
     self.kw_strength_event = dict()
     self.kw_strength_thought = dict()
 
+    # For those unfamiliar, see https://datasciencedojo.com/blog/embeddings-and-llm/ or any
+    # other resource on embeddings related to LLM's
+    # Any embedding model can be used, all that is important is that the same model is used.
     self.embeddings = json.load(open(f_saved + "/embeddings.json"))
 
+    # Makes all the event nodes
     nodes_load = json.load(open(f_saved + "/nodes.json"))
     for count in range(len(nodes_load.keys())): 
       node_id = f"node_{str(count+1)}"
@@ -102,6 +106,9 @@ class AssociativeMemory:
         self.add_thought(created, expiration, s, p, o, 
                    description, keywords, poignancy, embedding_pair, filling)
 
+    # Review Note:
+    # Can't tell right now if this is used outside of this class, which would be weird.
+    # Refactoring should reveal more.
     kw_strength_load = json.load(open(f_saved + "/kw_strength.json"))
     if kw_strength_load["kw_strength_event"]: 
       self.kw_strength_event = kw_strength_load["kw_strength_event"]
@@ -174,11 +181,13 @@ class AssociativeMemory:
                        poignancy, keywords, filling)
 
     # Creating various dictionary cache for fast access. 
-    self.seq_event[0:0] = [node]
+    # Review Note:
+    # Refactoring weird code
+    self.seq_event.insert(0,node)
     keywords = [i.lower() for i in keywords]
     for kw in keywords: 
       if kw in self.kw_to_event: 
-        self.kw_to_event[kw][0:0] = [node]
+        self.kw_to_event[kw].insert(0,node)
       else: 
         self.kw_to_event[kw] = [node]
     self.id_to_node[node_id] = node 
@@ -218,11 +227,11 @@ class AssociativeMemory:
                        description, embedding_pair[0], poignancy, keywords, filling)
 
     # Creating various dictionary cache for fast access. 
-    self.seq_thought[0:0] = [node]
+    self.seq_thought.insert(0,node)
     keywords = [i.lower() for i in keywords]
     for kw in keywords: 
       if kw in self.kw_to_thought: 
-        self.kw_to_thought[kw][0:0] = [node]
+        self.kw_to_thought[kw].insert(0,node)
       else: 
         self.kw_to_thought[kw] = [node]
     self.id_to_node[node_id] = node 
@@ -257,11 +266,11 @@ class AssociativeMemory:
                        description, embedding_pair[0], poignancy, keywords, filling)
 
     # Creating various dictionary cache for fast access. 
-    self.seq_chat[0:0] = [node]
+    self.seq_chat.insert(0,node)
     keywords = [i.lower() for i in keywords]
     for kw in keywords: 
       if kw in self.kw_to_chat: 
-        self.kw_to_chat[kw][0:0] = [node]
+        self.kw_to_chat[kw].insert(0,node)
       else: 
         self.kw_to_chat[kw] = [node]
     self.id_to_node[node_id] = node 
