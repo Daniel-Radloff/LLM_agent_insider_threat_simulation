@@ -1,4 +1,5 @@
 # Notes on this code base structure
+I would like to just note that: everyone is learning. I'm also not a python specific dev and I have little professional dev experience and that's ok. These are just critiques and suggestions and are not meant to hurt or belittle anyone :). Rather show how to improve and get better. Critique can sometimes feel harsh, however It's important to take them in the spirit that they are meant. They are an opportunity to improve. Without this basis, I would never have been able to complete my research. I thank the creators for contributing in the name of open source research.
 ## Suggested Modifications
 - restructure static assets and shared stuff, because the current project directory structure is very odd.
 ## Original Filtered Directory Structure
@@ -145,3 +146,35 @@ Most of this file needs to be reimplemented because its very inefficient.
 - `path_finder_v2`: a path finding algorithm.
 - `path_finder`: this is the public facing function, it just moves a few things and then sends it off to the `path_finder_v2` function.
 
+### backend_server/persona
+This is a difficult to follow in its current state, but here is the main summary:
+Persona.py is the main controller of everything under `/persona` and its the main high level abstraction used for all agent interactions.
+There are 3 directories:
+- `cognitive_modules`: this stores some functions that are used in the `Persona` class, *this should be completely reworked so that all these little functions are encapsulated in the class instead of like this.*
+- `memory_structures`: this stores 3 classes, scratch (short term memory), associative_memory, and spatial_memory, each serve a specific task.
+#### persona.py
+"Defines persona class that powers the agents."
+There are a bunch of `import *`'s which is gonna make things a bit more tedious to find where stuff is coming from.
+- `__init__(name,folder_mem_saved)`:
+    - `folder_mem_saved` is only ever initialized as a string, so this has to be a mistake.
+    - the initialization of the rest of the variables are shoddy with how it handles files not existing, such as the creation of a new persona, will look at the README again later to check if I'm missing something.
+
+### backend_server/persona_memory_structures
+#### spatial_memory.py
+Defines the `MemoryTree` class that contains spatial memory and "aids in grounding their behavior in the game world".
+
+### prompt_template
+#### run_gpt_prompt.py
+- `run_gpt_promp_event_poignancy(persona, event_description, test_input=None, verbose=False)`
+  In the file poignancy_event_v1.txt, the prompt is something along the lines of:
+  ```
+  On the scale of 1 to 10, where 1 is purely mundane
+  (e.g., brushing teeth, making bed) and 10 is
+  extremely poignant (e.g., a break up, college
+  acceptance), rate the likely poignancy of the
+  following piece of memory.
+  Memory: buying groceries at The Willows Market
+  and Pharmacy
+  Rating: <fill in>
+  ```
+however, this doesn't make sense because if something is poignant then it means it's sad, but college acceptance is not sad. Furthermore, in the paper, it is the section under importance, not strictly sad events. Therefor: I think this is a mistake and what is meant to happen here is rank the events on impact/importance on the agents' life.

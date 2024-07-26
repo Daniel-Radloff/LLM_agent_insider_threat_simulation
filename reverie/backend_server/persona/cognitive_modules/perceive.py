@@ -119,17 +119,21 @@ def perceive(persona, maze):
     # We retrieve the latest persona.scratch.retention events. If there is  
     # something new that is happening (that is, p_event not in latest_events),
     # then we add that event to the a_mem and return it. 
+    # Review Note:
+    # Surely the same event cannot occur in two places, if this is the case, then why call this every time?
     latest_events = persona.a_mem.get_summarized_latest_events(
                                     persona.scratch.retention)
     if p_event not in latest_events:
       # We start by managing keywords. 
       keywords = set()
-      sub = p_event[0]
-      obj = p_event[2]
       if ":" in p_event[0]: 
         sub = p_event[0].split(":")[-1]
+      else:
+        sub = p_event[0]
       if ":" in p_event[2]: 
         obj = p_event[2].split(":")[-1]
+      else:
+        obj = p_event[2]
       keywords.update([sub, obj])
 
       # Get event embedding

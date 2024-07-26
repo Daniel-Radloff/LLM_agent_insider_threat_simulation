@@ -38,6 +38,9 @@ class Persona:
     # If there is already memory in folder_mem_saved, we load that. Otherwise,
     # we create new memory instances. 
     # <s_mem> is the persona's spatial memory. 
+    # Review Note:
+    # Why is folder_mem_saved defaulted to a boolean and then used in a string
+    # to access persona specific information if i understand correctly?
     f_s_mem_saved = f"{folder_mem_saved}/bootstrap_memory/spatial_memory.json"
     self.s_mem = MemoryTree(f_s_mem_saved)
     # <s_mem> is the persona's associative memory. 
