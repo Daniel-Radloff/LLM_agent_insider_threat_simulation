@@ -65,6 +65,8 @@ class AssociativeMemory:
     # For those unfamiliar, see https://datasciencedojo.com/blog/embeddings-and-llm/ or any
     # other resource on embeddings related to LLM's
     # Any embedding model can be used, all that is important is that the same model is used.
+    # These are supposed to be in a with for robustness, but im not going to do that because
+    # I don't wanna edit this file anymore so this is now TODO
     self.embeddings = json.load(open(f_saved + "/embeddings.json"))
 
     # Makes all the event nodes
