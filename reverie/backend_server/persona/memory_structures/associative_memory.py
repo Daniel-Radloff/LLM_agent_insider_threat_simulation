@@ -73,10 +73,7 @@ class AssociativeMemory:
       node_id = f"node_{str(count+1)}"
       node_details = nodes_load[node_id]
 
-      node_count = node_details["node_count"]
-      type_count = node_details["type_count"]
       node_type = node_details["type"]
-      depth = node_details["depth"]
 
       created = datetime.datetime.strptime(node_details["created"], 
                                            '%Y-%m-%d %H:%M:%S')
@@ -181,8 +178,8 @@ class AssociativeMemory:
           else: 
             kw_strength_list[kw] = 1
 
-    # Setting up the node ID and counts.
     depth = 0
+    # Node type specific operations
     if node_type == "chat":
       check_idle = lambda : None
     elif node_type == "event":
@@ -203,6 +200,7 @@ class AssociativeMemory:
     else:
       raise NotImplementedError("Invalid node_type")
 
+    # Setting up the node ID and counts.
     node_count = len(self.id_to_node.keys()) + 1
     type_count = len(getattr(self,f"seq_{node_type}")) + 1 
     node_id = f"node_{str(node_count)}"
@@ -257,29 +255,26 @@ class AssociativeMemory:
 
 
   def get_summarized_latest_events(self, retention): 
-    ret_set = set()
-    for e_node in self.seq_event[:retention]: 
-      ret_set.add(e_node.spo_summary())
-    return ret_set
+    return {e_node.spo_summary() for e_node in self.seq_event[:retention]}
 
 
   def get_str_seq_events(self): 
     ret_str = ""
     for count, event in enumerate(self.seq_event): 
-      ret_str += f'{"Event", len(self.seq_event) - count, ": ", event.spo_summary(), " -- ", event.description}\n'
+        ret_str += f'"Event"{len(self.seq_event) - count}":"{event.spo_summary()}" -- "{event.description}\n'
     return ret_str
 
 
   def get_str_seq_thoughts(self): 
     ret_str = ""
     for count, event in enumerate(self.seq_thought): 
-      ret_str += f'{"Thought", len(self.seq_thought) - count, ": ", event.spo_summary(), " -- ", event.description}'
+      ret_str += f'"Thought"{len(self.seq_thought) - count}": "{event.spo_summary()}" -- "{event.description}\n'
     return ret_str
 
 
   def get_str_seq_chats(self): 
     ret_str = ""
-    for count, event in enumerate(self.seq_chat): 
+    for event in self.seq_chat: 
       ret_str += f"with {event.object.content} ({event.description})\n"
       ret_str += f'{event.created.strftime("%B %d, %Y, %H:%M:%S")}\n'
       for row in event.filling: 
@@ -293,10 +288,9 @@ class AssociativeMemory:
     ret = []
     for i in contents: 
       if i in self.kw_to_thought: 
-        ret += self.kw_to_thought[i.lower()]
+        ret.append(self.kw_to_thought[i.lower()])
 
-    ret = set(ret)
-    return ret
+    return set(ret)
 
 
   def retrieve_relevant_events(self, s_content, p_content, o_content): 
@@ -305,10 +299,9 @@ class AssociativeMemory:
     ret = []
     for i in contents: 
       if i in self.kw_to_event: 
-        ret += self.kw_to_event[i]
+        ret.append(self.kw_to_event[i])
 
-    ret = set(ret)
-    return ret
+    return set(ret)
 
 
   def get_last_chat(self, target_persona_name): 
