@@ -7,12 +7,21 @@ Description: Defines the short-term memory module for generative agents.
 import datetime
 import json
 import sys
+
+from reverie.backend_server.custom_json_encoder import CustomJSONEncoder
 sys.path.append('../../')
 
 from global_methods import *
 
 class Scratch: 
+  # Review Note:
+  # oh god
   def __init__(self, f_saved): 
+    # Review note:
+    # There are attributes that don't align well with the class description
+    # for instance:
+    #  vision_r, curr_tile, etc, this should be in spatial memory
+    #  name, first_name, last_name, age, surely these are long term memories?
     # PERSONA HYPERPARAMETERS
     # <vision_r> denotes the number of tiles that the persona can see around 
     # them. 
@@ -158,10 +167,8 @@ class Scratch:
     # e.g., [(50, 10), (49, 10), (48, 10), ...]
     self.planned_path = []
 
-    if check_if_file_exists(f_saved): 
+    with json.load(open(f_saved)) as scratch_load:
       # If we have a bootstrap file, load that here. 
-      scratch_load = json.load(open(f_saved))
-
       self.vision_r = scratch_load["vision_r"]
       self.att_bandwidth = scratch_load["att_bandwidth"]
       self.retention = scratch_load["retention"]
@@ -169,8 +176,6 @@ class Scratch:
       if scratch_load["curr_time"]: 
         self.curr_time = datetime.datetime.strptime(scratch_load["curr_time"],
                                                   "%B %d, %Y, %H:%M:%S")
-      else: 
-        self.curr_time = None
       self.curr_tile = scratch_load["curr_tile"]
       self.daily_plan_req = scratch_load["daily_plan_req"]
 
@@ -209,8 +214,6 @@ class Scratch:
         self.act_start_time = datetime.datetime.strptime(
                                               scratch_load["act_start_time"],
                                               "%B %d, %Y, %H:%M:%S")
-      else: 
-        self.curr_time = None
       self.act_duration = scratch_load["act_duration"]
       self.act_description = scratch_load["act_description"]
       self.act_pronunciatio = scratch_load["act_pronunciatio"]
@@ -227,9 +230,6 @@ class Scratch:
         self.chatting_end_time = datetime.datetime.strptime(
                                             scratch_load["chatting_end_time"],
                                             "%B %d, %Y, %H:%M:%S")
-      else:
-        self.chatting_end_time = None
-
       self.act_path_set = scratch_load["act_path_set"]
       self.planned_path = scratch_load["planned_path"]
 
@@ -243,71 +243,8 @@ class Scratch:
     OUTPUT: 
       None
     """
-    scratch = dict() 
-    scratch["vision_r"] = self.vision_r
-    scratch["att_bandwidth"] = self.att_bandwidth
-    scratch["retention"] = self.retention
-
-    scratch["curr_time"] = self.curr_time.strftime("%B %d, %Y, %H:%M:%S")
-    scratch["curr_tile"] = self.curr_tile
-    scratch["daily_plan_req"] = self.daily_plan_req
-
-    scratch["name"] = self.name
-    scratch["first_name"] = self.first_name
-    scratch["last_name"] = self.last_name
-    scratch["age"] = self.age
-    scratch["innate"] = self.innate
-    scratch["learned"] = self.learned
-    scratch["currently"] = self.currently
-    scratch["lifestyle"] = self.lifestyle
-    scratch["living_area"] = self.living_area
-
-    scratch["concept_forget"] = self.concept_forget
-    scratch["daily_reflection_time"] = self.daily_reflection_time
-    scratch["daily_reflection_size"] = self.daily_reflection_size
-    scratch["overlap_reflect_th"] = self.overlap_reflect_th
-    scratch["kw_strg_event_reflect_th"] = self.kw_strg_event_reflect_th
-    scratch["kw_strg_thought_reflect_th"] = self.kw_strg_thought_reflect_th
-
-    scratch["recency_w"] = self.recency_w
-    scratch["relevance_w"] = self.relevance_w
-    scratch["importance_w"] = self.importance_w
-    scratch["recency_decay"] = self.recency_decay
-    scratch["importance_trigger_max"] = self.importance_trigger_max
-    scratch["importance_trigger_curr"] = self.importance_trigger_curr
-    scratch["importance_ele_n"] = self.importance_ele_n
-    scratch["thought_count"] = self.thought_count
-
-    scratch["daily_req"] = self.daily_req
-    scratch["f_daily_schedule"] = self.f_daily_schedule
-    scratch["f_daily_schedule_hourly_org"] = self.f_daily_schedule_hourly_org
-
-    scratch["act_address"] = self.act_address
-    scratch["act_start_time"] = (self.act_start_time
-                                     .strftime("%B %d, %Y, %H:%M:%S"))
-    scratch["act_duration"] = self.act_duration
-    scratch["act_description"] = self.act_description
-    scratch["act_pronunciatio"] = self.act_pronunciatio
-    scratch["act_event"] = self.act_event
-
-    scratch["act_obj_description"] = self.act_obj_description
-    scratch["act_obj_pronunciatio"] = self.act_obj_pronunciatio
-    scratch["act_obj_event"] = self.act_obj_event
-
-    scratch["chatting_with"] = self.chatting_with
-    scratch["chat"] = self.chat
-    scratch["chatting_with_buffer"] = self.chatting_with_buffer
-    if self.chatting_end_time: 
-      scratch["chatting_end_time"] = (self.chatting_end_time
-                                        .strftime("%B %d, %Y, %H:%M:%S"))
-    else: 
-      scratch["chatting_end_time"] = None
-
-    scratch["act_path_set"] = self.act_path_set
-    scratch["planned_path"] = self.planned_path
-
     with open(out_json, "w") as outfile:
-      json.dump(scratch, outfile, indent=2) 
+      json.dump(vars(self), outfile, indent=2, cls=CustomJSONEncoder)
 
 
   def get_f_daily_schedule_index(self, advance=0):
