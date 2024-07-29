@@ -162,7 +162,7 @@ class AssociativeMemory:
 
   def _add_conceptnode(self, created, expiration, s, p, o, 
                       description, keywords, poignancy, 
-                      embedding_pair, filling, node_type):
+                      embedding_pair, filling, node_type)->ConceptNode:
     # For this refactor, we use getattr a lot because its convenient
     # All it does is access a attribute.
     # So: self.kw_strength_event
@@ -234,7 +234,7 @@ class AssociativeMemory:
 
   def add_event(self, created, expiration, s, p, o, 
                       description, keywords, poignancy, 
-                      embedding_pair, filling):
+                      embedding_pair, filling)->ConceptNode:
     return self._add_conceptnode(created, expiration, s, p, o, 
                       description, keywords, poignancy, 
                       embedding_pair, filling,"event")
@@ -242,7 +242,7 @@ class AssociativeMemory:
 
   def add_thought(self, created, expiration, s, p, o, 
                         description, keywords, poignancy, 
-                        embedding_pair, filling):
+                        embedding_pair, filling)->ConceptNode:
     return self._add_conceptnode(created, expiration, s, p, o, 
                       description, keywords, poignancy, 
                       embedding_pair, filling,"thought")
@@ -250,7 +250,7 @@ class AssociativeMemory:
 
   def add_chat(self, created, expiration, s, p, o, 
                      description, keywords, poignancy, 
-                     embedding_pair, filling): 
+                     embedding_pair, filling)->ConceptNode: 
     return self._add_conceptnode(created, expiration, s, p, o, 
                       description, keywords, poignancy, 
                       embedding_pair, filling,"chat")
