@@ -2,6 +2,10 @@
 I would like to just note that: everyone is learning. I'm also not a python specific dev and I have little professional dev experience and that's ok. These are just critiques and suggestions and are not meant to hurt or belittle anyone :). Rather show how to improve and get better. Critique can sometimes feel harsh, however It's important to take them in the spirit that they are meant. They are an opportunity to improve. Without this basis, I would never have been able to complete my research. I thank the creators for contributing in the name of open source research.
 ## Suggested Modifications
 - restructure static assets and shared stuff, because the current project directory structure is very odd.
+- enforce frontend and backend separation of concerns
+- refactor many dictionaries into classes with strict attributes
+- enforce stricter typing
+- Maybe rethink the project structure and especially the persona to conceptually represent the brain
 ## Original Filtered Directory Structure
 ```
 .
@@ -152,6 +156,13 @@ Persona.py is the main controller of everything under `/persona` and its the mai
 There are 3 directories:
 - `cognitive_modules`: this stores some functions that are used in the `Persona` class, *this should be completely reworked so that all these little functions are encapsulated in the class instead of like this.*
 - `memory_structures`: this stores 3 classes, scratch (short term memory), associative_memory, and spatial_memory, each serve a specific task.
+
+***before reading about `persona.py` and other files, it is almost more important to cover everything under `backend_server/persona_memory_structures***
+
+#### Important Naming conventions
+- `s`: refers to subject
+- `p`: refers to predicate
+- `o`: refers to object
 #### persona.py
 "Defines persona class that powers the agents."
 There are a bunch of `import *`'s which is gonna make things a bit more tedious to find where stuff is coming from.
@@ -160,6 +171,16 @@ There are a bunch of `import *`'s which is gonna make things a bit more tedious 
     - the initialization of the rest of the variables are shoddy with how it handles files not existing, such as the creation of a new persona, will look at the README again later to check if I'm missing something.
 
 ### backend_server/persona_memory_structures
+#### associative_memory.py
+This contains two classes:
+- `ConceptNode`: an object that represents some concept.
+- `AssociativeMemory`: the long term memory of the agent.
+
+##### AssociativeMemory
+- `__init__(f_saved)`
+- `save(out_json)`: saves the state of an agent to a file
+- `add_*`: adds an event/thought/conversation that has happened, it adds the info to a ConceptNode and stores it.
+
 #### spatial_memory.py
 Defines the `MemoryTree` class that contains spatial memory and "aids in grounding their behavior in the game world".
 
