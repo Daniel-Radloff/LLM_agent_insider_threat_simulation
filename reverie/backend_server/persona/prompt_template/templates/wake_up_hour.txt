@@ -1,4 +1,4 @@
-wake_up_hour_v1.txt
+wake_up_hour.txt
 
 Variables: 
 !<INPUT 0>! -- Identity Stable Set
@@ -9,4 +9,4 @@ Variables:
 !<INPUT 0>!
 
 In general, !<INPUT 1>!
-!<INPUT 2>!'s wake up hour:
+What is !<INPUT 2>!'s wake up hour today?
