@@ -12,21 +12,8 @@ from utils import *
 
 openai.api_key = openai_api_key
 
-# Review Note:
-# Why are there like 4 different functions that all do for 
-# all intents and purposes the exact same thing
 def temp_sleep(seconds=0.1):
   time.sleep(seconds)
-
-def ChatGPT_single_request(prompt): 
-  temp_sleep()
-
-  completion = openai.ChatCompletion.create(
-    model="gpt-3.5-turbo", 
-    messages=[{"role": "user", "content": prompt}]
-  )
-  return completion["choices"][0]["message"]["content"]
-
 
 def run_inference(prompt): 
   """
@@ -52,7 +39,6 @@ def run_inference(prompt):
     print ("ChatGPT ERROR")
     return "ChatGPT ERROR"
 
-
 def safe_generate_response(prompt:str, 
                                    example_output:str,
                                    validate:Callable[[str,str],str],
@@ -66,6 +52,7 @@ def safe_generate_response(prompt:str,
     1) the current response of the model
     2) the original prompt the model was given
     It is up to the validate function to check any formatting
+    validate must throw a ValueError
     Special instructions such as a format specification can be
     passed via special_instruction.
   '''
@@ -80,17 +67,15 @@ def safe_generate_response(prompt:str,
       # Review Note:
       # func_validate should validate the output and return the value surely. 
       # Why make two functions
-      response = validate(curr_gpt_response, prompt)
-      if response: 
-        return response
-      
-    except: 
+      return validate(curr_gpt_response, prompt)
+    except ValueError:
       pass
-
-  # Surely we should return the fail safe response here.
+    except:
+      # TODO, impliment something more concrete here
+      pass
   return fail_safe_response
 
-def generate_prompt(curr_input, prompt_lib_file): 
+def generate_prompt(curr_input:list[str], prompt_lib_file): 
   """
   Takes in the current input (e.g. comment that you want to classifiy) and 
   the path to a prompt file. The prompt file contains the raw str prompt that
@@ -98,23 +83,22 @@ def generate_prompt(curr_input, prompt_lib_file):
   function replaces this substr with the actual curr_input to produce the 
   final promopt that will be sent to the GPT3 server. 
   ARGS:
-    curr_input: the input we want to feed in (IF THERE ARE MORE THAN ONE
-                INPUT, THIS CAN BE A LIST.)
+    curr_input: the list of string inputs for the prompt.
     prompt_lib_file: the path to the promopt file. 
   RETURNS: 
     a str prompt that will be sent to OpenAI's GPT server.  
   """
-  if type(curr_input) == type("string"): 
-    curr_input = [curr_input]
-  curr_input = [str(i) for i in curr_input]
+  with open(prompt_lib_file, "r") as prompt_file:
+    prompt = prompt_file.read()
 
-  f = open(prompt_lib_file, "r")
-  prompt = f.read()
-  f.close()
-  for count, i in enumerate(curr_input):   
-    prompt = prompt.replace(f"!<INPUT {count}>!", i)
+  # For all the files, there is an optional comment section describing what the inputs do
+  # See v3_ChatGPT/action_location_v1.txt as an example
+  # All this does is remove those descriptions from the final prompt
   if "<commentblockmarker>###</commentblockmarker>" in prompt: 
     prompt = prompt.split("<commentblockmarker>###</commentblockmarker>")[1]
+
+  for count, prompt_input in enumerate(curr_input):   
+    prompt = prompt.replace(f"!<INPUT {count}>!", prompt_input)
   return prompt.strip()
 
 def get_embedding(text, model="text-embedding-ada-002"):
@@ -123,7 +107,6 @@ def get_embedding(text, model="text-embedding-ada-002"):
     text = "this is blank"
   return openai.Embedding.create(
           input=[text], model=model)['data'][0]['embedding']
-
 
 if __name__ == '__main__':
   gpt_parameter = {"engine": "text-davinci-003", "max_tokens": 50, 
