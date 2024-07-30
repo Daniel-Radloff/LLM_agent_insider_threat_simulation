@@ -17,7 +17,10 @@ from persona.prompt_template.gpt_structure import *
 from persona.prompt_template.print_prompt import *
 
 # Review note:
-# What the fuck is going on here, there must be a better way to do most of this
+# There is a lot of repeated code and a lot of modifications 
+# that need to be made here.
+# Because we are using a local LLM, model parameterization
+# Will be re-implimented later.
 def get_random_alphanumeric(i=6, j=6): 
   """
   Returns a random alpha numeric strength that has the length of somewhere
@@ -34,11 +37,11 @@ def get_random_alphanumeric(i=6, j=6):
   return x
 
 
-######################################################################
-# CHAPTER 1: Run GPT Prompt
-######################################################################
-
-def run_gpt_prompt_wake_up_hour(persona, test_input=None, verbose=False): 
+# Review Note:
+# Important: During refactor, temperature for model was set at 0.8 
+# TODO: Reimpliment temperature
+# TODO: Maybe this should rather be a real time instead of just the hour to allow for small variance
+def run_gpt_prompt_wake_up_hour(persona, test_input=None, verbose=False)->int:
   """
   Given the persona, returns an integer that indicates the hour when the 
   persona wakes up.  
@@ -48,42 +51,36 @@ def run_gpt_prompt_wake_up_hour(persona, test_input=None, verbose=False):
   OUTPUT: 
     integer for the wake up hour.
   """
-  def create_prompt_input(persona, test_input=None): 
-    if test_input: return test_input
+  def validate(gpt_response:str, prompt=""):
+    try:
+      to_return = gpt_response.strip().lower().split("am")[0]
+      # try to coerce to integer for validation
+      _ = int(to_return)
+    except:
+      raise ValueError()
+    return to_return
+  
+  if test_input == None:
     prompt_input = [persona.scratch.get_str_iss(),
                     persona.scratch.get_str_lifestyle(),
                     persona.scratch.get_str_firstname()]
-    return prompt_input
-
-  def __func_clean_up(gpt_response, prompt=""):
-    cr = int(gpt_response.strip().lower().split("am")[0])
-    return cr
-  
-  def __func_validate(gpt_response, prompt=""): 
-    try: __func_clean_up(gpt_response, prompt="")
-    except: return False
-    return True
-
-  def get_fail_safe(): 
-    fs = 8
-    return fs
-
-  gpt_param = {"engine": "text-davinci-002", "max_tokens": 5, 
-             "temperature": 0.8, "top_p": 1, "stream": False,
-             "frequency_penalty": 0, "presence_penalty": 0, "stop": ["\n"]}
+  else:   
+    prompt_input = test_input
   prompt_template = "persona/prompt_template/v2/wake_up_hour_v1.txt"
-  prompt_input = create_prompt_input(persona, test_input)
   prompt = generate_prompt(prompt_input, prompt_template)
-  fail_safe = get_fail_safe()
+  fail_safe_and_example = "8am"
 
-  output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
-                                   __func_validate, __func_clean_up)
+  output = safe_generate_response(prompt, 
+                                  fail_safe_and_example, 
+                                  validate, 
+                                  fail_safe_and_example)
   
   if debug or verbose: 
-    print_run_prompts(prompt_template, persona, gpt_param, 
+    print_run_prompts(prompt_template, persona, "", 
                       prompt_input, prompt, output)
-    
-  return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+
+  # has been validated  
+  return int(output)
 
 
 def run_gpt_prompt_daily_plan(persona, 
@@ -1520,50 +1517,28 @@ def run_gpt_prompt_convo_to_thoughts(persona,
   return output, [output, prompt, gpt_param, prompt_input, fail_safe]
 
 def run_gpt_prompt_event_poignancy(persona, event_description, test_input=None, verbose=False): 
-  def create_prompt_input(persona, event_description, test_input=None): 
-    prompt_input = [persona.scratch.name,
-                    persona.scratch.get_str_iss(),
-                    persona.scratch.name,
-                    event_description]
-    return prompt_input
-  
-  def __func_clean_up(gpt_response, prompt=""):
-    gpt_response = int(gpt_response.strip())
-    return gpt_response
-
-  def __func_validate(gpt_response, prompt=""): 
+  def validate(gpt_response, prompt=""):
     try: 
-      __func_clean_up(gpt_response, prompt)
-      return True
+      gpt_response = int(gpt_response.strip())
+      return gpt_response
     except:
       return False 
 
-  def get_fail_safe(): 
-    return 4
-
-  def __chat_func_clean_up(gpt_response, prompt=""):
-    gpt_response = int(gpt_response)
-    return gpt_response
-
-  def __chat_func_validate(gpt_response, prompt=""):
-    try: 
-      __func_clean_up(gpt_response, prompt)
-      return True
-    except:
-      return False 
-
-  print ("asdhfapsh8p9hfaiafdsi;ldfj as DEBUG 7")
   gpt_param = {"engine": "text-davinci-002", "max_tokens": 15, 
                "temperature": 0, "top_p": 1, "stream": False,
                "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
   prompt_template = "persona/prompt_template/v3_ChatGPT/poignancy_event_v1.txt"
-  prompt_input = create_prompt_input(persona, event_description)
+  prompt_input = [persona.scratch.name,
+                  persona.scratch.get_str_iss(),
+                  persona.scratch.name,
+                  event_description]
+
   prompt = generate_prompt(prompt_input, prompt_template)
   example_output = "5"
   special_instruction = "The output should ONLY contain ONE integer value on the scale of 1 to 10."
-  fail_safe = get_fail_safe()
+  fail_safe = "4"
   output = ChatGPT_safe_generate_response(prompt, example_output, special_instruction, 3, fail_safe,
-                                          __chat_func_validate, __chat_func_clean_up, True)
+                                          validate, True)
   if output != False: 
     return output, [output, prompt, gpt_param, prompt_input, fail_safe]
 
