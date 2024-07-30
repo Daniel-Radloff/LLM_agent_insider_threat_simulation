@@ -258,6 +258,8 @@ class Maze:
     return (x, y)
 
 
+  # Review Note:
+  # TODO rename to get_tile_details for clarity and consistency
   def access_tile(self, tile): 
     """
     Returns the tiles details dictionary that is stored in self.tiles of the 
@@ -318,6 +320,8 @@ class Maze:
     return path
 
 
+  # Review Note:
+  # TODO rename to get_nearby_tile_coordinates for clarity and consistency
   def get_nearby_tiles(self, tile, vision_r): 
     """
     Given the current tile and vision_r, return a list of tiles that are 

@@ -12,6 +12,8 @@ sys.path.append('../../')
 from utils import *
 from global_methods import *
 
+# Review Note:
+# The purpose of this class and how its uses is all unclear because it seems to be used elsewhere and we can't tell how its being used yet.
 class MemoryTree: 
   def __init__(self, f_saved): 
     self.tree = {}
@@ -39,7 +41,8 @@ class MemoryTree:
     with open(out_json, "w") as outfile:
       json.dump(self.tree, outfile) 
 
-
+  def get_tree(self):
+    return self.tree
 
   def get_str_accessible_sectors(self, curr_world): 
     """
