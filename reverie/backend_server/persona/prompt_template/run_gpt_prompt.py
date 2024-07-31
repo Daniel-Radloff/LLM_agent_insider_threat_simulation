@@ -126,7 +126,7 @@ def run_gpt_prompt_daily_plan(persona,
   else:
     prompt_input= test_input
 
-  prompt_template = "persona/prompt_template/v2/daily_planning_v6.txt"
+  prompt_template = "persona/prompt_template/templates/daily_planning_v6.txt"
   prompt = generate_prompt(prompt_input, prompt_template)
   fail_safe = '''eat breakfast at 7:00 am,
   read a book from 8:00 am to 12:00 pm,
