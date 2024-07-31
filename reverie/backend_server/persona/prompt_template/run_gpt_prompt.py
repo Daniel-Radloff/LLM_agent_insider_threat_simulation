@@ -66,7 +66,7 @@ def run_gpt_prompt_wake_up_hour(persona, test_input=None, verbose=False)->int:
                     persona.scratch.get_str_firstname()]
   else:   
     prompt_input = test_input
-  prompt_template = "persona/prompt_template/v2/wake_up_hour_v1.txt"
+  prompt_template = "persona/prompt_template/templates/wake_up_hour.txt"
   prompt = generate_prompt(prompt_input, prompt_template)
   fail_safe_and_example = "8am"
 
@@ -83,6 +83,8 @@ def run_gpt_prompt_wake_up_hour(persona, test_input=None, verbose=False)->int:
   return int(output)
 
 
+# Review Note:
+# Temperature in parameters was originally 1
 def run_gpt_prompt_daily_plan(persona, 
                               wake_up_hour, 
                               test_input=None, 
@@ -99,62 +101,57 @@ def run_gpt_prompt_daily_plan(persona,
   OUTPUT: 
     a list of daily actions in broad strokes.
   """
-  def create_prompt_input(persona, wake_up_hour, test_input=None):
-    if test_input: return test_input
-    prompt_input = []
-    prompt_input += [persona.scratch.get_str_iss()]
-    prompt_input += [persona.scratch.get_str_lifestyle()]
-    prompt_input += [persona.scratch.get_str_curr_date_str()]
-    prompt_input += [persona.scratch.get_str_firstname()]
-    prompt_input += [f"{str(wake_up_hour)}:00 am"]
-    return prompt_input
+  # Review note:
+  # The prompt lists the instructions out as: 
+  #1) something 
+  #2) something 
+  # which is why there is a split on )
+  # TODO This function may need to be modified, maybe
+  # we move to a structured format such as json
+  # Why we validate this way is debatable, but i agree with author that
+  # we should atleast have some verifiable means to validate this output
+  def validate(response:str, _="")->str:
+    lines = [line.rstrip() for line in response.split("\n")]
+    actions = [line.split(")")[1] for line in lines]
+    return ",".join(actions)
 
-  def __func_clean_up(gpt_response, prompt=""):
-    cr = []
-    _cr = gpt_response.split(")")
-    for i in _cr: 
-      if i[-1].isdigit(): 
-        i = i[:-1].strip()
-        if i[-1] == "." or i[-1] == ",": 
-          cr += [i[:-1].strip()]
-    return cr
+  # Review note:
+  # Probably gonna remove this if guard at some point
+  if test_input == None:
+    # TODO, add ISS for the Model class refactor in system prompt
+    prompt_input = [persona.scratch.get_str_lifestyle(),
+                    persona.scratch.get_str_curr_date_str(),
+                    persona.scratch.get_str_firstname(),
+                    f"{str(wake_up_hour)}:00 am"]
+  else:
+    prompt_input= test_input
 
-  def __func_validate(gpt_response, prompt=""):
-    try: __func_clean_up(gpt_response, prompt="")
-    except: 
-      return False
-    return True
-
-  def get_fail_safe(): 
-    fs = ['wake up and complete the morning routine at 6:00 am', 
-          'eat breakfast at 7:00 am', 
-          'read a book from 8:00 am to 12:00 pm', 
-          'have lunch at 12:00 pm', 
-          'take a nap from 1:00 pm to 4:00 pm', 
-          'relax and watch TV from 7:00 pm to 8:00 pm', 
-          'go to bed at 11:00 pm'] 
-    return fs
-
-
-  
-  gpt_param = {"engine": "text-davinci-003", "max_tokens": 500, 
-               "temperature": 1, "top_p": 1, "stream": False,
-               "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
   prompt_template = "persona/prompt_template/v2/daily_planning_v6.txt"
-  prompt_input = create_prompt_input(persona, wake_up_hour, test_input)
   prompt = generate_prompt(prompt_input, prompt_template)
-  fail_safe = get_fail_safe()
+  fail_safe = '''eat breakfast at 7:00 am,
+  read a book from 8:00 am to 12:00 pm,
+  have lunch at 12:00 pm,
+  take a nap from 1:00 pm to 4:00 pm,
+  relax and watch TV from 7:00 pm to 8:00 pm,
+  go to bed at 11:00 pm'''
 
-  output = safe_generate_response(prompt, gpt_param, 5, fail_safe,
-                                   __func_validate, __func_clean_up)
-  output = ([f"wake up and complete the morning routine at {wake_up_hour}:00 am"]
-              + output)
+  # This is why wake_up_hour, needs to be refactored to an actual time -_-
+  am_or_pm = lambda time: "pm" if time+2>=12 else "am"
+  example = f'''1) wake up and complete the morning routine at {wake_up_hour}:00 {am_or_pm(wake_up_hour+2)},
+  2) eat breakfast at {wake_up_hour+1}:00 {am_or_pm(wake_up_hour+2)},
+  3) work on company balance sheets from {wake_up_hour+2}:00 {am_or_pm(wake_up_hour+2)} to {wake_up_hour+2}:00 {am_or_pm(wake_up_hour+2)},
+  4) ...
+  '''
+  output = safe_generate_response(prompt, fail_safe, validate, example)
+
+  # I think, that this next line is not worth it, lets see how the LLM responds
+  # output = f"wake up and complete the morning routine at {wake_up_hour}:00 am," + output
 
   if debug or verbose: 
-    print_run_prompts(prompt_template, persona, gpt_param, 
+    print_run_prompts(prompt_template, persona, "", 
                       prompt_input, prompt, output)
     
-  return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+  return output.split(",")
 
 
 def run_gpt_prompt_generate_hourly_schedule(persona, 

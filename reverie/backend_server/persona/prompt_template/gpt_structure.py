@@ -59,7 +59,7 @@ def safe_generate_response(prompt:str,
 
   modified_prompt = f"{prompt}\n"
   modified_prompt += f"{special_instruction}\n"
-  modified_prompt += f"Example output:\n{example_output}"
+  modified_prompt += f"Example response:\n{example_output}"
 
   for _ in range(repeat): 
     try: 
