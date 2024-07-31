@@ -126,6 +126,7 @@ def run_gpt_prompt_daily_plan(persona,
   else:
     prompt_input= test_input
 
+  # Rename soon
   prompt_template = "persona/prompt_template/templates/daily_planning_v6.txt"
   prompt = generate_prompt(prompt_input, prompt_template)
   fail_safe = '''eat breakfast at 7:00 am,
@@ -161,6 +162,8 @@ def run_gpt_prompt_generate_hourly_schedule(persona,
                                             intermission2=None,
                                             test_input=None, 
                                             verbose=False): 
+  # Review note:
+  # I have absolutely no clue what is going on here
   def create_prompt_input(persona, 
                           curr_hour_str, 
                           p_f_ds_hourly_org,
@@ -168,12 +171,21 @@ def run_gpt_prompt_generate_hourly_schedule(persona,
                           intermission2=None,
                           test_input=None): 
     if test_input: return test_input
+    # Seems to be making something that goes:
+    # [some date -- some time]
+    #  Activity: [Fill in]
+    # Maybe this is the example format that we want the bot to respond with?
+    # In the context of the prompt, that would make sense
     schedule_format = ""
     for i in hour_str: 
       schedule_format += f"[{persona.scratch.get_str_curr_date_str()} -- {i}]"
       schedule_format += f" Activity: [Fill in]\n"
     schedule_format = schedule_format[:-1]
 
+    # Intermission idk why the name is that but lets see:
+    # this is the 4'th input the the final prompt if the prompt comments are correct
+    # I don't know how daily_req is changed throughout the course of the program right now because of poor practice.
+    # Maybe should hold off on refactoring this for now
     intermission_str = f"Here the originally intended hourly breakdown of"
     intermission_str += f" {persona.scratch.get_str_firstname()}'s schedule today: "
     for count, i in enumerate(persona.scratch.daily_req): 
@@ -227,10 +239,7 @@ def run_gpt_prompt_generate_hourly_schedule(persona,
     fs = "asleep"
     return fs
 
-  gpt_param = {"engine": "text-davinci-003", "max_tokens": 50, 
-               "temperature": 0.5, "top_p": 1, "stream": False,
-               "frequency_penalty": 0, "presence_penalty": 0, "stop": ["\n"]}
-  prompt_template = "persona/prompt_template/v2/generate_hourly_schedule_v2.txt"
+  prompt_template = "persona/prompt_template/templates/generate_hourly_schedule_v2.txt"
   prompt_input = create_prompt_input(persona, 
                                      curr_hour_str, 
                                      p_f_ds_hourly_org,
@@ -1513,18 +1522,20 @@ def run_gpt_prompt_convo_to_thoughts(persona,
   
   return output, [output, prompt, gpt_param, prompt_input, fail_safe]
 
-def run_gpt_prompt_event_poignancy(persona, event_description, test_input=None, verbose=False): 
-  def validate(gpt_response, prompt=""):
-    try: 
-      gpt_response = int(gpt_response.strip())
-      return gpt_response
-    except:
-      return False 
+def validate_number(response:str, _="")->str:
+  '''
+  Used a lot as the validate function in the poignancy functions
+  '''
+  try: 
+    to_return = response.strip()
+    # attempt to coerce value
+    _ = int(to_return)
+    return to_return
+  except:
+    raise ValueError("Response does not contain only an Integer")
 
-  gpt_param = {"engine": "text-davinci-002", "max_tokens": 15, 
-               "temperature": 0, "top_p": 1, "stream": False,
-               "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
-  prompt_template = "persona/prompt_template/v3_ChatGPT/poignancy_event_v1.txt"
+def run_gpt_prompt_event_poignancy(persona, event_description, test_input=None, verbose=False)->int: 
+  prompt_template = "persona/prompt_template/templates/poignancy_event_v1.txt"
   prompt_input = [persona.scratch.name,
                   persona.scratch.get_str_iss(),
                   persona.scratch.name,
@@ -1534,10 +1545,8 @@ def run_gpt_prompt_event_poignancy(persona, event_description, test_input=None, 
   example_output = "5"
   special_instruction = "The output should ONLY contain ONE integer value on the scale of 1 to 10."
   fail_safe = "4"
-  output = ChatGPT_safe_generate_response(prompt, example_output, special_instruction, 3, fail_safe,
-                                          validate, True)
-  if output != False: 
-    return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+  output = safe_generate_response(prompt, example_output, validate_number, fail_safe, special_instruction)
+  return int(output)
 
 def run_gpt_prompt_thought_poignancy(persona, event_description, test_input=None, verbose=False): 
   def create_prompt_input(persona, event_description, test_input=None): 
@@ -1587,53 +1596,19 @@ def run_gpt_prompt_thought_poignancy(persona, event_description, test_input=None
   if output != False: 
     return output, [output, prompt, gpt_param, prompt_input, fail_safe]
 
-def run_gpt_prompt_chat_poignancy(persona, event_description, test_input=None, verbose=False): 
-  def create_prompt_input(persona, event_description, test_input=None): 
-    prompt_input = [persona.scratch.name,
-                    persona.scratch.get_str_iss(),
-                    persona.scratch.name,
-                    event_description]
-    return prompt_input
-  
-  def __func_clean_up(gpt_response, prompt=""):
-    gpt_response = int(gpt_response.strip())
-    return gpt_response
-
-  def __func_validate(gpt_response, prompt=""): 
-    try: 
-      __func_clean_up(gpt_response, prompt)
-      return True
-    except:
-      return False 
-
-  def get_fail_safe(): 
-    return 4
-
-  def __chat_func_clean_up(gpt_response, prompt=""):
-    gpt_response = int(gpt_response)
-    return gpt_response
-
-  def __chat_func_validate(gpt_response, prompt=""):
-    try: 
-      __func_clean_up(gpt_response, prompt)
-      return True
-    except:
-      return False 
-
-  print ("asdhfapsh8p9hfaiafdsi;ldfj as DEBUG 9")
-  gpt_param = {"engine": "text-davinci-002", "max_tokens": 15, 
-               "temperature": 0, "top_p": 1, "stream": False,
-               "frequency_penalty": 0, "presence_penalty": 0, "stop": None}
-  prompt_template = "persona/prompt_template/v3_ChatGPT/poignancy_chat_v1.txt"
-  prompt_input = create_prompt_input(persona, event_description)
+def run_gpt_prompt_chat_poignancy(persona, event_description, test_input=None, verbose=False)->int:
+  prompt_input = [persona.scratch.name,
+                  persona.scratch.get_str_iss(),
+                  persona.scratch.name,
+                  event_description]
+  prompt_template = "persona/prompt_template/template/poignancy_chat_v1.txt"
   prompt = generate_prompt(prompt_input, prompt_template)
+
   example_output = "5"
   special_instruction = "The output should ONLY contain ONE integer value on the scale of 1 to 10."
-  fail_safe = get_fail_safe()
-  output = ChatGPT_safe_generate_response(prompt, example_output, special_instruction, 3, fail_safe,
-                                          __chat_func_validate, __chat_func_clean_up, True)
-  if output != False: 
-    return output, [output, prompt, gpt_param, prompt_input, fail_safe]
+  fail_safe = "4"
+  output = safe_generate_response(prompt, example_output, validate_number, fail_safe, special_instruction)
+  return int(output)
 
 def run_gpt_prompt_focal_pt(persona, statements, n, test_input=None, verbose=False): 
   def create_prompt_input(persona, statements, n, test_input=None): 
