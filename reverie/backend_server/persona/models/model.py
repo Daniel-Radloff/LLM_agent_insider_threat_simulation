@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import re
-from typing import Union
+from typing import Callable, Union
 import sys
 
 # this is so that paths are relative to reverie/backend_server/persona
@@ -47,6 +47,11 @@ class Model(ABC):
                     user_prompt_location:str,
                     user_prompt_parameters:list,
                     system_prompt_parameters:list,
+                    example_output:str,
+                    validate:Callable[[str,str],str],
+                    fail_safe_response:str,
+                    special_instruction:Union[str,None]=None,
+                    repeat=3,
                     system_prompt:Union[str,None]=None)->str:
     '''
     Provided the relative path of the prompt, the model will run inference on the prompt
@@ -67,8 +72,21 @@ class Model(ABC):
           raise ValueError("Using the default system prompt requires a prompt_parameter list of length 1, see doc string")
 
     with open(user_prompt_location,"r") as user_prompt_file:
-      user_prompt = self._fill_in_prompt(user_prompt_file.read(),user_prompt_parameters)
+      user_prompt = f"{self._fill_in_prompt(user_prompt_file.read(),user_prompt_parameters)}\n"
+    user_prompt += f"{special_instruction}\n" if special_instruction else ""
+    user_prompt += f"An example response is:\n{example_output}"
+
     system_prompt = self._fill_in_prompt(system_prompt, system_prompt_parameters)
 
     final_prompt = self._format_final_prompt(user_prompt, system_prompt)
-    return self._call_model(final_prompt)
+
+    for _ in range(repeat):
+      try:
+        response = self._call_model(final_prompt)
+        return validate(response,user_prompt)
+      except ValueError:
+        pass
+      except:
+        # TODO, impliment something more concrete here
+        pass
+    return fail_safe_response
