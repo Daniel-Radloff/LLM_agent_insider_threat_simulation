@@ -21,7 +21,6 @@ from persona.memory_structures.spatial_memory import *
 from persona.memory_structures.associative_memory import *
 from persona.memory_structures.scratch import *
 
-from persona.cognitive_modules.perceive import *
 from persona.cognitive_modules.retrieve import *
 from persona.cognitive_modules.plan import *
 from persona.cognitive_modules.reflect import *
@@ -257,13 +256,31 @@ class Persona:
     need to consider as context when planning. 
 
     INPUT: 
-      perceive: a list of <ConceptNode> that are perceived and new.  
+      perceived: a list of event <ConceptNode>s that represent any of the events
+      `         that are happening around the persona. What is included in here
+                are controlled by the att_bandwidth and retention 
+                hyper-parameters.
     OUTPUT: 
-      retrieved: dictionary of dictionary. The first layer specifies an event,
+      retrieved: a dictionary of dictionary. The first layer specifies an event, 
                  while the latter layer specifies the "curr_event", "events", 
                  and "thoughts" that are relevant.
     """
-    return retrieve(self, perceived)
+    # We rerieve events and thoughts separately. 
+    retrieved = dict()
+    for event in perceived: 
+      retrieved[event.description] = dict()
+      retrieved[event.description]["curr_event"] = event
+      
+      relevant_events = self.a_mem.retrieve_relevant_events(
+                          event.subject, event.predicate, event.object)
+      retrieved[event.description]["events"] = list(relevant_events)
+
+      relevant_thoughts = self.a_mem.retrieve_relevant_thoughts(
+                            event.subject, event.predicate, event.object)
+      retrieved[event.description]["thoughts"] = list(relevant_thoughts)
+      
+    return retrieved
+
 
 
   def plan(self, maze, personas, new_day, retrieved):

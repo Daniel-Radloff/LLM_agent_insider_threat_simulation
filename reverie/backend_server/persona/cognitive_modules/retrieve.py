@@ -13,38 +13,6 @@ from persona.prompt_template.gpt_structure import *
 from numpy import dot
 from numpy.linalg import norm
 
-def retrieve(persona, perceived): 
-  """
-  This function takes the events that are perceived by the persona as input
-  and returns a set of related events and thoughts that the persona would 
-  need to consider as context when planning. 
-
-  INPUT: 
-    perceived: a list of event <ConceptNode>s that represent any of the events
-    `         that are happening around the persona. What is included in here
-              are controlled by the att_bandwidth and retention 
-              hyper-parameters.
-  OUTPUT: 
-    retrieved: a dictionary of dictionary. The first layer specifies an event, 
-               while the latter layer specifies the "curr_event", "events", 
-               and "thoughts" that are relevant.
-  """
-  # We rerieve events and thoughts separately. 
-  retrieved = dict()
-  for event in perceived: 
-    retrieved[event.description] = dict()
-    retrieved[event.description]["curr_event"] = event
-    
-    relevant_events = persona.a_mem.retrieve_relevant_events(
-                        event.subject, event.predicate, event.object)
-    retrieved[event.description]["events"] = list(relevant_events)
-
-    relevant_thoughts = persona.a_mem.retrieve_relevant_thoughts(
-                          event.subject, event.predicate, event.object)
-    retrieved[event.description]["thoughts"] = list(relevant_thoughts)
-    
-  return retrieved
-
 
 def cos_sim(a, b): 
   """
