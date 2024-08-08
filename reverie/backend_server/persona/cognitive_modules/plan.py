@@ -20,54 +20,8 @@ from persona.cognitive_modules.converse import *
 # CHAPTER 2: Generate
 ##############################################################################
 
-def generate_wake_up_hour(persona):
-  """
-  Generates the time when the persona wakes up. This becomes an integral part
-  of our process for generating the persona's daily plan.
-  
-  Persona state: identity stable set, lifestyle, first_name
-
-  INPUT: 
-    persona: The Persona class instance 
-  OUTPUT: 
-    an integer signifying the persona's wake up hour
-  EXAMPLE OUTPUT: 
-    8
-  """
-  if debug: print ("GNS FUNCTION: <generate_wake_up_hour>")
-  return int(run_gpt_prompt_wake_up_hour(persona)[0])
-
-
-def generate_first_daily_plan(persona, wake_up_hour): 
-  """
-  Generates the daily plan for the persona. 
-  Basically the long term planning that spans a day. Returns a list of actions
-  that the persona will take today. Usually comes in the following form: 
-  'wake up and complete the morning routine at 6:00 am', 
-  'eat breakfast at 7:00 am',.. 
-  Note that the actions come without a period. 
-
-  Persona state: identity stable set, lifestyle, cur_data_str, first_name
-
-  INPUT: 
-    persona: The Persona class instance 
-    wake_up_hour: an integer that indicates when the hour the persona wakes up 
-                  (e.g., 8)
-  OUTPUT: 
-    a list of daily actions in broad strokes.
-  EXAMPLE OUTPUT: 
-    ['wake up and complete the morning routine at 6:00 am', 
-     'have breakfast and brush teeth at 6:30 am',
-     'work on painting project from 8:00 am to 12:00 pm', 
-     'have lunch at 12:00 pm', 
-     'take a break and watch TV from 2:00 pm to 4:00 pm', 
-     'work on painting project from 4:00 pm to 6:00 pm', 
-     'have dinner at 6:00 pm', 'watch TV from 7:00 pm to 8:00 pm']
-  """
-  if debug: print ("GNS FUNCTION: <generate_first_daily_plan>")
-  return run_gpt_prompt_daily_plan(persona, wake_up_hour)[0]
-
-
+# Review Note:
+# These functions shouldn't be functions
 def generate_hourly_schedule(persona, wake_up_hour): 
   """
   Based on the daily req, creates an hourly schedule -- one hour at a time. 
@@ -94,48 +48,43 @@ def generate_hourly_schedule(persona, wake_up_hour):
               "10:00 AM", "11:00 AM", "12:00 PM", "01:00 PM", "02:00 PM", 
               "03:00 PM", "04:00 PM", "05:00 PM", "06:00 PM", "07:00 PM",
               "08:00 PM", "09:00 PM", "10:00 PM", "11:00 PM"]
-  n_m1_activity = []
-  diversity_repeat_count = 3
-  for i in range(diversity_repeat_count): 
-    n_m1_activity_set = set(n_m1_activity)
-    if len(n_m1_activity_set) < 5: 
-      n_m1_activity = []
+  activities = []
+  retry = 3
+  for activity in range(retry): 
+    # this is just to check that we are doing different stuff at different times
+    activity_set = set(activities)
+    if len(activity_set) < 5: 
+      activities = []
       for count, curr_hour_str in enumerate(hour_str): 
         if wake_up_hour > 0: 
-          n_m1_activity += ["sleeping"]
+          activities += ["sleeping"]
           wake_up_hour -= 1
         else: 
-          n_m1_activity += [run_gpt_prompt_generate_hourly_schedule(
-                          persona, curr_hour_str, n_m1_activity, hour_str)[0]]
-  
+          activities += [run_gpt_prompt_generate_hourly_schedule(
+                          persona, curr_hour_str, activities, hour_str)[0]]
+    else:
+      break
   # Step 1. Compressing the hourly schedule to the following format: 
   # The integer indicates the number of hours. They should add up to 24. 
+  # Review note:
+  # refactored to minutes but basicallyt the same thing
   # [['sleeping', 6], ['waking up and starting her morning routine', 1], 
   # ['eating breakfast', 1], ['getting ready for the day', 1], 
   # ['working on her painting', 2], ['taking a break', 1], 
   # ['having lunch', 1], ['working on her painting', 3], 
   # ['taking a break', 2], ['working on her painting', 2], 
   # ['relaxing and watching TV', 1], ['going to bed', 1], ['sleeping', 2]]
-  _n_m1_hourly_compressed = []
+  activity_duration_pairs = []
   prev = None 
-  prev_count = 0
-  for i in n_m1_activity: 
-    if i != prev:
-      prev_count = 1 
-      _n_m1_hourly_compressed += [[i, prev_count]]
-      prev = i
+  for activity in activities: 
+    if activity != prev:
+      activity_duration_pairs.append([activity, 60])
+      prev = activity
     else: 
-      if _n_m1_hourly_compressed: 
-        _n_m1_hourly_compressed[-1][1] += 1
+      if activity_duration_pairs: 
+        activity_duration_pairs[-1][1] += 60
 
-  # Step 2. Expand to min scale (from hour scale)
-  # [['sleeping', 360], ['waking up and starting her morning routine', 60], 
-  # ['eating breakfast', 60],..
-  n_m1_hourly_compressed = []
-  for task, duration in _n_m1_hourly_compressed: 
-    n_m1_hourly_compressed += [[task, duration*60]]
-
-  return n_m1_hourly_compressed
+  return activity_duration_pairs
 
 
 def generate_task_decomp(persona, task, duration): 
@@ -469,7 +418,8 @@ def _long_term_planning(persona, new_day):
              create the personas' long term planning on the new day. 
   """
   # We start by creating the wake up hour for the persona. 
-  wake_up_hour = generate_wake_up_hour(persona)
+  wake_up_hour = run_gpt_prompt_wake_up_hour(persona)
+
 
   # When it is a new day, we start by creating the daily_req of the persona.
   # Note that the daily_req is a list of strings that describe the persona's
@@ -479,8 +429,8 @@ def _long_term_planning(persona, new_day):
     # if this is the start of generation (so there is no previous day's 
     # daily requirement, or if we are on a new day, we want to create a new
     # set of daily requirements.
-    persona.scratch.daily_req = generate_first_daily_plan(persona, 
-                                                          wake_up_hour)
+    persona.scratch.daily_req = run_gpt_prompt_daily_plan(persona, wake_up_hour)
+
   elif new_day == "New day":
     revise_identity(persona)
 
@@ -630,7 +580,7 @@ def _determine_action(persona, maze):
                                                 persona, maze)
   new_address = f"{act_world}:{act_sector}:{act_arena}:{act_game_object}"
   act_pron = generate_action_pronunciatio(act_desp, persona)
-  act_event = generate_action_event_triple(act_desp, persona)
+  act_event = run_gpt_prompt_act_obj_event_triple(act_desp, persona)
   # Persona's actions also influence the object states. We set those up here. 
   act_obj_desp = generate_act_obj_desc(act_game_object, act_desp, persona)
   act_obj_pron = generate_action_pronunciatio(act_obj_desp, persona)
