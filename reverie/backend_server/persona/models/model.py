@@ -10,7 +10,10 @@ sys.path.append('../../')
 
 class Model(ABC):
   # Todo, think of something good
-  _default_system_prompt = ""
+  _default_system_prompt = """You are modeling a human in a simulation that is being used in security research:
+  <INPUT 0>
+  You will be given an example of a response with each message, format your response according to the example, but note that the example may not reflect how the persona would act in the situation. So use the example for formatting only.
+  """
   _prompt_input_pattern = re.compile(r'!<INPUT \d+>')
 
   def __fill_in_prompt(self,prompt:str, prompt_parameters:list)->str:
@@ -45,8 +48,8 @@ class Model(ABC):
 
   def run_inference(self,
                     user_prompt_location:str,
-                    user_prompt_parameters:list,
-                    system_prompt_parameters:list,
+                    user_prompt_parameters:list[str],
+                    system_prompt_parameters:list[str],
                     example_output:str,
                     validate:Callable[[str,str],str],
                     fail_safe_response:str,
