@@ -27,7 +27,7 @@ from persona.cognitive_modules.reflect import *
 from persona.cognitive_modules.execute import *
 from persona.cognitive_modules.converse import *
 
-class Persona: 
+class Agent: 
   def __init__(self, name, folder_mem_saved=False):
     # PERSONA BASE STATE 
     # <name> is the full name of the persona. This is a unique identifier for

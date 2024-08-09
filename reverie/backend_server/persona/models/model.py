@@ -13,7 +13,7 @@ class Model(ABC):
   _default_system_prompt = ""
   _prompt_input_pattern = re.compile(r'!<INPUT \d+>')
 
-  def _fill_in_prompt(self,prompt:str, prompt_parameters:list)->str:
+  def __fill_in_prompt(self,prompt:str, prompt_parameters:list)->str:
     '''
     Loads a prompt from a relative file location and fills in parameters from provided list.
     Throws ValueError if list does not fill in all the inputs in the prompt.
@@ -36,11 +36,11 @@ class Model(ABC):
     return prompt.strip()
 
   @abstractmethod
-  def _format_final_prompt(self,user_prompt:str,system_prompt:str)->str:
+  def __format_final_prompt(self,user_prompt:str,system_prompt:str)->dict[str,str]:
     pass
 
   @abstractmethod
-  def _call_model(self,prompt:str)->str:
+  def __call_model(self,prompt_arguments:dict)->str:
     pass
 
   def run_inference(self,
@@ -72,17 +72,17 @@ class Model(ABC):
           raise ValueError("Using the default system prompt requires a prompt_parameter list of length 1, see doc string")
 
     with open(user_prompt_location,"r") as user_prompt_file:
-      user_prompt = f"{self._fill_in_prompt(user_prompt_file.read(),user_prompt_parameters)}\n"
+      user_prompt = f"{self.__fill_in_prompt(user_prompt_file.read(),user_prompt_parameters)}\n"
     user_prompt += f"{special_instruction}\n" if special_instruction else ""
     user_prompt += f"An example response is:\n{example_output}"
 
-    system_prompt = self._fill_in_prompt(system_prompt, system_prompt_parameters)
+    system_prompt = self.__fill_in_prompt(system_prompt, system_prompt_parameters)
 
-    final_prompt = self._format_final_prompt(user_prompt, system_prompt)
+    final_prompt = self.__format_final_prompt(user_prompt, system_prompt)
 
     for _ in range(repeat):
       try:
-        response = self._call_model(final_prompt)
+        response = self.__call_model(final_prompt)
         return validate(response,user_prompt)
       except ValueError:
         pass
