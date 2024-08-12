@@ -1,5 +1,7 @@
 # Notes on this code base structure
 I would like to just note that: everyone is learning. I'm also not a python specific dev and I have little professional dev experience and that's ok. These are just critiques and suggestions and are not meant to hurt or belittle anyone :). Rather show how to improve and get better. Critique can sometimes feel harsh, however It's important to take them in the spirit that they are meant. They are an opportunity to improve. Without this basis, I would never have been able to complete my research. I thank the creators for contributing in the name of open source research.
+
+***Davinci-003 is deprecated so the prompts and processing needs to be changed***
 ## Suggested Modifications
 - restructure static assets and shared stuff, because the current project directory structure is very odd.
 - enforce frontend and backend separation of concerns
@@ -199,3 +201,7 @@ Defines the `MemoryTree` class that contains spatial memory and "aids in groundi
   Rating: <fill in>
   ```
 however, this doesn't make sense because if something is poignant then it means it's sad, but college acceptance is not sad. Furthermore, in the paper, it is the section under importance, not strictly sad events. Therefor: I think this is a mistake and what is meant to happen here is rank the events on impact/importance on the agents' life.
+
+
+## What todo
+1. restructure logic into different classes

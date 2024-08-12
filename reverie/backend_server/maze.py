@@ -378,9 +378,6 @@ class Maze:
     self.tiles[tile[1]][tile[0]]["events"].add(curr_event)
 
 
-# Review Note:
-# Numpy pitfall? not sure. But the copy is unfortunate for RAM in the context of this project.
-# The effect should be negligable.
   def remove_event_from_tile(self, curr_event, tile):
     """
     Remove an event triple from a tile.  
