@@ -49,35 +49,35 @@ class Maze:
     # Revision Comments:
     # Reads in a bunch of specific world objects, in the format of a ID
     # as a key and a human readiable identifies as the value in a dictionary
+
+    # Keeping id's as strings
+    def csv_to_list(location:str)->list:
+      with open(location,"r") as file:
+        to_return = []
+        for line in file:
+          to_return.append(line.strip().split(','))
+        return to_return
+
     blocks_folder = f"{env_matrix}/special_blocks"
 
-    _wb = blocks_folder + "/world_blocks.csv"
-    wb_rows = read_file_to_list(_wb, header=False)
-    wb = wb_rows[0][-1]
+    # getting only the id? this is what i think happened in the original code
+    wb = csv_to_list(f"{blocks_folder}/world_blocks.csv")[-1]
    
-    _sb = blocks_folder + "/sector_blocks.csv"
-    sb_rows = read_file_to_list(_sb, header=False)
+    sb_rows = csv_to_list(f"{blocks_folder}/sector_blocks.csv")
     sb_dict = dict()
     for i in sb_rows: sb_dict[i[0]] = i[-1]
     
-    _ab = blocks_folder + "/arena_blocks.csv"
-    ab_rows = read_file_to_list(_ab, header=False)
+    ab_rows = csv_to_list(f"{blocks_folder}/arena_blocks.csv")
     ab_dict = dict()
     for i in ab_rows: ab_dict[i[0]] = i[-1]
     
-    _gob = blocks_folder + "/game_object_blocks.csv"
-    gob_rows = read_file_to_list(_gob, header=False)
+    gob_rows = csv_to_list(f"{blocks_folder}/game_object_blocks.csv")
     gob_dict = dict()
     for i in gob_rows: gob_dict[i[0]] = i[-1]
     
-    _slb = blocks_folder + "/spawning_location_blocks.csv"
-    slb_rows = read_file_to_list(_slb, header=False)
+    slb_rows = csv_to_list(f"{blocks_folder}/spawning_location_blocks.csv")
     slb_dict = dict()
     for i in slb_rows: slb_dict[i[0]] = i[-1]
-
-    # [SECTION 3] Reading in the matrices 
-    # This is your typical two dimensional matrices. It's made up of 0s and 
-    # the number that represents the color block from the blocks folder. 
 
     # Revision Comments:
     # The world is represented as a big 2D array, 
@@ -87,55 +87,11 @@ class Maze:
     #   it is a id that maps to a previously defined special object? 
     # a default collision block is defined in utils.py.
     maze_folder = f"{env_matrix}/maze"
-
-    _cm = maze_folder + "/collision_maze.csv"
-    collision_maze_raw = read_file_to_list(_cm, header=False)[0]
-    _sm = maze_folder + "/sector_maze.csv"
-    sector_maze_raw = read_file_to_list(_sm, header=False)[0]
-    _am = maze_folder + "/arena_maze.csv"
-    arena_maze_raw = read_file_to_list(_am, header=False)[0]
-    _gom = maze_folder + "/game_object_maze.csv"
-    game_object_maze_raw = read_file_to_list(_gom, header=False)[0]
-    _slm = maze_folder + "/spawning_location_maze.csv"
-    spawning_location_maze_raw = read_file_to_list(_slm, header=False)[0]
-
-    # Loading the maze. The mazes are taken directly from the json exports of
-    # Tiled maps. They should be in csv format. 
-    # Importantly, they are "not" in a 2-d matrix format -- they are single 
-    # row matrices with the length of width x height of the maze. So we need
-    # to convert here. 
-    # We can do this all at once since the dimension of all these matrices are
-    # identical (e.g., 70 x 40).
-    # example format: [['0', '0', ... '25309', '0',...], ['0',...]...]
-    # 25309 is the collision bar number right now.
-
-    collision_maze = []
-    sector_maze = []
-    arena_maze = []
-    game_object_maze = []
-    spawning_location_maze = []
-    for i in range(0, len(collision_maze_raw), self.maze_width): 
-      collision_maze += [collision_maze_raw[i:i+self.maze_width]]
-      sector_maze += [sector_maze_raw[i:i+self.maze_width]]
-      arena_maze += [arena_maze_raw[i:i+self.maze_width]]
-      game_object_maze += [game_object_maze_raw[i:i+self.maze_width]]
-      spawning_location_maze += [spawning_location_maze_raw[i:i+self.maze_width]]
-
-    # Once we are done loading in the maze, we now set up self.tiles. This is
-    # a matrix accessed by row:col where each access point is a dictionary
-    # that contains all the things that are taking place in that tile. 
-    # More specifically, it contains information about its "world," "sector,"
-    # "arena," "game_object," "spawning_location," as well as whether it is a
-    # collision block, and a set of all events taking place in it. 
-    # e.g., self.tiles[32][59] = {'world': 'double studio', 
-    #            'sector': '', 'arena': '', 'game_object': '', 
-    #            'spawning_location': '', 'collision': False, 'events': set()}
-    # e.g., self.tiles[9][58] = {'world': 'double studio', 
-    #         'sector': 'double studio', 'arena': 'bedroom 2', 
-    #         'game_object': 'bed', 'spawning_location': 'bedroom-2-a', 
-    #         'collision': False,
-    #         'events': {('double studio:double studio:bedroom 2:bed',
-    #                    None, None)}} 
+    collision_maze = csv_to_list(f"{maze_folder}/collision_maze.csv")
+    sector_maze = csv_to_list(f"{maze_folder}/sector_maze.csv")
+    arena_maze = csv_to_list(f"{maze_folder}/arena_maze.csv")
+    game_object_maze = csv_to_list(f"{maze_folder}/game_object_maze.csv")
+    spawning_location_maze = csv_to_list(f"{maze_folder}/spawning_location_maze.csv")
 
     # Revision Comments:
     # This defines the main object that we use to interact with the world?
@@ -212,20 +168,20 @@ class Maze:
         addresses = []
         if self.tiles[i][j]["sector"]: 
           addresses.append(":".join([
-            f'{self.tiles[i][j]["world"]}:',
+            f'{self.tiles[i][j]["world"]}',
             f'{self.tiles[i][j]["sector"]}'
             ]))
         if self.tiles[i][j]["arena"]: 
           addresses.append(":".join([
-            f'{self.tiles[i][j]["world"]}:',
-            f'{self.tiles[i][j]["sector"]}:',
+            f'{self.tiles[i][j]["world"]}',
+            f'{self.tiles[i][j]["sector"]}',
             f'{self.tiles[i][j]["arena"]}'
             ]))
         if self.tiles[i][j]["game_object"]: 
           addresses.append(":".join([
-            f'{self.tiles[i][j]["world"]}:',
-            f'{self.tiles[i][j]["sector"]}:',
-            f'{self.tiles[i][j]["arena"]}:',
+            f'{self.tiles[i][j]["world"]}',
+            f'{self.tiles[i][j]["sector"]}',
+            f'{self.tiles[i][j]["arena"]}',
             f'{self.tiles[i][j]["game_object"]}'
             ]))
         if self.tiles[i][j]["spawning_location"]: 
