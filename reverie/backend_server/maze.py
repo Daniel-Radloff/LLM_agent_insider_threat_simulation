@@ -6,6 +6,7 @@ Description: Defines the Maze class, which represents the map of the simulated
 world in a 2-dimensional matrix. 
 """
 import json
+from typing import Tuple
 import numpy
 import datetime
 import pickle
@@ -278,7 +279,7 @@ class Maze:
 
   # Review Note:
   # TODO rename to get_nearby_tile_coordinates for clarity and consistency
-  def get_nearby_tiles(self, tile, vision_r): 
+  def get_nearby_tiles(self, tile, vision_r):
     """
     Given the current tile and vision_r, return a list of tiles that are 
     within the radius. Note that this implementation looks at a square 
@@ -318,6 +319,20 @@ class Maze:
         nearby_tiles += [(i, j)]
     return nearby_tiles
 
+  # This function will hopefully replace the get_nearby_tiles() function
+  def get_surrounding_environment(self,
+                                  tile:Tuple[int,int],
+                                  vision_radius:int
+                                  )->list[Tuple[dict,str,Tuple[int,int]]]:
+    nearby_tiles = self.get_nearby_tiles(tile,vision_radius)
+    to_return = []
+    for tile in nearby_tiles:
+      to_return.append((
+        self.access_tile(tile),
+        self.get_tile_path(tile,"arena"),
+        tile
+        ))
+    return to_return
 
   def add_event_from_tile(self, curr_event, tile): 
     """
