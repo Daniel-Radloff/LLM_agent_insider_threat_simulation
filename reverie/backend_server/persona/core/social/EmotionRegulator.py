@@ -45,4 +45,4 @@ class EmotionalRegulator:
                                              fail_safe,
                                              special_instruction=special_instruction)
         return int(output)
-    return 1
+    raise ValueError(f"event_type is invalid. Got {event_type}, expected: event, chat, or thought")
