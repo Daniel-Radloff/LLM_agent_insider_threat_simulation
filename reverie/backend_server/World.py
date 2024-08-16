@@ -16,7 +16,7 @@ import math
 from global_methods import *
 from utils import *
 
-class Maze: 
+class World: 
   def __init__(self, maze_name): 
     # READING IN THE BASIC META INFORMATION ABOUT THE MAP
     self.maze_name = maze_name

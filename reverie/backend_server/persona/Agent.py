@@ -12,7 +12,7 @@ import math
 import sys
 import datetime
 import random
-from reverie.backend_server.maze import Maze
+from reverie.backend_server.World import World
 sys.path.append('../')
 
 from global_methods import *
@@ -81,7 +81,7 @@ class Agent:
     self.scratch.save(f_scratch)
 
 
-  def perceive(self, maze:Maze)->list[ConceptNode]:
+  def perceive(self, maze:World)->list[ConceptNode]:
     """
     This function takes the current maze, and returns events that are 
     happening around the persona. 
@@ -394,7 +394,9 @@ class Agent:
   def open_convo_session(self, convo_mode): 
     open_convo_session(self, convo_mode)
     
-
+  @property
+  def current_tile(self):
+    return self.__current_position.copy()
 
 
 
