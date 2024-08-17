@@ -3,7 +3,7 @@ class Concept:
                node_id, node_count, type_count, node_type, depth,
                created, expiration, 
                s, p, o, 
-               description, embedding_key, poignancy, keywords, filling): 
+               description, embedding_key, poignancy, keywords, chat_history): 
     self.id = node_id
     self.count = node_count
     self.type_count = type_count
@@ -22,7 +22,8 @@ class Concept:
     self.embedding_key = embedding_key
     self.poignancy = poignancy
     self.keywords = keywords
-    self.filling = filling
+    # TODO: refactor into a chat node or something because this is stupid
+    self.chat_history = chat_history
 
 
   def spo_summary(self): 

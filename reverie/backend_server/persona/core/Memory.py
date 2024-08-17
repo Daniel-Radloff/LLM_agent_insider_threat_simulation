@@ -1,6 +1,6 @@
 from abc import ABC
 from datetime import datetime 
-from typing import Callable, Dict, Tuple, Union
+from typing import Callable, Dict, Literal, Tuple, Union
 
 from reverie.backend_server.persona.core.Concept import Concept
 
@@ -10,8 +10,7 @@ class Memory(ABC):
                embeddings:Dict[str,list[float]], 
                concepts:dict,
                keyword_strengths:dict,
-               current_time_func:Callable[[],datetime]
-               ) -> None:
+               current_time_func:Callable[[],datetime]) -> None:
     super().__init__()
     try:
       self._id_to_node:Dict[str,Concept] = dict()
@@ -53,8 +52,8 @@ class Memory(ABC):
         description = concept["description"]
         embedding_pair = (concept["embedding_key"], 
                           self._embeddings[concept["embedding_key"]])
-        poignancy =concept["poignancy"]
-        keywords = set(concept["keywords"])
+        poignancy = concept["poignancy"]
+        keywords:list[str] = concept["keywords"]
         filling = concept["filling"]
         
         self._add_conceptnode(created, expiration, s, p, o, 
@@ -71,7 +70,7 @@ class Memory(ABC):
         self._kw_strength_thought = keyword_strengths["kw_strength_thought"]
     except:
       raise ValueError("Dictionary does not contain expect value")
-    self.__time_func = current_time_func
+    self.__time_func:Callable[[],datetime] = current_time_func
 
   def _add_conceptnode(self, 
                        created:datetime,
@@ -83,7 +82,7 @@ class Memory(ABC):
                        keywords:list[str], 
                        poignancy:int, 
                        embedding_pair:Tuple[str,list[float]],
-                       filling, node_type:str)->Concept:
+                       previous_chats, node_type:Literal["chat","event","thought"])->Concept:
     # For this refactor, we use getattr a lot because its convenient
     # All it does is access a attribute.
     # So: self.kw_strength_event
@@ -117,8 +116,8 @@ class Memory(ABC):
       depth = 1 
       check_idle = is_idle_check
       try: 
-        if filling: 
-          depth += max([self._id_to_node[i].depth for i in filling])
+        if previous_chats: 
+          depth += max([self._id_to_node[i].depth for i in previous_chats])
       except: 
         pass
     else:
@@ -134,7 +133,7 @@ class Memory(ABC):
                        created, expiration, 
                        s, p, o, 
                        description, embedding_pair[0], 
-                       poignancy, keywords, filling)
+                       poignancy, keywords, previous_chats)
 
     # Creating various dictionary cache for fast access. 
     # Review Note:
@@ -197,5 +196,5 @@ class Memory(ABC):
     pass
     return[]
 
-  def _get_current_time(self):
-    self.__time_func()
+  def _get_current_time(self)->datetime:
+    return self.__time_func()
