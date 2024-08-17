@@ -1,10 +1,10 @@
 from typing import Tuple
 
 from numpy.lib import math
-from reverie.backend_server.maze import Maze
+from reverie.backend_server.World import World
 
 class SpatialMemory:
-  def __init__(self, spatial_memory:dict, environment:Maze) -> None:
+  def __init__(self, spatial_memory:dict, environment:World) -> None:
     try:
       self.__current_location:Tuple[int,int] = spatial_memory['current_location']
       self.__environment = environment

@@ -30,7 +30,7 @@ import traceback
 
 from global_methods import *
 from utils import *
-from maze import *
+from World import *
 from persona.persona import *
 
 ##############################################################################
@@ -84,7 +84,7 @@ class ReverieServer:
     # <maze> is the main Maze instance. Note that we pass in the maze_name
     # (e.g., "double_studio") to instantiate Maze. 
     # e.g., Maze("double_studio")
-    self.maze = Maze(reverie_meta['maze_name'])
+    self.maze = World(reverie_meta['maze_name'])
     
     # <step> denotes the number of steps that our game has taken. A step here
     # literally translates to the number of moves our personas made in terms
