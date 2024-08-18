@@ -25,6 +25,13 @@ class Concept:
     # TODO: refactor into a chat node or something because this is stupid
     self.chat_history = chat_history
 
+  def __eq__(self, value: object, /) -> bool:
+    if isinstance(value, Concept):
+      this_tuple = (self.concept_subject, self.concept_predicate, self.concept_object, self.description)
+      other_tuple = (value.concept_subject, value.concept_predicate, value.concept_object, value.description)
+      if value.created == self.created and this_tuple == other_tuple:
+        return True
+    return False
 
   def spo_summary(self): 
     return (self.concept_subject, self.concept_predicate, self.concept_object)

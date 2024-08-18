@@ -69,9 +69,33 @@ class ShortTermMemory(Memory):
           )
       # TODO: review how importance triggers work because its not clear yet how this is relevant and if i want to keep or initialize them here
 
+  def _retrieval_filter(self, concept: Concept, potential_candidate: Concept) -> bool:
+    '''
+    this works with the retrieve_relevant_concepts(self,concepts:list[Concept]) function
+    defined in the memory base class.
+    '''
+    # Short term memory is at the forefront of our mind
+    concept_tuple = concept.spo_summary()
+    comparison_tuple = potential_candidate.spo_summary()
+    if concept_tuple == comparison_tuple:
+      return True
+    return False
+
   def cleanup(self):
     raise NotImplemented()
 
+  @property
+  def recent_events(self):
+    '''
+    Returns all events that the agent has in the forefront of their mind
+    '''
+    return [concept for _, concept in self._id_to_node.items()]
+  @property
+  def most_recent_events(self):
+    '''
+    Returns all events that have happened right now
+    '''
+    return [concept for _, concept in self._id_to_node.items() if concept.created == self._get_current_time()]
   @property
   def attention_span(self):
     return self.__attention_span

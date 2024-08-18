@@ -1,4 +1,4 @@
-from abc import ABC
+from abc import ABC, abstractmethod
 from datetime import datetime 
 from typing import Callable, Dict, Literal, Tuple, Union
 
@@ -198,3 +198,28 @@ class Memory(ABC):
 
   def _get_current_time(self)->datetime:
     return self.__time_func()
+  
+  @abstractmethod
+  def _retrieval_filter(self,concept:Concept, potential_candidate:Concept)->bool:
+    pass
+
+  def retrieve_relevant_concepts(self,concepts:list[Concept]):
+    '''
+    Takes in a list of concepts and looks in memory for relevant concepts.
+    Concepts are filtered by the _retrieval_filter method which determines
+    if a concept is retrieved or not.
+    _retrieval_fitler is a abstract method that must be implimented by the concrete class.
+    '''
+    # could be a list but better safe than sorry
+    to_return:set[Concept] = set()
+    for concept in concepts:
+      for _, concept_candidate in self._id_to_node.items():
+        if concept_candidate in to_return:
+          continue
+        if concept == concept_candidate:
+          continue
+        if concept_candidate in concepts:
+          continue
+        if self._retrieval_filter(concept,concept_candidate):
+          to_return.add(concept_candidate)
+    return list(to_return)
