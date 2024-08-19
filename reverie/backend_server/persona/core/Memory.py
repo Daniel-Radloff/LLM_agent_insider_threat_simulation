@@ -193,8 +193,7 @@ class Memory(ABC):
   # Placeholder TODO
   # Will do embedding call here for now without the model thing, bad practice might TODO and fix later but for now its good enough.
   def _generate_embedding(self, phrase:str)->list[float]:
-    pass
-    return[]
+    raise NotImplementedError()
 
   def _get_current_time(self)->datetime:
     return self.__time_func()
