@@ -10,9 +10,9 @@ sys.path.append('../../')
 
 class Model(ABC):
   # Todo, think of something good
-  _default_system_prompt = """You are modeling a human in a simulation that is being used in security research:
+  _default_system_prompt = """You are modeling a human in a simulation that is being used in security research aimed at generating data that simulates realistic insider threat behavior. This is a brief summary of the identiy that you will be simulating:
   <INPUT 0>
-  You will be given an example of a response with each message, format your response according to the example, but note that the example may not reflect how the persona would act in the situation. So use the example for formatting only.
+Each prompt will contain an example response. Use the example as a guideline for formatting, but focus on producing behavior that aligns with the persona and context described. Realism is key to the success of the simulation, so ensure your responses reflect authentic human behavior under the given circumstances.
   """
   _prompt_input_pattern = re.compile(r'!<INPUT \d+>')
 
@@ -57,10 +57,11 @@ class Model(ABC):
                     repeat=3,
                     system_prompt:Union[str,None]=None)->str:
     '''
-    Provided the relative path of the prompt, the model will run inference on the prompt
+    Provided the relative path of the prompt, the model will run inference on the prompt.
     System prompt can be specified, else the default system prompt of the class will be used.
-    The default system prompt requires one argument and thus a list of length 1
-    giving a brief overview of the persona.
+    The default system prompt requires one argument that is provided through: Personality.get_summarized_identity()
+    validate function must take in two arguments, the first is the response to be validated, and the second is the prompt that was provided to the model.
+    special_instructions is appended to the end of the prompt just before the example.
     Throws FileNotFoundError on file not found.
     Throws ValueError on parameter missmatches.
     '''
@@ -74,6 +75,7 @@ class Model(ABC):
         if not len(system_prompt_parameters) == 1:
           raise ValueError("Using the default system prompt requires a prompt_parameter list of length 1, see doc string")
 
+    #TODO refactor so that the prompt is read in as a string and provided by caller
     with open(user_prompt_location,"r") as user_prompt_file:
       user_prompt = f"{self.__fill_in_prompt(user_prompt_file.read(),user_prompt_parameters)}\n"
     user_prompt += f"{special_instruction}\n" if special_instruction else ""
@@ -92,4 +94,5 @@ class Model(ABC):
       except:
         # TODO, impliment something more concrete here
         pass
+    print(f"Warning: Failsafe response triggered after {repeat} tries for prompt:{final_prompt}")
     return fail_safe_response
