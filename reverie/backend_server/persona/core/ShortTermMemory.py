@@ -54,7 +54,7 @@ class ShortTermMemory(Memory):
 
       # TODO: redefine how events are put on the map so that we can differenciate between conversations.
       self._add_conceptnode(
-          self._get_current_time(),
+          self.get_current_time(),
           # TODO: change expiration
           None,
           subject,
@@ -95,7 +95,7 @@ class ShortTermMemory(Memory):
     '''
     Returns all events that have happened right now
     '''
-    return [concept for _, concept in self._id_to_node.items() if concept.created == self._get_current_time()]
+    return [concept for _, concept in self._id_to_node.items() if concept.created == self.get_current_time()]
   @property
   def attention_span(self):
     return self.__attention_span

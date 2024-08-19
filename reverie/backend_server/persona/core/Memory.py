@@ -195,7 +195,7 @@ class Memory(ABC):
   def _generate_embedding(self, phrase:str)->list[float]:
     raise NotImplementedError()
 
-  def _get_current_time(self)->datetime:
+  def get_current_time(self)->datetime:
     return self.__time_func()
   
   @abstractmethod
