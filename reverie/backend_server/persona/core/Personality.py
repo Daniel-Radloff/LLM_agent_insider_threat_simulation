@@ -57,3 +57,7 @@ class Personality:
   @property
   def age(self):
     return self.__age
+
+  @property
+  def lifestyle(self):
+    return self.__lifestyle
