@@ -201,7 +201,12 @@ class Memory(ABC):
   
   @abstractmethod
   def _retrieval_filter(self,concept:Concept, potential_candidate:Concept)->bool:
-    pass
+    '''
+    Defines a function that determines if a candidate concept:
+    1. is relevant to the concept being evaluated.
+    2. if the concept should be returned.
+    '''
+    raise NotImplementedError(f"concrete class: {type(self)} must impliment abstract method: _retrieval_filter. See core/Memory.py:_retrieval_filter")
 
   def retrieve_relevant_concepts(self,concepts:list[Concept]):
     '''
@@ -211,15 +216,12 @@ class Memory(ABC):
     _retrieval_fitler is a abstract method that must be implimented by the concrete class.
     '''
     # could be a list but better safe than sorry
-    to_return:set[Concept] = set()
+    to_return:list[list[Concept]] = []
     for concept in concepts:
+      to_return.append([])
       for _, concept_candidate in self._id_to_node.items():
-        if concept_candidate in to_return:
-          continue
         if concept == concept_candidate:
           continue
-        if concept_candidate in concepts:
-          continue
         if self._retrieval_filter(concept,concept_candidate):
-          to_return.add(concept_candidate)
-    return list(to_return)
+          to_return[-1].append(concept_candidate)
+    return to_return
