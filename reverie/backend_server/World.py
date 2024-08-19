@@ -16,6 +16,21 @@ import math
 from global_methods import *
 from utils import *
 
+#TODO placeholder
+class WorldObject:
+  '''
+  This represents objects inside of the world.
+  '''
+  pass
+
+#TODO placeholder
+class InteractableObject(WorldObject):
+  '''
+  This is the objects in the world that an Agent
+  can interact with.
+  '''
+  pass
+
 class World: 
   def __init__(self, maze_name): 
     # READING IN THE BASIC META INFORMATION ABOUT THE MAP
