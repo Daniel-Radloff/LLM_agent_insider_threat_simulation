@@ -1,37 +1,52 @@
+from datetime import datetime
+from typing import Literal
+
+
 class Concept: 
   def __init__(self,
-               node_id, node_count, type_count, node_type, depth,
-               created, expiration, 
-               s, p, o, 
-               description, embedding_key, poignancy, keywords, chat_history): 
-    self.id = node_id
-    self.count = node_count
-    self.type_count = type_count
-    self.type_of_concept = node_type # thought / event / chat
-    self.depth = depth
+               node_id:str,
+               node_type:Literal["chat","event","thought"],
+               created:datetime, 
+               s:str, p:str, o:str,
+               description:str, 
+               embedding:list[float],
+               impact:int,
+               chat_history): 
+    self._id = node_id
+    self._type_of_concept = node_type # thought / event / chat
 
-    self.created = created
-    self.expiration = expiration
-    self.last_accessed = self.created
+    self._created = created
+    self._last_accessed = self._created
 
-    self.concept_subject = s
-    self.concept_predicate = p
-    self.concept_object = o
+    self._concept_subject = s
+    self._concept_predicate = p
+    self._concept_object = o
 
-    self.description = description
-    self.embedding_key = embedding_key
-    self.poignancy = poignancy
-    self.keywords = keywords
+    self._description = description
+    # Maybe change to just the embedding per concept?
+    self._embedding = embedding
+    self._impact = impact
+    #
+    self._keywords = list(set([s.split(":")[-1].lower(),o.split(":")[-1].lower()]))
+
     # TODO: refactor into a chat node or something because this is stupid
-    self.chat_history = chat_history
+    self._chat_history = chat_history
 
   def __eq__(self, value: object, /) -> bool:
     if isinstance(value, Concept):
-      this_tuple = (self.concept_subject, self.concept_predicate, self.concept_object, self.description)
-      other_tuple = (value.concept_subject, value.concept_predicate, value.concept_object, value.description)
-      if value.created == self.created and this_tuple == other_tuple:
+      this_tuple = (self._concept_subject, self._concept_predicate, self._concept_object, self._description)
+      other_tuple = (value._concept_subject, value._concept_predicate, value._concept_object, value._description)
+      if value._created == self._created and this_tuple == other_tuple:
         return True
     return False
+  
+  @property
+  def keywords(self):
+    return self._keywords
+
+  @property
+  def created(self):
+    return self._created
 
   def spo_summary(self): 
-    return (self.concept_subject, self.concept_predicate, self.concept_object)
+    return (self._concept_subject, self._concept_predicate, self._concept_object)

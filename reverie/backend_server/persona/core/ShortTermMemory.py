@@ -7,15 +7,13 @@ from reverie.backend_server.persona.core.social.EmotionRegulator import Emotiona
 
 class ShortTermMemory(Memory):
   def __init__(self,
-               short_term:dict[str,str],
-               embeddings:Dict[str,list[float]], 
                concepts:dict, 
-               keyword_strengths:dict,
                time_func:Callable[[],datetime],
-               emotion_regulator:EmotionalRegulator) -> None:
+               emotion_regulator:EmotionalRegulator,
+               short_term:dict[str,str],
+               ) -> None:
     try:
-      super().__init__(embeddings,concepts,keyword_strengths,time_func)
-      self.__emotions = emotion_regulator
+      super().__init__(concepts,emotion_regulator,time_func)
       self.__currently = short_term['currently']
       self.__attention_span = int(short_term['attention_span'])
 
@@ -30,15 +28,9 @@ class ShortTermMemory(Memory):
     recent_events:list[Tuple[str,str,str]] = [event.spo_summary() for event in self._seq_event]
     for subject,proposition,obj,desc in new_events:
       if (subject,proposition,obj) in recent_events:
+        #TODO update the most recently accessed? or maybe we still keep?
+        # Seeing the same thing twice can hold sematic value.
         continue
-
-      if desc in self._embeddings: 
-        event_embedding = self._embeddings[desc]
-      else: 
-        event_embedding = self._generate_embedding(desc)
-      event_embedding_pair = (desc, event_embedding)
-      keywords = list(set([subject.split(":")[-1],obj.split(":")[-1]]))
-      event_impact = self.__emotions.determine_emotional_impact("event",desc)
 
       # IMPORTANT
       # The original method from congnitive_modules/observe.py: percieve(persona,maze)
@@ -54,27 +46,17 @@ class ShortTermMemory(Memory):
 
       # TODO: redefine how events are put on the map so that we can differenciate between conversations.
       self._add_conceptnode(
+          "event",
           self.get_current_time(),
-          # TODO: change expiration
-          None,
           subject,
           proposition,
           obj,
           desc,
-          keywords,
-          event_impact,
-          event_embedding_pair,
           [],
-          "event"
           )
-      # TODO: review how importance triggers work because its not clear yet how this is relevant and if i want to keep or initialize them here
+      # TODO: review how importance triggers work because its not clear yet how this is relevant and if i want to keep or initialize them here like in the initial code
 
   def _retrieval_filter(self, concept: Concept, potential_candidate: Concept) -> bool:
-    '''
-    this works with the retrieve_relevant_concepts(self,concepts:list[Concept]) function
-    defined in the memory base class.
-    '''
-    # Short term memory is at the forefront of our mind
     concept_tuple = concept.spo_summary()
     comparison_tuple = potential_candidate.spo_summary()
     if concept_tuple == comparison_tuple:
@@ -85,20 +67,16 @@ class ShortTermMemory(Memory):
     raise NotImplemented()
 
   @property
-  def recent_events(self):
-    '''
-    Returns all events that the agent has in the forefront of their mind
-    '''
-    return [concept for _, concept in self._id_to_node.items()]
-  @property
-  def most_recent_events(self):
+  def current_events(self):
     '''
     Returns all events that have happened right now
     '''
     return [concept for _, concept in self._id_to_node.items() if concept.created == self.get_current_time()]
+
   @property
   def attention_span(self):
     return self.__attention_span
+
   @property
   def currently(self):
     return self.__currently
