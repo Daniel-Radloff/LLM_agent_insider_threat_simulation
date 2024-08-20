@@ -149,28 +149,74 @@ class Memory(ABC):
     return self.__time_func()
   
   @abstractmethod
-  def _retrieval_filter(self,concept:Concept, potential_candidate:Concept)->bool:
+  def _retrieval_score(self,concept:Concept, potential_candidate:Concept)->tuple[float]:
     '''
-    Defines a function that determines if a candidate concept:
-    1. is relevant to the concept being evaluated.
-    2. if the concept should be returned.
-    '''
-    raise NotImplementedError(f"concrete class: {type(self)} must impliment abstract method: _retrieval_filter. See core/Memory.py:_retrieval_filter")
+    This function should determine how relevant a candidate concept
+    is to the concept being evaluated.
+    It must return a tuple of float values inbetween 0 and 1 (this is not checked but recommended).
+    These values will be used in the _retrieve_relevant_concept_scores, and retrieve_relevant_concepts functions by multiplying them to weights and summing them to generate a relevance score for the concept.
 
-  def retrieve_relevant_concepts(self,concepts:list[Concept]):
+    If the length of the returned tuple is not equal to the weights provided to
+    retrieve_relevant_concepts, then _retrieve_relvant_concept_scores will raise a 
+    RuntimeError.
+    '''
+    raise NotImplementedError(f"concrete class: {type(self)} must impliment abstract method: _retrieval_score. See core/Memory.py:_retrieval_score")
+
+  def _retrieve_relevant_concept_scores(self,concept:Concept,relevance_weights:tuple)->list[Tuple[float,Concept]]:
     '''
     Takes in a list of concepts and looks in memory for relevant concepts.
-    Concepts are filtered by the _retrieval_filter method which determines
-    if a concept is retrieved or not.
-    _retrieval_fitler is a abstract method that must be implimented by the concrete class.
+    Concepts are ranked by the _retrieval_score method which determines the likely hood
+    of a concept being remembered
+    _retrieval_score is a abstract method that must be implimented by the concrete class.
     '''
     # could be a list but better safe than sorry
-    to_return:list[list[Concept]] = []
+    relevance_scores:list[Tuple[float,Concept]] = []
+    for _, concept_candidate in self._id_to_node.items():
+      if concept == concept_candidate:
+        continue
+      raw_score = self._retrieval_score(concept,concept_candidate)
+
+      if len(raw_score) != len(relevance_weights):
+        raise RuntimeError("Tuple returned by _retrieval_score, does not match the length of the weights used in calculating final score")
+
+      # dot product of the tuples appended to the index corresponding with the node were
+      # evaluating
+      relevance_scores.append(
+          (sum(x*y for x,y in zip(raw_score,relevance_weights)), 
+           concept_candidate))
+    return relevance_scores
+
+  def _retrieve_relevant_concepts(self,concepts:list[Concept],relevance_weights:tuple)->list[Concept]:
+    '''
+    Takes in a list of concepts and looks in memory for relevant concepts.
+    Concepts are ranked by the _retrieval_score method which determines the likely hood
+    of a concept being remembered
+    _retrieval_fitler is a abstract method that must be implimented by the concrete class.
+    '''
+    relevance_scores:dict[str,Tuple[float,Concept]] = {}
     for concept in concepts:
-      to_return.append([])
-      for _, concept_candidate in self._id_to_node.items():
-        if concept == concept_candidate:
-          continue
-        if self._retrieval_filter(concept,concept_candidate):
-          to_return[-1].append(concept_candidate)
-    return to_return
+      candidate_scores = self._retrieve_relevant_concept_scores(concept,relevance_weights)
+      for candidate in candidate_scores:
+        # Check if candidate has already been seen
+        candidate_id = candidate[1].id
+        if candidate_id in relevance_scores:
+          #  update if the relevance score is greater than what was previously assigned to it.
+          old_score = relevance_scores[candidate_id][0]
+          if old_score < candidate[0]:
+            # TODO, maybe scale because it came up a second time?
+            relevance_scores[candidate_id] = candidate
+        else:
+          relevance_scores[candidate_id] = candidate
+
+    to_return = sorted(relevance_scores.values(),key=lambda x:x[0],reverse=True)
+    return [concept for _, concept in to_return]
+  
+  @abstractmethod
+  def retrieve_relevant_concepts(self,concepts:list[Concept])->list[Concept]:
+    '''
+    Takes in a list of concepts and looks in memory for relevant concepts.
+    Concepts are ranked by the _retrieval_score method which determines the likely hood
+    of a concept being remembered
+    _retrieval_fitler is a abstract method that must be implimented by the concrete class.
+    '''
+    raise NotImplementedError(f"concrete class: {type(self)} must impliment abstract method: retrieve_relevant_concepts. See core/Memory.py:retrieve_relevant_concepts")

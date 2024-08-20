@@ -48,5 +48,9 @@ class Concept:
   def created(self):
     return self._created
 
+  @property
+  def id(self):
+    return self._id
+
   def spo_summary(self): 
     return (self._concept_subject, self._concept_predicate, self._concept_object)
