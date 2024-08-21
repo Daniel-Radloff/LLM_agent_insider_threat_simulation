@@ -13,6 +13,7 @@ class Model(ABC):
   _default_system_prompt = """You are modeling a human in a simulation that is being used in security research aimed at generating data that simulates realistic insider threat behavior. This is a brief summary of the identiy that you will be simulating:
   <INPUT 0>
 Each prompt will contain an example response. Use the example as a guideline for formatting, but focus on producing behavior that aligns with the persona and context described. Realism is key to the success of the simulation, so ensure your responses reflect authentic human behavior under the given circumstances.
+Often, prompts will ask you how you would react in different situations, or how you think the human that you are modeling will behave. You not only serve as a model of the human, but also of that individuals concious thinking and should respond appropriately according to the requirements of the prompt.
   """
   _prompt_input_pattern = re.compile(r'!<INPUT \d+>')
 

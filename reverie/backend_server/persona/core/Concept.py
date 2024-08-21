@@ -67,3 +67,7 @@ class Concept:
   @property
   def impact(self):
     return self._impact
+
+  @property
+  def description(self):
+    return self._description

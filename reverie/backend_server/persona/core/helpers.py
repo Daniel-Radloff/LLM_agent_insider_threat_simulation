@@ -29,3 +29,6 @@ def validate_hour_minute_time(response:str, _="")->str:
     return response
   else:
     raise ValueError
+
+def no_validate(response:str,_="")->str:
+  return response
