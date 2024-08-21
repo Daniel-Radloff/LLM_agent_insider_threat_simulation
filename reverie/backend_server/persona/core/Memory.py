@@ -5,6 +5,9 @@ from typing import Callable, Dict, Literal, Tuple, Union
 from reverie.backend_server.persona.core.Concept import Concept
 from reverie.backend_server.persona.core.social.EmotionRegulator import EmotionalRegulator
 
+from numba import njit
+import numpy as np
+
 
 class Memory(ABC):
   def __init__(self,
@@ -149,7 +152,7 @@ class Memory(ABC):
     return self.__time_func()
   
   @abstractmethod
-  def _retrieval_score(self,concept:Concept, potential_candidate:Concept)->tuple[float]:
+  def _retrieval_score(self,concept:Concept, potential_candidate:Concept)->Tuple[float,...]:
     '''
     This function should determine how relevant a candidate concept
     is to the concept being evaluated.
@@ -214,9 +217,18 @@ class Memory(ABC):
   @abstractmethod
   def retrieve_relevant_concepts(self,concepts:list[Concept])->list[Concept]:
     '''
+    This function is a frontend for the _retrieve_relevant_concepts function.
+    It should contain line a line that calls _retrieve_relevant_concepts with the default weights used in memory retrieval.
+
     Takes in a list of concepts and looks in memory for relevant concepts.
     Concepts are ranked by the _retrieval_score method which determines the likely hood
     of a concept being remembered
     _retrieval_fitler is a abstract method that must be implimented by the concrete class.
     '''
     raise NotImplementedError(f"concrete class: {type(self)} must impliment abstract method: retrieve_relevant_concepts. See core/Memory.py:retrieve_relevant_concepts")
+
+
+  @njit
+  def __similarity_score_function(self,a, b):
+      return (np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)) + 1)/2
+

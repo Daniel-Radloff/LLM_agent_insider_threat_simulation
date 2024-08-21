@@ -1,5 +1,6 @@
 from datetime import datetime
 from typing import Literal
+import numpy as np
 
 
 class Concept: 
@@ -24,7 +25,7 @@ class Concept:
 
     self._description = description
     # Maybe change to just the embedding per concept?
-    self._embedding = embedding
+    self._embedding = np.array(embedding)
     self._impact = impact
     #
     self._keywords = list(set([s.split(":")[-1].lower(),o.split(":")[-1].lower()]))
@@ -52,5 +53,17 @@ class Concept:
   def id(self):
     return self._id
 
+  @property
+  def last_accessed(self):
+    return self._last_accessed
+
   def spo_summary(self): 
     return (self._concept_subject, self._concept_predicate, self._concept_object)
+
+  @property
+  def embedding(self):
+    return self._embedding
+
+  @property
+  def impact(self):
+    return self._impact
