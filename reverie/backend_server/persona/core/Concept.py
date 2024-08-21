@@ -10,7 +10,7 @@ class Concept:
                created:datetime, 
                s:str, p:str, o:str,
                description:str, 
-               embedding:list[float],
+               embedding:np.ndarray,
                impact:int,
                chat_history): 
     self._id = node_id

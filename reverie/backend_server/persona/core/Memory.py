@@ -70,7 +70,7 @@ class Memory(ABC):
                        description:str, 
                        previous_chats,
                        impact:Union[None,int] = None,
-                       embedding:Union[None,list[float]] = None)->Concept:
+                       embedding:Union[None,np.ndarray] = None)->Concept:
     # For this refactor, we use getattr a lot because its convenient
     # All it does is access a attribute.
     # So: self.kw_strength_event
@@ -145,14 +145,14 @@ class Memory(ABC):
 
   # Placeholder TODO
   # Will do embedding call here for now without the model thing, bad practice might TODO and fix later but for now its good enough.
-  def _generate_embedding(self, phrase:str)->list[float]:
+  def _generate_embedding(self, phrase:str)->np.ndarray:
     raise NotImplementedError()
 
   def get_current_time(self)->datetime:
     return self.__time_func()
   
   @abstractmethod
-  def _retrieval_score(self,concept:Concept, potential_candidate:Concept)->Tuple[float,...]:
+  def _retrieval_score(self,concept:np.ndarray, potential_candidate:Concept)->Tuple[float,...]:
     '''
     This function should determine how relevant a candidate concept
     is to the concept being evaluated.
@@ -165,7 +165,7 @@ class Memory(ABC):
     '''
     raise NotImplementedError(f"concrete class: {type(self)} must impliment abstract method: _retrieval_score. See core/Memory.py:_retrieval_score")
 
-  def _retrieve_relevant_concept_scores(self,concept:Concept,relevance_weights:tuple)->list[Tuple[float,Concept]]:
+  def _retrieve_relevant_concept_scores(self,concept:np.ndarray,relevance_weights:tuple)->list[Tuple[float,Concept]]:
     '''
     Takes in a list of concepts and looks in memory for relevant concepts.
     Concepts are ranked by the _retrieval_score method which determines the likely hood
@@ -175,7 +175,7 @@ class Memory(ABC):
     # could be a list but better safe than sorry
     relevance_scores:list[Tuple[float,Concept]] = []
     for _, concept_candidate in self._id_to_node.items():
-      if concept == concept_candidate:
+      if concept == concept_candidate.embedding:
         continue
       raw_score = self._retrieval_score(concept,concept_candidate)
 
@@ -189,7 +189,7 @@ class Memory(ABC):
            concept_candidate))
     return relevance_scores
 
-  def _retrieve_relevant_concepts(self,concepts:list[Concept],relevance_weights:tuple)->list[Concept]:
+  def _retrieve_relevant_concepts(self,concepts:list[np.ndarray],relevance_weights:tuple)->list[Concept]:
     '''
     Takes in a list of concepts and looks in memory for relevant concepts.
     Concepts are ranked by the _retrieval_score method which determines the likely hood
@@ -215,7 +215,7 @@ class Memory(ABC):
     return [concept for _, concept in to_return]
   
   @abstractmethod
-  def retrieve_relevant_concepts(self,concepts:list[Concept])->list[Concept]:
+  def retrieve_relevant_concepts(self,concepts:list[np.ndarray])->list[Concept]:
     '''
     This function is a frontend for the _retrieve_relevant_concepts function.
     It should contain line a line that calls _retrieve_relevant_concepts with the default weights used in memory retrieval.

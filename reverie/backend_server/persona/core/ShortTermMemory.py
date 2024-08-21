@@ -59,7 +59,7 @@ class ShortTermMemory(Memory):
           )
       # TODO: review how importance triggers work because its not clear yet how this is relevant and if i want to keep or initialize them here like in the initial code
 
-  def _retrieval_score(self, concept: Concept, potential_candidate: Concept) -> Tuple[float,...]:
+  def _retrieval_score(self, concept: np.ndarray, potential_candidate: Concept) -> Tuple[float,...]:
     @njit
     def last_accessed_decay_function(x)->float:
         return 1.1 ** (-4 * x ** 2)
@@ -73,9 +73,9 @@ class ShortTermMemory(Memory):
     time_delta = current_time - last_accessed
     return (last_accessed_decay_function(time_delta),
             importance_gradient_function(potential_candidate.impact),
-            self.__similarity_score_function(concept.embedding,potential_candidate.embedding))
+            self.__similarity_score_function(concept,potential_candidate.embedding))
   
-  def retrieve_relevant_concepts(self, concepts: list[Concept]) -> list[Concept]:
+  def retrieve_relevant_concepts(self, concepts: list[np.ndarray]) -> list[Concept]:
     # Factors: 
     # Weight 1, Last accessed: this is short term memory so we forget quicker
     return self._retrieve_relevant_concepts(concepts,(1,2,2))[:self.__attention_span]
