@@ -47,7 +47,7 @@ Each prompt will contain an example response. Use the example as a guideline for
     pass
 
   def run_inference(self,
-                    user_prompt_location:str,
+                    user_prompt:str,
                     user_prompt_parameters:list[str],
                     system_prompt_parameters:list[str],
                     example_output:str,
@@ -57,7 +57,7 @@ Each prompt will contain an example response. Use the example as a guideline for
                     repeat=3,
                     system_prompt:Union[str,None]=None)->str:
     '''
-    Provided the relative path of the prompt, the model will run inference on the prompt.
+    The model will run inference on the prompt.
     System prompt can be specified, else the default system prompt of the class will be used.
     The default system prompt requires one argument that is provided through: Personality.get_summarized_identity()
     validate function must take in two arguments, the first is the response to be validated, and the second is the prompt that was provided to the model.
@@ -76,8 +76,7 @@ Each prompt will contain an example response. Use the example as a guideline for
           raise ValueError("Using the default system prompt requires a prompt_parameter list of length 1, see doc string")
 
     #TODO refactor so that the prompt is read in as a string and provided by caller
-    with open(user_prompt_location,"r") as user_prompt_file:
-      user_prompt = f"{self.__fill_in_prompt(user_prompt_file.read(),user_prompt_parameters)}\n"
+    user_prompt = f"{self.__fill_in_prompt(user_prompt,user_prompt_parameters)}\n"
     user_prompt += f"{special_instruction}\n" if special_instruction else ""
     user_prompt += f"An example response is:\n{example_output}"
 

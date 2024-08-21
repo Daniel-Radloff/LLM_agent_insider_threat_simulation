@@ -9,6 +9,10 @@ class EmotionalRegulator:
     self.__model = llm
 
   def determine_emotional_impact(self, event_type:str, description:str)->int:
+    if event_type not in ["event","chat","thought"]:
+      raise ValueError("event type must be an event,chat,or thought")
+    with open(f"templates/impact_{event_type}.txt","r") as file:
+      prompt = file.read()
     prompt_input = [self.__personality.full_name,
                     description]
     system_input = [self.__personality.get_summarized_identity()]
@@ -17,32 +21,11 @@ class EmotionalRegulator:
     fail_safe = "4"
     if "is idle" in description: 
       return 1
-    match event_type:
-      case "event":
-        output =  self.__model.run_inference("templates/impact_event.txt",
-                                             prompt_input,
-                                             system_input,
-                                             example_output,
-                                             validate_number,
-                                             fail_safe,
-                                             special_instruction=special_instruction)
-        return int(output)
-      case"chat": 
-        output =  self.__model.run_inference("templates/impact_chat.txt",
-                                             prompt_input,
-                                             system_input,
-                                             example_output,
-                                             validate_number,
-                                             fail_safe,
-                                             special_instruction=special_instruction)
-        return int(output)
-      case"thought": 
-        output =  self.__model.run_inference("templates/impact_thought.txt",
-                                             prompt_input,
-                                             system_input,
-                                             example_output,
-                                             validate_number,
-                                             fail_safe,
-                                             special_instruction=special_instruction)
-        return int(output)
-    raise ValueError(f"event_type is invalid. Got {event_type}, expected: event, chat, or thought")
+    output =  self.__model.run_inference(prompt,
+                                         prompt_input,
+                                         system_input,
+                                         example_output,
+                                         validate_number,
+                                         fail_safe,
+                                         special_instruction=special_instruction)
+    return int(output)
