@@ -70,7 +70,8 @@ class ShortTermMemory(Memory):
 
     last_accessed = potential_candidate.last_accessed
     current_time = self.get_current_time()
-    time_delta = current_time - last_accessed
+    # conversion to days
+    time_delta = (current_time - last_accessed).total_seconds()/86400
     return (last_accessed_decay_function(time_delta),
             importance_gradient_function(potential_candidate.impact),
             self.__similarity_score_function(concept,potential_candidate.embedding))
