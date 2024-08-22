@@ -30,7 +30,6 @@ class TimePeriod:
 @dataclass(frozen=True)
 class Task:
   description:str
-  time_period:TimePeriod
   _target:Union[InteractableObject,None] = field(default=None)
 
   @property
@@ -50,6 +49,8 @@ class Task:
 @dataclass
 class DailyPlanningData:
   wake_up_time:datetime
+  # This includes variance, but is still subject to change.
+  basic_schedule_for_today:dict[TimePeriod,Task]
   incompleted_tasks:list[Task]
 
 
@@ -143,7 +144,17 @@ class DailyPlanning:
     #   1. our normal day to day requirements
     #   2. the revised requirements based on our experiences
     #   3. the tasks that we meant to complete yesterday but were unable to?
+
     todays_broad_plan = self.summarize_day_plan(important_points)
+    # Using the basic plan for today we again look for relevant concepts related to each plan.
+    # TODO Get only the most important point for each one, or the general most important points of all of them.
+    embeddings = [self.__short_term_memory._generate_embedding(item) for item in todays_broad_plan]
+    most_important_concepts = self.__short_term_memory.retrieve_relevant_concepts(embeddings)
+    most_important_points = [concept.description for concept in most_important_concepts]
+
+    self.__data.basic_schedule_for_today = self._detailed_plan(
+        '\n'.join(todays_broad_plan),
+        '\n'.join(most_important_points))
     
     pass
 
@@ -195,6 +206,11 @@ class DailyPlanning:
     return output
 
   def _detailed_plan(self,plan_outline:str, important_concepts:str):
+    '''
+    Formulates a detailed plan for the agent to follow that guides their
+    behavior. This plan is more a prediction, as it includes time
+    variances that aim to simulate human behavior.
+    '''
     def validate(response:str,_="")->str:
       def validate_time(time:str)->bool:
         '''
@@ -221,6 +237,7 @@ class DailyPlanning:
           raise ValueError(f"Response has malformed task: {task}")
       return response
 
+    to_return:dict[TimePeriod,Task] = dict()
     with open("daily_planning_templates/detailed_plan.txt","r") as file:
       prompt = file.read()
     prompt_input = [plan_outline,important_concepts]
@@ -255,4 +272,60 @@ class DailyPlanning:
                                         validate,
                                         failsafe,
                                         )
+
+    # Introduce variance into the response, through testing, it has been
+    #   determined that placing this into a seperate prompt produces
+    #   more consistent and superiour results
+    with open("daily_planning_templates/introduce_variance.txt","r") as file:
+      prompt = file.read()
+    prompt_input = [response]
+    example = '''
+06:25 <-> 07:00 <-> Wake up and complete morning routine
+07:02 <-> 07:17 <-> Eat breakfast
+08:05 <-> 09:55 <-> Work on the weekly report: Review project progress, gather data,
+and start drafting sections
+09:58 <-> 10:13 <-> Break to get a drink and stretch
+10:16 <-> 11:00 <-> Attend the team meeting: Discuss project updates, client
+feedback, and collaborate with team members
+11:05 <-> 11:20 <-> Break to grab a snack
+11:17 <-> 12:07 <-> Review and finalize the project proposal: Revise sections based
+on team feedback and comments from previous version
+12:10 <-> 13:00 <-> Lunch break (ended up being 50 minutes instead of 1 hour)
+13:02 <-> 14:32 <-> Continue working on the weekly report: Refine data analysis, add
+visualizations, and make any necessary changes to draft sections
+14:35 <-> 15:05 <-> Break and review project proposal for finalization
+15:10 <-> 16:30 <-> Finalize and submit the project proposal: Make sure all
+requirements are met and document is perfect before submission (ended up taking
+longer than expected)
+16:32 <-> 17:00 <-> Wrap up any remaining tasks: Respond to urgent emails, update
+project management tool, and make sure everything is up-to-date
+17:05 <-> 18:10 <-> Relax and prepare for the next day: Take a break, recharge, and
+get ready for tomorrow's tasks (ended up being longer than expected)
+    '''
+    # no failsafe for this stage
+    failsafe = 'FAILURE'
       
+    response = self.__model.run_inference(prompt,
+                                        prompt_input,
+                                        [self.__personality.get_summarized_identity()],
+                                        example,
+                                        validate,
+                                        failsafe,
+                                        )
+
+    tasks = [line.strip() for line in response.split('\n')]
+    for task in tasks:
+      start,end,desc = [component.strip() for component in task.split('<->')]
+      current_time = self.__short_term_memory.get_current_time()
+      start_hour,start_minute = map(int, start.split(":"))
+      end_hour,end_minute = map(int,end.split(":"))
+      time = TimePeriod(
+          current_time.replace(hour=start_hour, minute=start_minute),
+          current_time.replace(hour=end_hour, minute=end_minute)
+          )
+      new_task = Task(
+          desc
+          )
+      to_return[time] = new_task
+
+    return to_return
