@@ -230,5 +230,10 @@ class Memory(ABC):
 
   @njit
   def __similarity_score_function(self,a, b):
-      return (np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b)) + 1)/2
+    '''
+    This function can return a negative value, but the likely hood is
+    very low after testing, and if a negative value does occur, then it means
+    the embeddings must be so distant from each other that it is a good thing.
+    '''
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
 
