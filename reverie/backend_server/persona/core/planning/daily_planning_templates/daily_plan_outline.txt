@@ -12,4 +12,4 @@ Today is !<INPUT 1>!, you wake up at !<INPUT 2>!.
 You need to plan how you are going to go through your day
 Earlier when you thought about today, you raised the following points to yourself:
 !<INPUT 3>!
-Keep these in mind while planning out your tasks.
+Keep these in mind while planning out your tasks. Output any times in 24 hour time.

@@ -1,0 +1,15 @@
+Variables:
+!<INPUT 0>! -- full name
+!<INPUT 1>! -- Plan Outline
+<commentblockmarker>###</commentblockmarker>
+You need to plan the actions that !<INPUT 0>! is going to take today.
+An outline of the actions that you are required to take with approximate but flexible times is shown bellow:
+!<INPUT 1>!
+
+Plan out the tasks with time frames that you plan on doing today. Include the time that you wake up.
+Your responses should be in the format of:
+{start} - {end} : {description}
+Where start and end are 24-hour times that you plan on taking action, and the description is the description of what you're going to do.
+Add more detail to the tasks that you plan on doing where it is relevant.
+Try to stick to the timeframes provided, but keep in mind you are predicting the behavior of the person you are portraying and that humans make mistakes and that they sometimes don't follow the strictest time frames.
+
