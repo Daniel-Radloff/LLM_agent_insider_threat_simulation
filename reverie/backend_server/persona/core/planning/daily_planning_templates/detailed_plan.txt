@@ -1,15 +1,18 @@
 Variables:
 !<INPUT 0>! -- full name
 !<INPUT 1>! -- Plan Outline
+!<INPUT 2>! -- Most important concepts related to today
 <commentblockmarker>###</commentblockmarker>
-You need to plan the actions that !<INPUT 0>! is going to take today.
-An outline of the actions that you are required to take with approximate but flexible times is shown bellow:
+You need to determine the actions that !<INPUT 0>! is going to take today.
+An outline of the actions that you have planned to do today is shown bellow:
 !<INPUT 1>!
 
-Plan out the tasks with time frames that you plan on doing today. Include the time that you wake up.
+lan out the tasks with time frames that you plan on doing today. Include the time that you wake up.
 Your responses should be in the format of:
-{start} - {end} : {description}
+{start} <-> {end} <-> {description}
 Where start and end are 24-hour times that you plan on taking action, and the description is the description of what you're going to do.
-Add more detail to the tasks that you plan on doing where it is relevant.
-Try to stick to the timeframes provided, but keep in mind you are predicting the behavior of the person you are portraying and that humans make mistakes and that they sometimes don't follow the strictest time frames.
+Add more detail to the tasks that you plan on doing where it is relevant by breaking it into seperate smaller parts adhearing strictly to the required format.
+Try to stick to the timeframes if they are provided, but keep in mind you are predicting the behavior of the person you are portraying.
+The following thoughts and items are important context to keep in mind when planning out your day:
+!<INPUT 2>!
 

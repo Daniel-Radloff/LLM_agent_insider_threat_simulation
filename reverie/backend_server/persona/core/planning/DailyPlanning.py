@@ -18,10 +18,19 @@ from reverie.backend_server.persona.core.ShortTermMemory import ShortTermMemory
 from reverie.backend_server.persona.core.helpers import no_validate, validate_hour_minute_time
 from reverie.backend_server.persona.models.model import Model
 
+@dataclass(frozen=True)
+class TimePeriod:
+  start:datetime
+  end:datetime
+
+  def __contains__(self, time:datetime) ->bool:
+    return self.start <= time <= self.end
+
 # ඞ
 @dataclass(frozen=True)
 class Task:
   description:str
+  time_period:TimePeriod
   _target:Union[InteractableObject,None] = field(default=None)
 
   @property
@@ -42,6 +51,7 @@ class Task:
 class DailyPlanningData:
   wake_up_time:datetime
   incompleted_tasks:list[Task]
+
 
 class DailyPlanning:
   '''
@@ -101,6 +111,8 @@ class DailyPlanning:
     # return new datetime object with wakeup time.
     return date.replace(hour=hour,minute=minute)
 
+  # TODO what if something bad happens, maybe we should be 
+  #   able to rethink how we are gonna approach the day
   def plan_for_today(self):
     # First, relevant memories related to planning are retrieved.
     important_events = self.__short_term_memory._generate_embedding(
@@ -132,6 +144,7 @@ class DailyPlanning:
     #   2. the revised requirements based on our experiences
     #   3. the tasks that we meant to complete yesterday but were unable to?
     todays_broad_plan = self.summarize_day_plan(important_points)
+    
     pass
 
   def summarize_day_plan(self,recent_knowledge:str,overwrite=False):
@@ -156,19 +169,18 @@ class DailyPlanning:
     system_input = [self.__personality.get_summarized_identity()]
     wake_up_hour = self.__data.wake_up_time.hour
     example = f'''
-    1) wake up and complete the morning routine at {wake_up_hour}:00,
-    2) eat breakfast at {wake_up_hour+1}:00,
-    3) work on company balance sheets from {wake_up_hour+2}:00 to {wake_up_hour+4}:00,
-    4) ...
+1) Wake up and complete the morning routine at 06:30
+2) Eat breakfast at 07:00
+3) Work on the weekly report from 08:00 to 10:00
+4) Attend the team meeting from 10:15 to 11:00
+5) Review and finalize the project proposal from 11:15 to 12:00
+6) Lunch break at 12:00
+7) Continue working on the weekly report from 13:00 to 15:00
+8) Submit the project proposal by 15:30
+9) Wrap up any remaining tasks by 17:00
+10) Relax and prepare for the next day starting at 18:00
     '''
-    failsafe = '''
-    eat breakfast at 7:00 am,
-    read a book from 8:00 am to 12:00 pm,
-    have lunch at 12:00 pm,
-    take a nap from 1:00 pm to 4:00 pm,
-    relax and watch TV from 7:00 pm to 8:00 pm,
-    go to bed at 11:00 pm
-    '''
+    failsafe = 'eat breakfast at 7:00,read a book from 8:00 to 12:00,have lunch at 12:00,take a nap from 13:00 to 16:00,relax and watch TV from 19:00 to 20:00,go to bed at 23:00'
     special_instruction = "This plan that you generate now will replace and become your new default strategy, so don't make too drastic changes unless they are generally applicable."
     output = self.__model.run_inference(prompt,
                                         prompt_input,
@@ -182,4 +194,65 @@ class DailyPlanning:
       self.__standard_tasks = output
     return output
 
+  def _detailed_plan(self,plan_outline:str, important_concepts:str):
+    def validate(response:str,_="")->str:
+      def validate_time(time:str)->bool:
+        '''
+        Assumes that the time is .strip()'d
+        '''
+        numbers = time.split(':')
+        if len(numbers) != 2:
+          raise ValueError("Time does not contain a ':' character")
+        hours,minutes = numbers
+        if int(hours) < 24 and int(hours) >= 0 and int(minutes) < 60 and int(minutes) >= 0:
+          return True
+        else:
+          raise ValueError(f"Time is malformed '{hours}:{minutes}'")
 
+      tasks = [line.rstrip() for line in response.split("\n")]
+      for task in tasks:
+        parts = task.split("<->")
+        if len(parts) != 3:
+          raise ValueError(f"Response has malformed task: {task}")
+        start,end,_ = parts
+        if validate_time(start.strip()) and validate_time(end.strip()):
+          continue
+        else:
+          raise ValueError(f"Response has malformed task: {task}")
+      return response
+
+    with open("daily_planning_templates/detailed_plan.txt","r") as file:
+      prompt = file.read()
+    prompt_input = [plan_outline,important_concepts]
+    example = '''
+07:00 <-> 07:15 <-> Wake up and get out of bed
+07:15 <-> 07:30 <-> Morning workout: Stretching exercises
+07:30 <-> 07:45 <-> Morning workout: Cardio session
+08:00 <-> 08:30 <-> Make and eat breakfast
+08:30 <-> 09:00 <-> Commute to the office
+09:00 <-> 09:30 <-> Team meeting: Project status updates
+09:30 <-> 11:00 <-> Work on project report: Compile data and draft sections
+11:00 <-> 11:30 <-> Client call: Discuss feedback on current deliverables
+11:30 <-> 12:00 <-> Review and respond to emails
+12:00 <-> 13:00 <-> Lunch break
+13:00 <-> 14:30 <-> Continue working on project report: Refine and finalize draft
+14:30 <-> 15:00 <-> Break and quick walk
+15:00 <-> 16:00 <-> Review and organize notes from client call
+16:00 <-> 17:00 <-> Follow up on action items from team meeting
+17:00 <-> 17:30 <-> Wrap up work and prepare for the next day
+17:30 <-> 18:00 <-> Commute back home
+18:00 <-> 19:00 <-> Dinner
+19:00 <-> 21:00 <-> Leisure time: Relax and unwind
+21:00 <-> 22:00 <-> Prepare for bed and wind down
+22:00 <-> 22:30 <-> Go to sleep
+    '''
+    # no failsafe for this stage
+    failsafe = 'FAILURE'
+    response = self.__model.run_inference(prompt,
+                                        prompt_input,
+                                        [self.__personality.get_summarized_identity()],
+                                        example,
+                                        validate,
+                                        failsafe,
+                                        )
+      

@@ -1,0 +1,6 @@
+Variables:
+!<INPUT 0>! -- Plan
+<commentblockmarker>###</commentblockmarker>
+The following is a schedule that you have come up with for today:
+!<INPUT 0>!
+Induce small variances in the start and end times in order to simulate human like behavior.
