@@ -31,6 +31,25 @@ class InteractableObject(WorldObject):
   '''
   pass
 
+class Tile:
+  '''
+  This is a single space in the world.
+  It contains:
+  - infromation about the spaces location
+  - events occuring in the space
+  - any objects located in the space
+  - any agents located in the space
+  When an agent enters a tile, all objects in the tile are notified.
+  This is so that an object can block an agents path (such as a door)
+  '''
+  def __init__(self,world,sector,arena,location:Tuple[int,int],objects:list[WorldObject]) -> None:
+    self.__world = world
+    self.__sector = sector
+    self.__arena = arena
+    self.__x, self.__y = location
+    self.__objects = objects
+    pass
+
 class World: 
   def __init__(self, maze_name): 
     # READING IN THE BASIC META INFORMATION ABOUT THE MAP
@@ -81,7 +100,7 @@ class World:
    
     sb_rows = csv_to_list(f"{blocks_folder}/sector_blocks.csv")
     sb_dict = dict()
-    for i in sb_rows: sb_dict[i[0]] = i[-1]
+    for i in sb_rows: sb_dict[i[0]] = i[-1] 
     
     ab_rows = csv_to_list(f"{blocks_folder}/arena_blocks.csv")
     ab_dict = dict()
@@ -210,8 +229,8 @@ class World:
             self.address_tiles[add] = set([(j, i)])
 
 
-    # Review Notes:
-    # Surely this is frontend related?
+  # Review Notes:
+  # Surely this is frontend related?
   def turn_coordinate_to_tile(self, px_coordinate): 
     """
     Turns a pixel coordinate to a tile coordinate. 
