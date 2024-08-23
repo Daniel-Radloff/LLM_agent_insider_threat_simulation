@@ -10,7 +10,7 @@ class Personality:
       self.__age = int(personality['age'])
       self.__innate_traits = personality['innate_traits']
       self.__lifestyle = personality['lifestyle']
-      self.__long_term_memory = long_term_memory
+      self.__learned_traits = personality['learned_traits']
     except TypeError:
       raise ValueError("Recieved dict is malformed")
     pass
@@ -34,10 +34,16 @@ class Personality:
     return f"""Name: {self.__first_name + self.__last_name}
     Age: {self.__age}
     Innate Traits: {self.__innate_traits}
-    Learnt Traits: {self.__long_term_memory.get_learned_traits()}
+    Learnt Traits: {self.__learned_traits}
     Lifestyle: {self.__lifestyle}
     """
 
+  def _revise_learned_traits(self,new_traits:str):
+    '''
+    Sets new learned traits. Defined as protected and meant to be used in
+    LongTermMemory.
+    '''
+    self.__learned_traits = new_traits
   def increment_age(self):
     self.__age += 1
 
