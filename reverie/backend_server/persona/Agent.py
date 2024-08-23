@@ -341,8 +341,7 @@ class Agent:
     """
     reflect(self)
 
-
-  def move(self, maze, personas, curr_tile, curr_time):
+def move(self, maze, personas, curr_tile, curr_time):
     """
     This is the main cognitive function where our main sequence is called. 
 

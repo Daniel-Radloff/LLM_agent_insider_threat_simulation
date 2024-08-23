@@ -569,6 +569,9 @@ def _determine_action(persona, maze):
 
 
 
+  '''
+  All this is doing is finding the location of some object so that we can perform some action.
+  '''
   # Finding the target location of the action and creating action-related
   # variables.
   act_world = maze.access_tile(persona.scratch.curr_tile)["world"]

@@ -155,8 +155,9 @@ class DailyPlanning:
     self.__data.basic_schedule_for_today = self._detailed_plan(
         '\n'.join(todays_broad_plan),
         '\n'.join(most_important_points))
-    
-    pass
+
+    #TODO Originally, a thought would be generated here about the plan.
+    # May or may not still do this.
 
   def summarize_day_plan(self,recent_knowledge:str,overwrite=False):
     '''
