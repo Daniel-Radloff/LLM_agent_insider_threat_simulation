@@ -1,4 +1,4 @@
-from reverie.backend_server.World import World
+from reverie.backend_server.world.World import World
 from reverie.backend_server.persona.core.SpatialMemory import SpatialMemory
 from reverie.backend_server.persona.core.ShortTermMemory import ShortTermMemory
 

@@ -21,7 +21,13 @@ class WorldObject:
   '''
   This represents objects inside of the world.
   '''
-  pass
+  def __init__(self,
+               object_id:str,
+               name:str,
+               tile:Tile
+               ) -> None:
+    self.__id = object_id 
+    self.__name = name
 
 #TODO placeholder
 class InteractableObject(WorldObject):
@@ -42,12 +48,15 @@ class Tile:
   When an agent enters a tile, all objects in the tile are notified.
   This is so that an object can block an agents path (such as a door)
   '''
-  def __init__(self,world,sector,arena,location:Tuple[int,int],objects:list[WorldObject]) -> None:
-    self.__world = world
+  def __init__(self,
+               sector:str,
+               arena:str,
+               location:Tuple[int,int],
+               object_ids:list[str]) -> None:
     self.__sector = sector
     self.__arena = arena
     self.__x, self.__y = location
-    self.__objects = objects
+    # self.__objects = 
     pass
 
 class World: 
@@ -136,7 +145,7 @@ class World:
     #           "sector" : "sector name",
     #           "arena" : "more detailed general position within sector",
     #           "game_object" : "object",
-    #           "game_object" : "a spawn location identifier?",
+    #           "spawning_location" : "a spawn location identifier?",
     #           "collision" : boolean: indicates if position is accessable,
     #           "events" : numpy.set: a set of event tuples, 
     #                       first item: is a identy specified by the rest of the tiles 

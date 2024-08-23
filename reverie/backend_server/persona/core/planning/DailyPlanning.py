@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Union
 
-from reverie.backend_server.World import InteractableObject
+from reverie.backend_server.world.World import InteractableObject
 from reverie.backend_server.persona.core.Concept import Concept
 from reverie.backend_server.persona.core.LongTermMemory import LongTermMemory
 from reverie.backend_server.persona.core.Personality import Personality
