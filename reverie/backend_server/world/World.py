@@ -7,7 +7,7 @@ world in a 2-dimensional matrix.
 """
 from collections.abc import Callable
 import json
-from typing import Tuple
+from typing import Tuple, Union
 import numpy
 import datetime
 import pickle
@@ -17,6 +17,7 @@ import math
 from global_methods import *
 from reverie.backend_server.world.world_objects.ObjectList import object_classes
 from utils import *
+from reverie.backend_server.persona.Agent import Agent
 
 
 # the third parameter must be a tile, the reason it is not is because of defintions
@@ -44,17 +45,19 @@ class Tile:
     self.__sector = sector
     self.__arena = arena
     self.__x, self.__y = location
-    self.objects = []
+    self.__objects = []
+    # See world_objects/ObjectList.py for a better understanding of whats happening in this loop
     for object_id,(object_name,object_data) in objects.items():
       if object_id in object_classes:
-        self.objects.append(object_classes[object_id](object_id,object_name,object_data))
-    # self.__objects = 
-    pass
+        self.__objects.append(object_classes[object_id](object_id,object_name,object_data))
+    self.__agents:list[Agent]
+    # TODO see if we can store agents in the tiles, but I suspect there will be a circular dependency
 
 class World: 
   def __init__(self, maze_name): 
     # READING IN THE BASIC META INFORMATION ABOUT THE MAP
     self.maze_name = maze_name
+    self.tilesss:list[Tile] = []
     # Reading in the meta information about the world. If you want tp see the
     # example variables, check out the maze_meta_info.json file. 
     with json.load(open(f"{env_matrix}/maze_meta_info.json")) as meta_info:
