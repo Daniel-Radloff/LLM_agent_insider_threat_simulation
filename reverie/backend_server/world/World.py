@@ -5,6 +5,7 @@ File: maze.py
 Description: Defines the Maze class, which represents the map of the simulated
 world in a 2-dimensional matrix. 
 """
+from collections.abc import Callable
 import json
 from typing import Tuple
 import numpy
@@ -14,31 +15,17 @@ import time
 import math
 
 from global_methods import *
+from reverie.backend_server.world.world_objects.ObjectList import object_classes
 from utils import *
 
-#TODO placeholder
-class WorldObject:
-  '''
-  This represents objects inside of the world.
-  '''
-  def __init__(self,
-               object_id:str,
-               name:str,
-               tile:Tile
-               ) -> None:
-    self.__id = object_id 
-    self.__name = name
 
-#TODO placeholder
-class InteractableObject(WorldObject):
-  '''
-  This is the objects in the world that an Agent
-  can interact with.
-  '''
-  pass
-
+# the third parameter must be a tile, the reason it is not is because of defintions
 class Tile:
   '''
+  Takes in objects in the form of a dictionary:
+  {
+  "id" : ("name", {object_data})
+  }
   This is a single space in the world.
   It contains:
   - infromation about the spaces location
@@ -52,10 +39,15 @@ class Tile:
                sector:str,
                arena:str,
                location:Tuple[int,int],
-               object_ids:list[str]) -> None:
+               objects:dict[str,Tuple[str,dict]],
+               ) -> None:
     self.__sector = sector
     self.__arena = arena
     self.__x, self.__y = location
+    self.objects = []
+    for object_id,(object_name,object_data) in objects.items():
+      if object_id in object_classes:
+        self.objects.append(object_classes[object_id](object_id,object_name,object_data))
     # self.__objects = 
     pass
 

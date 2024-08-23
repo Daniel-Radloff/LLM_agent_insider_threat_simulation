@@ -10,13 +10,13 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Union
 
-from reverie.backend_server.world.World import InteractableObject
 from reverie.backend_server.persona.core.Concept import Concept
 from reverie.backend_server.persona.core.LongTermMemory import LongTermMemory
 from reverie.backend_server.persona.core.Personality import Personality
 from reverie.backend_server.persona.core.ShortTermMemory import ShortTermMemory
 from reverie.backend_server.persona.core.helpers import no_validate, validate_hour_minute_time
 from reverie.backend_server.persona.models.model import Model
+from reverie.backend_server.world.world_objects.WorldObject import WorldObject
 
 @dataclass(frozen=True)
 class TimePeriod:
@@ -30,7 +30,7 @@ class TimePeriod:
 @dataclass(frozen=True)
 class Task:
   description:str
-  _target:Union[InteractableObject,None] = field(default=None)
+  _target:Union[WorldObject,None] = field(default=None)
 
   @property
   def target(self):
@@ -40,7 +40,7 @@ class Task:
   #   agent can be penalized/feel stupid/feel bad for making
   #   a mistake.
   @target.setter
-  def set_target(self, target:InteractableObject):
+  def set_target(self, target:WorldObject):
     if self.target == None:
       object.__setattr__(self, '_target',target)
     else:
