@@ -50,6 +50,8 @@ class Tile:
     for object_id,(object_name,object_data) in objects.items():
       if object_id in object_classes:
         self.__objects.append(object_classes[object_id](object_id,object_name,object_data))
+      else:
+        self.__objects.append(object_classes['default'](object_id,object_name,object_data))
     self.__agents:list[Agent]
     # TODO see if we can store agents in the tiles, but I suspect there will be a circular dependency
 
@@ -57,7 +59,6 @@ class World:
   def __init__(self, maze_name): 
     # READING IN THE BASIC META INFORMATION ABOUT THE MAP
     self.maze_name = maze_name
-    self.tilesss:list[Tile] = []
     # Reading in the meta information about the world. If you want tp see the
     # example variables, check out the maze_meta_info.json file. 
     with json.load(open(f"{env_matrix}/maze_meta_info.json")) as meta_info:
@@ -189,49 +190,6 @@ class World:
                                   self.tiles[i][j]["game_object"]])
           go_event = (object_name, None, None, None)
           self.tiles[i][j]["events"].add(go_event)
-
-    # Reverse tile access. 
-    # <self.address_tiles> -- given a string address, we return a set of all 
-    # tile coordinates belonging to that address (this is opposite of  
-    # self.tiles that give you the string address given a coordinate). This is
-    # an optimization component for finding paths for the personas' movement. 
-    # self.address_tiles['<spawn_loc>bedroom-2-a'] == {(58, 9)}
-    # self.address_tiles['double studio:recreation:pool table'] 
-    #   == {(29, 14), (31, 11), (30, 14), (32, 11), ...}, 
-
-    # Review Notes:
-    # This is cool, rewritten to be more pythonic
-    self.address_tiles = dict()
-    for i in range(self.maze_height):
-      for j in range(self.maze_width): 
-        addresses = []
-        if self.tiles[i][j]["sector"]: 
-          addresses.append(":".join([
-            f'{self.tiles[i][j]["world"]}',
-            f'{self.tiles[i][j]["sector"]}'
-            ]))
-        if self.tiles[i][j]["arena"]: 
-          addresses.append(":".join([
-            f'{self.tiles[i][j]["world"]}',
-            f'{self.tiles[i][j]["sector"]}',
-            f'{self.tiles[i][j]["arena"]}'
-            ]))
-        if self.tiles[i][j]["game_object"]: 
-          addresses.append(":".join([
-            f'{self.tiles[i][j]["world"]}',
-            f'{self.tiles[i][j]["sector"]}',
-            f'{self.tiles[i][j]["arena"]}',
-            f'{self.tiles[i][j]["game_object"]}'
-            ]))
-        if self.tiles[i][j]["spawning_location"]: 
-          addresses.append(f'<spawn_loc>{self.tiles[i][j]["spawning_location"]}')
-
-        for add in addresses: 
-          if add in self.address_tiles: 
-            self.address_tiles[add].add((j, i))
-          else: 
-            self.address_tiles[add] = set([(j, i)])
-
 
   # Review Notes:
   # Surely this is frontend related?
