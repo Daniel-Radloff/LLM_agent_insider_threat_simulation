@@ -5,13 +5,11 @@ File: maze.py
 Description: Defines the Maze class, which represents the map of the simulated
 world in a 2-dimensional matrix. 
 """
+
+# TODO all the pathing is going to be cooked, so once it runs and breaks, fix it.
 from collections.abc import Callable
 import json
 from typing import Tuple, Union
-import numpy
-import datetime
-import pickle
-import time
 import math
 
 from global_methods import *
@@ -40,12 +38,14 @@ class Tile:
                sector:str,
                arena:str,
                location:Tuple[int,int],
+               collide:bool,
                objects:dict[str,Tuple[str,dict]],
                ) -> None:
     self.__sector = sector
     self.__arena = arena
     self.__x, self.__y = location
     self.__objects = []
+    self.__colidable = collide
     # See world_objects/ObjectList.py for a better understanding of whats happening in this loop
     for object_id,(object_name,object_data) in objects.items():
       if object_id in object_classes:
@@ -57,40 +57,14 @@ class Tile:
 
 class World: 
   def __init__(self, maze_name): 
-    # READING IN THE BASIC META INFORMATION ABOUT THE MAP
     self.maze_name = maze_name
-    # Reading in the meta information about the world. If you want tp see the
-    # example variables, check out the maze_meta_info.json file. 
     with json.load(open(f"{env_matrix}/maze_meta_info.json")) as meta_info:
-      # <maze_width> and <maze_height> denote the number of tiles make up the 
-        # height and width of the map. 
       self.maze_width = int(meta_info["maze_width"])
       self.maze_height = int(meta_info["maze_height"])
         # <sq_tile_size> denotes the pixel height/width of a tile. 
       self.sq_tile_size = int(meta_info["sq_tile_size"])
-        # <special_constraint> is a string description of any relevant special 
-        # constraints the world might have. 
-        # e.g., "planning to stay at home all day and never go out of her home"
-      self.special_constraint = meta_info["special_constraint"]
 
-    # READING IN SPECIAL BLOCKS
-    # Special blocks are those that are colored in the Tiled map. 
 
-    # Here is an example row for the arena block file: 
-    # e.g., "25335, Double Studio, Studio, Common Room"
-    # And here is another example row for the game object block file: 
-    # e.g, "25331, Double Studio, Studio, Bedroom 2, Painting"
-
-    # Notice that the first element here is the color marker digit from the 
-    # Tiled export. Then we basically have the block path: 
-    # World, Sector, Arena, Game Object -- again, these paths need to be 
-    # unique within an instance of Reverie. 
-
-    # Revision Comments:
-    # Reads in a bunch of specific world objects, in the format of a ID
-    # as a key and a human readiable identifies as the value in a dictionary
-
-    # Keeping id's as strings
     def csv_to_list(location:str)->list:
       with open(location,"r") as file:
         to_return = []
@@ -98,10 +72,10 @@ class World:
           to_return.append(line.strip().split(','))
         return to_return
 
+    # Revision Comments:
+    # Reads in a bunch of specific world objects, in the format of a ID
+    # as a key and a human readiable identifies as the value in a dictionary
     blocks_folder = f"{env_matrix}/special_blocks"
-
-    # getting only the id? this is what i think happened in the original code
-    wb = csv_to_list(f"{blocks_folder}/world_blocks.csv")[-1]
    
     sb_rows = csv_to_list(f"{blocks_folder}/sector_blocks.csv")
     sb_dict = dict()
@@ -111,6 +85,7 @@ class World:
     ab_dict = dict()
     for i in ab_rows: ab_dict[i[0]] = i[-1]
     
+    #TODO refactor game objects to read in a different way.
     gob_rows = csv_to_list(f"{blocks_folder}/game_object_blocks.csv")
     gob_dict = dict()
     for i in gob_rows: gob_dict[i[0]] = i[-1]
@@ -133,63 +108,27 @@ class World:
     game_object_maze = csv_to_list(f"{maze_folder}/game_object_maze.csv")
     spawning_location_maze = csv_to_list(f"{maze_folder}/spawning_location_maze.csv")
 
-    # Revision Comments:
-    # This defines the main object that we use to interact with the world?
-    # it is a 2D array that indexes into a dictionary, the dictionary is of the form:
-    # tiles[row][col] = {
-    #           "world" : "world name",
-    #           "sector" : "sector name",
-    #           "arena" : "more detailed general position within sector",
-    #           "game_object" : "object",
-    #           "spawning_location" : "a spawn location identifier?",
-    #           "collision" : boolean: indicates if position is accessable,
-    #           "events" : numpy.set: a set of event tuples, 
-    #                       first item: is a identy specified by the rest of the tiles 
-    #                           properties which is odd? because its redundant.
-    #                       and then defaults to another 3 paramters of type None]
-    #       }
     self.tiles = []
     for i in range(self.maze_height): 
       row = []
       for j in range(self.maze_width):
-        tile_details = dict()
-        tile_details["world"] = wb
-        
-        tile_details["sector"] = ""
-        if sector_maze[i][j] in sb_dict: 
-          tile_details["sector"] = sb_dict[sector_maze[i][j]]
-        
-        tile_details["arena"] = ""
-        if arena_maze[i][j] in ab_dict: 
-          tile_details["arena"] = ab_dict[arena_maze[i][j]]
-        
-        tile_details["game_object"] = ""
-        if game_object_maze[i][j] in gob_dict: 
-          tile_details["game_object"] = gob_dict[game_object_maze[i][j]]
-        
-        tile_details["spawning_location"] = ""
-        if spawning_location_maze[i][j] in slb_dict: 
-          tile_details["spawning_location"] = slb_dict[spawning_location_maze[i][j]]
-        
-        tile_details["collision"] = False
-        if collision_maze[i][j] != "0": 
-          tile_details["collision"] = True
+        sector = sb_dict.get(sector_maze[i][j],"")
+        arena = ab_dict.get(arena_maze[i][j],"")
+        game_object = gob_dict.get(game_object_maze[i][j],"")
+        spawning_location = slb_dict.get(spawning_location_maze[i][j],"")
+        if collision_maze[i][j] == "0": 
+          collide = False
+        else:
+          collide = True
 
+        # Note: im keeping the tile orientation the same, 
+        #   don't want to cause issues.
+        # TODO: fix
+        tile = Tile(sector,arena,(i,j),collide,)
         tile_details["events"] = set()
         
         row += [tile_details]
       self.tiles += [row]
-    # Each game object occupies an event in the tile. We are setting up the 
-    # default event value here. 
-    for i in range(self.maze_height):
-      for j in range(self.maze_width): 
-        if self.tiles[i][j]["game_object"]:
-          object_name = ":".join([self.tiles[i][j]["world"], 
-                                  self.tiles[i][j]["sector"], 
-                                  self.tiles[i][j]["arena"], 
-                                  self.tiles[i][j]["game_object"]])
-          go_event = (object_name, None, None, None)
-          self.tiles[i][j]["events"].add(go_event)
 
   # Review Notes:
   # Surely this is frontend related?
