@@ -22,13 +22,7 @@ class Eyes:
         self.__spatial_memory.current_location,
         self.__vision_radius)
 
-    current_position = self.__environment.get_tile_path(
-        self.__spatial_memory.current_location,
-        "arena")
-
-    observed_events = self.__spatial_memory.process_environment(
-        current_position,
-        surrounding_environment)
+    observed_events = self.__spatial_memory.process_environment(surrounding_environment)
 
     # limit to attention bandwidth
     observed_events = observed_events[:self.__short_term_memory.attention_span]

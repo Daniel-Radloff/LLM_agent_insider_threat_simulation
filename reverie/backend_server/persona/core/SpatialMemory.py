@@ -1,50 +1,61 @@
+'''
+In the original code, spatial memory existed as a way to tie events to the game world.
+With an object oriented approach, a colegue has suggested that I do away with this
+in favor for conceptualizing the entire world and all information about it within the
+Concept objects.
+For now, this class will remain just to get the project to a workable state.
+'''
 from typing import Tuple
 
 from numpy.lib import math
-from reverie.backend_server.world.World import World
+from reverie.backend_server.persona.Agent import Agent
+from reverie.backend_server.world.World import Tile, World
+from reverie.backend_server.world.world_objects.WorldObject import WorldObject
 
 class SpatialMemory:
   def __init__(self, spatial_memory:dict, environment:World) -> None:
     try:
-      self.__current_location:Tuple[int,int] = spatial_memory['current_location']
+      self.__current_location:Tile = spatial_memory['current_location']
       self.__environment = environment
-      self.__spatial_memory = spatial_memory['spatial_memory']
-      if len(self.current_location) != 2:
-        raise ValueError("Current location is supposed to be of lenght 2, an x y co-ordinate pair")
+      # Spatial memory is used to remember where most recently:
+      #   Objects, and people are:
+      # TODO: and where events took place?
+
+      # {"object_name" : Tile}
+      # Note: When remembering where things are, 
+      #   never actually check to see if the object is where it was using the Tile
+      # Only explictly evalue the objects contained within a tile in process_visual_input
+      #   or other methods where it makes sense to do so.
+
+      # TODO: How is this initialized?
+      #  the result of initialization (whenever it takes place), should create this structure.
+      self.__object_locations:dict[WorldObject,Tile] = spatial_memory['object_locations']
+      self.__agent_locations:dict[Agent,Tile] = spatial_memory['agent']
     except:
       raise ValueError("Dictionary does not contain expected value")
+    raise NotImplementedError()
 
-  def process_environment(self,
-                          current_tile:str,
-                          surrounding_environment:list[Tuple[dict,str,Tuple[int,int]]])->list[tuple]:
-    events_in_observable_environment = []
-    for tile_dict,tile_description,coordinates in surrounding_environment:
-      world = tile_dict["world"]
-      sector = tile_dict["sector"]
-      arena = tile_dict["arena"]
-      game_object = tile_dict["arena"]
-      events = tile_dict["events"]
+  def process_visual_input(self,surrounding_environment:list[Tile])->list[str]:
+    events_in_observable_environment:list[Tuple[float,str]] = []
+    for tile in surrounding_environment:
+      game_objects = tile.objects
+      agents = tile.agents
+      events = tile.events
 
-      if (world and world not in self.__spatial_memory): 
-        self.__spatial_memory[world] = {}
-      if (sector and sector not in self.__spatial_memory[world]): 
-        self.__spatial_memory[world][sector] = {}
-      if (arena and arena not in self.__spatial_memory[world][sector]): 
-        self.__spatial_memory[world][sector][arena] = []
-      if (game_object and game_object not in self.__spatial_memory[world][sector][arena]): 
-        self.__spatial_memory[world][sector][arena].append(game_object)
-
-      if (events and tile_description == current_tile):
+      # arena's act as walls or availible fields of view. Its not perfect but its good enough
+      if self.__current_location.is_in_same_arena(tile):
+        for game_object in game_objects:
+          self.__object_locations[game_object] = tile
+        for agent in agents:
+          self.__agent_locations[agent] = tile
         # This calculates the distance between the persona's current tile, 
         # and the target tile.
-        dist = math.dist([coordinates[0], coordinates[1]], 
-                         [self.__current_location[0], 
-                          self.__current_location[1]])
+        dist = math.dist([tile.x, tile.x], 
+                         [self.__current_location.x, 
+                          self.__current_location.y])
         # Add any relevant events to our temp set/list with the distant info. 
         for event in events:
-          if (dist,event) not in events_in_observable_environment: 
-            events_in_observable_environment.append((dist, event))
-    # the closest events are "processed first" by the brain
+          if (dist,event) not in events_in_observable_environment: events_in_observable_environment.append((dist, event)) # the closest events are "processed first" by the brain
     # TODO, maybe this should be based on whats important instead of just the distance
     events_in_observable_environment.sort(key=lambda pair: pair[0])
     return [event for _,event in events_in_observable_environment]

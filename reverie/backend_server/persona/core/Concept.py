@@ -21,11 +21,13 @@ class Concept:
     # Maybe change to just the embedding per concept?
     self._embedding = np.array(embedding)
     self._impact = impact
-    #
-    self._keywords = list(set([s.split(":")[-1].lower(),o.split(":")[-1].lower()]))
 
     # TODO: refactor into a chat node or something because this is stupid
     self._chat_history = chat_history
+
+    # TODO: determine how to handle keywords
+    self._keywords = list(set())
+    raise NotImplementedError()
 
   def __eq__(self, value: object, /) -> bool:
     if isinstance(value, Concept):
