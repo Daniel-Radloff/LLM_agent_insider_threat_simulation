@@ -138,7 +138,7 @@ class Agent:
     percept_events_list = []
 
     for tile in nearby_tiles: 
-      tile_details = maze.access_tile(tile)
+      tile_details = maze.get_tile(tile)
       tile_path = maze.get_tile_path(tile_details, "arena")
       world = tile_details["world"]
       sector = tile_details["sector"]
@@ -392,3 +392,7 @@ class Agent:
 
   def open_convo_session(self, convo_mode): 
     open_convo_session(self, convo_mode)
+
+  @property
+  def status(self)->str:
+    raise NotImplementedError()
