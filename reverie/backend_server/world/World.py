@@ -18,7 +18,7 @@ Important:
 # TODO all the pathing is going to be cooked, so once it runs and breaks, fix it.
 from collections.abc import Callable
 import json
-from typing import Any, Literal, Tuple, Union
+from typing import Any, Literal, Self, Tuple, Union
 import math
 
 from global_methods import *
@@ -61,7 +61,7 @@ class Tile:
         self.__objects.append(object_classes[object_id](object_id,object_data))
       else:
         self.__objects.append(object_classes['default'](object_id,object_data))
-    self.__agents:list[Agent]
+    self.__agents:list[Agent] = []
     # TODO see if we can store agents in the tiles, but I suspect there will be a circular dependency
 
   @property
@@ -78,6 +78,18 @@ class Tile:
     return self.__objects[:]
 
   @property
+  def agents(self):
+    return self.__agents[:]
+
+  @property
+  def x(self):
+    return self.__x
+
+  @property
+  def y(self):
+    return self.__y
+
+  @property
   def events(self):
     '''
     All events occuring in the tile.
@@ -89,6 +101,12 @@ class Tile:
       to_return.append(agent.status)
 
     return to_return
+
+  def is_in_same_arena(self,to_compare:Self):
+    if self.__sector == to_compare.__sector:
+      if self.__arena == to_compare.__arena:
+        return True
+    return False
 
 
 class World: 

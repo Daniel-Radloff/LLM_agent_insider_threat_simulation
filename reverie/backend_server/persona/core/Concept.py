@@ -51,6 +51,7 @@ class Concept:
   def last_accessed(self):
     return self._last_accessed
 
+  @property
   def description(self): 
     return self._description
 
