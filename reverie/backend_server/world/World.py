@@ -23,6 +23,7 @@ import math
 
 from global_methods import *
 from reverie.backend_server.world.world_objects.ObjectList import object_classes
+from reverie.backend_server.world.world_objects.WorldObject import WorldObject
 from utils import *
 from reverie.backend_server.persona.Agent import Agent
 
@@ -52,7 +53,7 @@ class Tile:
     self.__sector = sector
     self.__arena = arena
     self.__x, self.__y = location
-    self.__objects = []
+    self.__objects:list[WorldObject] = []
     self.__colidable = collide
     # See world_objects/ObjectList.py for a better understanding of whats happening in this loop
     for object_id,object_data in objects.items():
@@ -62,6 +63,33 @@ class Tile:
         self.__objects.append(object_classes['default'](object_id,object_data))
     self.__agents:list[Agent]
     # TODO see if we can store agents in the tiles, but I suspect there will be a circular dependency
+
+  @property
+  def sector(self):
+    return self.__sector
+
+  @property
+  def arena(self):
+    return self.__arena
+
+  @property
+  def objects(self):
+    # for the uninitiated [:] is a way of cloning a list in python
+    return self.__objects[:]
+
+  @property
+  def events(self):
+    '''
+    All events occuring in the tile.
+    '''
+    to_return:list[str] = []
+    for obj in self.__objects:
+      to_return.append(obj.status)
+    for agent in self.__agents:
+      to_return.append(agent.status)
+
+    return to_return
+
 
 class World: 
   def __init__(self, maze_name): 
