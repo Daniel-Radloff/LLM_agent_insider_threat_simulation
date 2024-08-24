@@ -9,7 +9,7 @@ world in a 2-dimensional matrix.
 # TODO all the pathing is going to be cooked, so once it runs and breaks, fix it.
 from collections.abc import Callable
 import json
-from typing import Tuple, Union
+from typing import Any, Literal, Tuple, Union
 import math
 
 from global_methods import *
@@ -18,7 +18,6 @@ from utils import *
 from reverie.backend_server.persona.Agent import Agent
 
 
-# the third parameter must be a tile, the reason it is not is because of defintions
 class Tile:
   '''
   Takes in objects in the form of a dictionary:
@@ -39,7 +38,7 @@ class Tile:
                arena:str,
                location:Tuple[int,int],
                collide:bool,
-               objects:dict[str,Tuple[str,dict]],
+               objects:dict[str,dict],
                ) -> None:
     self.__sector = sector
     self.__arena = arena
@@ -47,11 +46,11 @@ class Tile:
     self.__objects = []
     self.__colidable = collide
     # See world_objects/ObjectList.py for a better understanding of whats happening in this loop
-    for object_id,(object_name,object_data) in objects.items():
+    for object_id,object_data in objects.items():
       if object_id in object_classes:
-        self.__objects.append(object_classes[object_id](object_id,object_name,object_data))
+        self.__objects.append(object_classes[object_id](object_id,object_data))
       else:
-        self.__objects.append(object_classes['default'](object_id,object_name,object_data))
+        self.__objects.append(object_classes['default'](object_id,object_data))
     self.__agents:list[Agent]
     # TODO see if we can store agents in the tiles, but I suspect there will be a circular dependency
 
@@ -65,7 +64,7 @@ class World:
       self.sq_tile_size = int(meta_info["sq_tile_size"])
 
 
-    def csv_to_list(location:str)->list:
+    def csv_to_list(location:str)->list[list[str]]:
       with open(location,"r") as file:
         to_return = []
         for line in file:
@@ -76,7 +75,7 @@ class World:
     # Reads in a bunch of specific world objects, in the format of a ID
     # as a key and a human readiable identifies as the value in a dictionary
     blocks_folder = f"{env_matrix}/special_blocks"
-   
+
     sb_rows = csv_to_list(f"{blocks_folder}/sector_blocks.csv")
     sb_dict = dict()
     for i in sb_rows: sb_dict[i[0]] = i[-1] 
@@ -85,11 +84,19 @@ class World:
     ab_dict = dict()
     for i in ab_rows: ab_dict[i[0]] = i[-1]
     
-    #TODO refactor game objects to read in a different way.
-    gob_rows = csv_to_list(f"{blocks_folder}/game_object_blocks.csv")
-    gob_dict = dict()
-    for i in gob_rows: gob_dict[i[0]] = i[-1]
-    
+    game_object_directory = f"{blocks_folder}/game_object_blocks"
+
+    # Game objects can have unique data that they contain.
+    gob_dict:dict[str,dict[str,Any]] = dict()
+    for filename in os.listdir(game_object_directory):
+      # sgo = simulation game object
+      if filename.endswith('.sgo.json'):
+        file_path = os.path.join(game_object_directory, filename)
+        with open(file_path, 'r') as json_file:
+          # TODO we should be doing more validation here to make sure the id's are unique 
+          #   and that the id in the file matches the id of the file name etc.
+          gob_dict[filename.split('.')[0]] = json.load(json_file)
+
     slb_rows = csv_to_list(f"{blocks_folder}/spawning_location_blocks.csv")
     slb_dict = dict()
     for i in slb_rows: slb_dict[i[0]] = i[-1]
@@ -108,13 +115,15 @@ class World:
     game_object_maze = csv_to_list(f"{maze_folder}/game_object_maze.csv")
     spawning_location_maze = csv_to_list(f"{maze_folder}/spawning_location_maze.csv")
 
-    self.tiles = []
+    self.tiles:list[list[Tile]] = []
     for i in range(self.maze_height): 
-      row = []
+      row:list[Tile] = []
       for j in range(self.maze_width):
         sector = sb_dict.get(sector_maze[i][j],"")
         arena = ab_dict.get(arena_maze[i][j],"")
-        game_object = gob_dict.get(game_object_maze[i][j],"")
+        # TODO: Refactor game object maze so that multiple objects can be stored per tile
+        # TODO: game_object_maze must have its id's validated before we assign, for now this will crash.
+        game_object = gob_dict[game_object_maze[i][j]]
         spawning_location = slb_dict.get(spawning_location_maze[i][j],"")
         if collision_maze[i][j] == "0": 
           collide = False
@@ -123,11 +132,10 @@ class World:
 
         # Note: im keeping the tile orientation the same, 
         #   don't want to cause issues.
-        # TODO: fix
-        tile = Tile(sector,arena,(i,j),collide,)
-        tile_details["events"] = set()
-        
-        row += [tile_details]
+        tile = Tile(sector,arena,(i,j),collide,{game_object_maze[i][j] : game_object})
+
+        # Note: Events used to be stored in the tile. Now: objects and agents should have a status, and the tile will emit those statuses as events.
+        row += [tile]
       self.tiles += [row]
 
   # Review Notes:
@@ -152,7 +160,7 @@ class World:
 
   # Review Note:
   # TODO rename to get_tile_details for clarity and consistency
-  def access_tile(self, tile): 
+  def access_tile(self, tile:Tuple[int,int]): 
     """
     Returns the tiles details dictionary that is stored in self.tiles of the 
     designated x, y location. 
@@ -170,12 +178,13 @@ class World:
             'events': {('double studio:double studio:bedroom 2:bed',
                        None, None)}} 
     """
-    x = tile[0]
-    y = tile[1]
-    return self.tiles[y][x]
+    row,col = tile
+    return self.tiles[col][row]
 
 
-  def get_tile_path(self, tile, level): 
+  # Note:
+  #   I don't know if im even going to use this, so I will leave it as broken for now
+  def get_tile_path(self, location:Tuple[int,int], level:Literal["sector","arena"]):
     """
     Get the tile string address given its coordinate. You designate the level
     by giving it a string level description. 
@@ -189,10 +198,10 @@ class World:
       Given tile=(58, 9), and level=arena,
       "double studio:double studio:bedroom 2"
     """
-    x = tile[0]
-    y = tile[1]
+    x,y = location
     tile = self.tiles[y][x]
-
+    raise NotImplementedError()
+    '''
     path = f"{tile['world']}"
     if level == "world": 
       return path
@@ -210,11 +219,12 @@ class World:
       path += f":{tile['game_object']}"
 
     return path
+    '''
 
 
   # Review Note:
   # TODO rename to get_nearby_tile_coordinates for clarity and consistency
-  def get_nearby_tiles(self, tile, vision_r):
+  def get_nearby_tiles(self, center:Tuple[int,int], vision_r):
     """
     Given the current tile and vision_r, return a list of tiles that are 
     within the radius. Note that this implementation looks at a square 
@@ -232,23 +242,24 @@ class World:
     OUTPUT: 
       nearby_tiles: a list of tiles that are within the radius. 
     """
+    row,col = center
     left_end = 0
-    if tile[0] - vision_r > left_end: 
-      left_end = tile[0] - vision_r
+    if row - vision_r > left_end: 
+      left_end = row - vision_r
 
     right_end = self.maze_width - 1
-    if tile[0] + vision_r + 1 < right_end: 
-      right_end = tile[0] + vision_r + 1
+    if row + vision_r + 1 < right_end: 
+      right_end = row + vision_r + 1
 
     bottom_end = self.maze_height - 1
-    if tile[1] + vision_r + 1 < bottom_end: 
-      bottom_end = tile[1] + vision_r + 1
+    if col + vision_r + 1 < bottom_end: 
+      bottom_end = col + vision_r + 1
 
     top_end = 0
-    if tile[1] - vision_r > top_end: 
-      top_end = tile[1] - vision_r 
+    if col - vision_r > top_end: 
+      top_end = col - vision_r 
 
-    nearby_tiles = []
+    nearby_tiles:list[Tuple[int,int]] = []
     for i in range(left_end, right_end): 
       for j in range(top_end, bottom_end): 
         nearby_tiles += [(i, j)]
@@ -268,94 +279,3 @@ class World:
         tile
         ))
     return to_return
-
-  def add_event_from_tile(self, curr_event, tile): 
-    """
-    Add an event triple to a tile.  
-
-    INPUT: 
-      curr_event: Current event triple. 
-        e.g., ('double studio:double studio:bedroom 2:bed', None,
-                None)
-      tile: The tile coordinate of our interest in (x, y) form.
-    OUPUT: 
-      None
-    """
-    self.tiles[tile[1]][tile[0]]["events"].add(curr_event)
-
-
-  def remove_event_from_tile(self, curr_event, tile):
-    """
-    Remove an event triple from a tile.  
-
-    INPUT: 
-      curr_event: Current event triple. 
-        e.g., ('double studio:double studio:bedroom 2:bed', None,
-                None)
-      tile: The tile coordinate of our interest in (x, y) form.
-    OUPUT: 
-      None
-    """
-    curr_tile_ev_cp = self.tiles[tile[1]][tile[0]]["events"].copy()
-    for event in curr_tile_ev_cp: 
-      if event == curr_event:  
-        self.tiles[tile[1]][tile[0]]["events"].remove(event)
-
-
-  def turn_event_from_tile_idle(self, curr_event, tile):
-    curr_tile_ev_cp = self.tiles[tile[1]][tile[0]]["events"].copy()
-    for event in curr_tile_ev_cp: 
-      if event == curr_event:  
-        self.tiles[tile[1]][tile[0]]["events"].remove(event)
-        new_event = (event[0], None, None, None)
-        self.tiles[tile[1]][tile[0]]["events"].add(new_event)
-
-
-  def remove_subject_events_from_tile(self, subject, tile):
-    """
-    Remove an event triple that has the input subject from a tile. 
-
-    INPUT: 
-      subject: "Isabella Rodriguez"
-      tile: The tile coordinate of our interest in (x, y) form.
-    OUPUT: 
-      None
-    """
-    curr_tile_ev_cp = self.tiles[tile[1]][tile[0]]["events"].copy()
-    for event in curr_tile_ev_cp: 
-      if event[0] == subject:  
-        self.tiles[tile[1]][tile[0]]["events"].remove(event)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

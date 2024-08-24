@@ -5,9 +5,9 @@ from collections.abc import Callable
 
 from reverie.backend_server.world.world_objects.WorldObject import WorldObject
 
-def default_object(id:str,name:str,data:dict):
-  return WorldObject(id,name,data)
+def default_object(id:str,data:dict):
+  return WorldObject(id,data)
 
-object_classes:dict[str,Callable[[str,str,dict],WorldObject]] = {
+object_classes:dict[str,Callable[[str,dict],WorldObject]] = {
     'default' : default_object
     }

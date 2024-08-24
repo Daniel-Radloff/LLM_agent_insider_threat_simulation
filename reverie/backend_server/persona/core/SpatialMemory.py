@@ -1,7 +1,7 @@
 from typing import Tuple
 
 from numpy.lib import math
-from reverie.backend_server.World import World
+from reverie.backend_server.world.World import World
 
 class SpatialMemory:
   def __init__(self, spatial_memory:dict, environment:World) -> None:

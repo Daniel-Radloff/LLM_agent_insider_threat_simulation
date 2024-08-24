@@ -5,9 +5,8 @@ class WorldObject:
   '''
   def __init__(self,
                object_id:str,
-               name:str,
                data:dict,
                ) -> None:
     self.__id = object_id 
-    self.__name = name
+    self.__name = data['name']
     self.__data = data
