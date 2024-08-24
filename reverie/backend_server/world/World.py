@@ -6,6 +6,15 @@ Description: Defines the Maze class, which represents the map of the simulated
 world in a 2-dimensional matrix. 
 """
 
+'''
+Important:
+  Currently, the way the World works is a bit wonky, x,y co-ordiantes are used for access 
+  outside of the class like you would expect, but internally the x and y are switched.
+  If you want to modify something or work within the World class for now: use the get_tile
+  method instead of attempting to use the list directly.
+  Soon, this will be refactored into expected behavior.
+'''
+
 # TODO all the pathing is going to be cooked, so once it runs and breaks, fix it.
 from collections.abc import Callable
 import json
@@ -158,124 +167,44 @@ class World:
     return (x, y)
 
 
-  # Review Note:
-  # TODO rename to get_tile_details for clarity and consistency
-  def access_tile(self, tile:Tuple[int,int]): 
+  def get_tile(self, tile:Tuple[int,int]): 
     """
-    Returns the tiles details dictionary that is stored in self.tiles of the 
-    designated x, y location. 
+    Returns the tile stored in self.tiles according to an x, y location. 
 
     INPUT
       tile: The tile coordinate of our interest in (x, y) form.
     OUTPUT
-      The tile detail dictionary for the designated tile. 
-    EXAMPLE OUTPUT
-      Given (58, 9), 
-      self.tiles[9][58] = {'world': 'double studio', 
-            'sector': 'double studio', 'arena': 'bedroom 2', 
-            'game_object': 'bed', 'spawning_location': 'bedroom-2-a', 
-            'collision': False,
-            'events': {('double studio:double studio:bedroom 2:bed',
-                       None, None)}} 
+      The tile at the specified location.
     """
     row,col = tile
     return self.tiles[col][row]
 
-
-  # Note:
-  #   I don't know if im even going to use this, so I will leave it as broken for now
-  def get_tile_path(self, location:Tuple[int,int], level:Literal["sector","arena"]):
-    """
-    Get the tile string address given its coordinate. You designate the level
-    by giving it a string level description. 
-
-    INPUT: 
-      tile: The tile coordinate of our interest in (x, y) form.
-      level: world, sector, arena, or game object
-    OUTPUT
-      The string address for the tile.
-    EXAMPLE OUTPUT
-      Given tile=(58, 9), and level=arena,
-      "double studio:double studio:bedroom 2"
-    """
-    x,y = location
-    tile = self.tiles[y][x]
-    raise NotImplementedError()
-    '''
-    path = f"{tile['world']}"
-    if level == "world": 
-      return path
-    else: 
-      path += f":{tile['sector']}"
-    
-    if level == "sector": 
-      return path
-    else: 
-      path += f":{tile['arena']}"
-
-    if level == "arena": 
-      return path
-    else: 
-      path += f":{tile['game_object']}"
-
-    return path
-    '''
-
-
-  # Review Note:
-  # TODO rename to get_nearby_tile_coordinates for clarity and consistency
-  def get_nearby_tiles(self, center:Tuple[int,int], vision_r):
-    """
-    Given the current tile and vision_r, return a list of tiles that are 
-    within the radius. Note that this implementation looks at a square 
-    boundary when determining what is within the radius. 
-    i.e., for vision_r, returns x's. 
-    x x x x x 
-    x x x x x
-    x x P x x 
-    x x x x x
-    x x x x x
-
-    INPUT: 
-      tile: The tile coordinate of our interest in (x, y) form.
-      vision_r: The radius of the persona's vision. 
-    OUTPUT: 
-      nearby_tiles: a list of tiles that are within the radius. 
-    """
+  def get_surrounding_environment(self,
+                                  center:Tuple[int,int],
+                                  vision_radius:int):
     row,col = center
     left_end = 0
-    if row - vision_r > left_end: 
-      left_end = row - vision_r
+    if row - vision_radius > left_end: 
+      left_end = row - vision_radius
 
     right_end = self.maze_width - 1
-    if row + vision_r + 1 < right_end: 
-      right_end = row + vision_r + 1
+    if row + vision_radius + 1 < right_end: 
+      right_end = row + vision_radius + 1
 
     bottom_end = self.maze_height - 1
-    if col + vision_r + 1 < bottom_end: 
-      bottom_end = col + vision_r + 1
+    if col + vision_radius + 1 < bottom_end: 
+      bottom_end = col + vision_radius + 1
 
     top_end = 0
-    if col - vision_r > top_end: 
-      top_end = col - vision_r 
+    if col - vision_radius > top_end: 
+      top_end = col - vision_radius 
 
-    nearby_tiles:list[Tuple[int,int]] = []
+    nearby_tiles:list[Tile] = []
     for i in range(left_end, right_end): 
       for j in range(top_end, bottom_end): 
-        nearby_tiles += [(i, j)]
-    return nearby_tiles
+        nearby_tiles.append(self.get_tile((i,j)))
 
-  # This function will hopefully replace the get_nearby_tiles() function
-  def get_surrounding_environment(self,
-                                  tile:Tuple[int,int],
-                                  vision_radius:int
-                                  )->list[Tuple[dict,str,Tuple[int,int]]]:
-    nearby_tiles = self.get_nearby_tiles(tile,vision_radius)
-    to_return = []
+    to_return:list[Tile] = []
     for tile in nearby_tiles:
-      to_return.append((
-        self.access_tile(tile),
-        self.get_tile_path(tile,"arena"),
-        tile
-        ))
+      to_return.append(tile)
     return to_return
