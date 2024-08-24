@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import Callable, Dict, Tuple
 from reverie.backend_server.persona.core.Concept import Concept
 from reverie.backend_server.persona.core.Memory import Memory
+from reverie.backend_server.persona.core.Personality import Personality
 from reverie.backend_server.persona.core.social.EmotionRegulator import EmotionalRegulator
 
 from numba import njit
@@ -14,11 +15,14 @@ class ShortTermMemory(Memory):
                time_func:Callable[[],datetime],
                emotion_regulator:EmotionalRegulator,
                short_term:dict[str,str],
+               personality:Personality
                ) -> None:
     try:
       super().__init__(concepts,emotion_regulator,time_func)
       self.__currently = short_term['currently']
       self.__attention_span = int(short_term['attention_span'])
+      # used in reactions and for filtering
+      self.__personality = personality
 
       # Current action
 
@@ -27,37 +31,35 @@ class ShortTermMemory(Memory):
     except TypeError as e:
       raise ValueError(f"Dictionary does not contain correct type:\n {e}")
 
-  def process_events(self,new_events:list):
-    recent_events:list[Tuple[str,str,str]] = [event.spo_summary() for event in self._seq_event]
-    for subject,proposition,obj,desc in new_events:
-      if (subject,proposition,obj) in recent_events:
-        #TODO update the most recently accessed? or maybe we still keep?
-        # Seeing the same thing twice can hold sematic value.
-        continue
+  def process_events(self,new_events:list[str]):
+    recent_events = [event.description() for event in self._seq_event]
+    for desc in new_events:
+      # If the event is related to ourselves, it is assumed to already be registered
+      #   In the event that hypothetically you would want to play out a scenario where
+      #   an agent attacks another agent, then the status of the threat actor must
+      #   not contain the name of the agent they are targeting until the other agent
+      #   is aware of the attack happening.
+      #   This behavior of the status should happen implicitly, but if you consistently.
+      #   into problems, raise an issue on github and link your fork in the issue.
+      if self.__personality.full_name.lower() in desc.lower():
+        raise NotImplementedError()
 
-      # IMPORTANT
-      # The original method from congnitive_modules/observe.py: percieve(persona,maze)
-      #   had a special case for if we encounter a event that is a chat with another agent.
-      #   This case from what it looked like, assumed that our current action was a chat with someone.
-      #   This refactor will assume that if we start a chat, we will register that concept in the
-      #   Method where we start the chat, and therefor, the chat is already assumed to be in our 
-      #   recent events and will thus be ignored.
-      #   
-      #   TODO: should we consider removing if we observe someone talkign to us? where the subject and object are basically switched?
-      #   or is this case implicityly covered by how we register events, do two agents negotiate an agreed upon event name and register both
-      #   their events with the same subject, proposition, and object?
-
-      # TODO: redefine how events are put on the map so that we can differenciate between conversations.
+      if desc in recent_events:
+        #TODO: update the most recently accessed?
+        # Seeing the same thing twice can hold value.
+        raise NotImplementedError()
+      # TODO: We should see if there are similar concepts to the thing
+      #   we saw (something we see reminds us of something else).
       self._add_conceptnode(
           "event",
           self.get_current_time(),
-          subject,
-          proposition,
-          obj,
           desc,
           [],
           )
       # TODO: review how importance triggers work because its not clear yet how this is relevant and if i want to keep or initialize them here like in the initial code
+      # TODO: return embeddings so that we can pass on to long term memory and refresh
+      #   Those memories if there are any relevant memories.
+      raise NotImplementedError()
 
   def _retrieval_score(self, concept: np.ndarray, potential_candidate: Concept) -> Tuple[float,...]:
     @njit

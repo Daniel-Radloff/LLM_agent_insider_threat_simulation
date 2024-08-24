@@ -39,9 +39,6 @@ class Memory(ABC):
         node_type = concept["type"]
         created = datetime.strptime(concept["created"], 
                                              '%Y-%m-%d %H:%M:%S')
-        subject = concept["subject"]
-        proposition = concept["predicate"]
-        obj = concept["object"]
 
         description = concept["description"]
         embedding = concept["embedding"]
@@ -50,9 +47,6 @@ class Memory(ABC):
         
         self._add_conceptnode(node_type,
                               created,
-                              subject,
-                              proposition,
-                              obj,
                               description,
                               impact,
                               previous_chats,
@@ -64,9 +58,6 @@ class Memory(ABC):
   def _add_conceptnode(self, 
                        node_type:Literal["chat","event","thought"],
                        created:datetime,
-                       subject:str,
-                       proposition:str,
-                       obj:str, 
                        description:str, 
                        previous_chats,
                        impact:Union[None,int] = None,
@@ -90,9 +81,6 @@ class Memory(ABC):
     node = Concept(node_id,
                    node_type,
                    created, 
-                   subject,
-                   proposition,
-                   obj, 
                    description,
                    embedding, 
                    impact,

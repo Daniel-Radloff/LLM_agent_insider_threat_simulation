@@ -1,9 +1,6 @@
-from reverie.backend_server.persona.core.LongTermMemory import LongTermMemory
-
 class Personality:
   def __init__(self,
-               personality:dict[str,str],
-               long_term_memory:LongTermMemory) -> None:
+               personality:dict[str,str]) -> None:
     try:
       self.__first_name = personality['first_name']
       self.__last_name = personality['last_name']

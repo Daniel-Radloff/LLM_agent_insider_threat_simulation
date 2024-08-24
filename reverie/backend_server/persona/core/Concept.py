@@ -8,7 +8,6 @@ class Concept:
                node_id:str,
                node_type:Literal["chat","event","thought"],
                created:datetime, 
-               s:str, p:str, o:str,
                description:str, 
                embedding:np.ndarray,
                impact:int,
@@ -18,11 +17,6 @@ class Concept:
 
     self._created = created
     self._last_accessed = self._created
-
-    self._concept_subject = s
-    self._concept_predicate = p
-    self._concept_object = o
-
     self._description = description
     # Maybe change to just the embedding per concept?
     self._embedding = np.array(embedding)
@@ -35,9 +29,7 @@ class Concept:
 
   def __eq__(self, value: object, /) -> bool:
     if isinstance(value, Concept):
-      this_tuple = (self._concept_subject, self._concept_predicate, self._concept_object, self._description)
-      other_tuple = (value._concept_subject, value._concept_predicate, value._concept_object, value._description)
-      if value._created == self._created and this_tuple == other_tuple:
+      if value._created == self._created and self._description == value._description:
         return True
     return False
   
@@ -57,8 +49,8 @@ class Concept:
   def last_accessed(self):
     return self._last_accessed
 
-  def spo_summary(self): 
-    return (self._concept_subject, self._concept_predicate, self._concept_object)
+  def description(self): 
+    return self._description
 
   @property
   def embedding(self):
@@ -67,7 +59,3 @@ class Concept:
   @property
   def impact(self):
     return self._impact
-
-  @property
-  def description(self):
-    return self._description
