@@ -12,8 +12,11 @@ class WorldObject:
       self.__name:str = data['name']
       self.__data = data
       self.__status:str = self.__data['status']
+      self.__qeued_action = ""
     except:
       raise RuntimeError(f'WorldObject:__init__ for object{object_id}. Object source data does not contain required attributes.')
+
+
 
   @property
   def name(self):

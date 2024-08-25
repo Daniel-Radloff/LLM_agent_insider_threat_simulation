@@ -19,7 +19,7 @@ class Eyes:
 
   def observe_environment(self):
     surrounding_environment = self.__environment.get_surrounding_environment(
-        self.__spatial_memory.current_location,
+        (self.__spatial_memory.current_location.x, self.__spatial_memory.current_location.y),
         self.__vision_radius)
 
     observed_events = self.__spatial_memory.process_visual_input(surrounding_environment)
