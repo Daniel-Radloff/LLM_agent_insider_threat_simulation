@@ -17,18 +17,6 @@ class SpatialMemory:
     try:
       self.__current_location:Tile = spatial_memory['current_location']
       self.__environment = environment
-      # Spatial memory is used to remember where most recently:
-      #   Objects, and people are:
-      # TODO: and where events took place?
-
-      # {"object_name" : Tile}
-      # Note: When remembering where things are, 
-      #   never actually check to see if the object is where it was using the Tile
-      # Only explictly evalue the objects contained within a tile in process_visual_input
-      #   or other methods where it makes sense to do so.
-
-      # TODO: How is this initialized?
-      #  the result of initialization (whenever it takes place), should create this structure.
       self.__object_locations:dict[WorldObject,Tile] = spatial_memory['object_locations']
       self.__agent_locations:dict[Agent,Tile] = spatial_memory['agent']
     except:
@@ -64,3 +52,9 @@ class SpatialMemory:
   @property
   def current_location(self):
     return self.__current_location
+
+  def get_known_objects(self):
+    return [obj for obj in self.__object_locations.keys()]
+
+  def get_known_people(self):
+    return [agent for agent in self.__agent_locations.keys()]

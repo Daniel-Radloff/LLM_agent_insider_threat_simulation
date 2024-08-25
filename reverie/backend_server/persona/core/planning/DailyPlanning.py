@@ -8,7 +8,7 @@ the system to be used as data for other methods in different objects.
 '''
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Union
+from typing import Tuple, Union
 
 from reverie.backend_server.persona.core.Concept import Concept
 from reverie.backend_server.persona.core.LongTermMemory import LongTermMemory
@@ -69,11 +69,33 @@ class DailyPlanning:
     pass
 
 
-  def _wake_up_time(self)->datetime:
+  # TODO what if something bad happens, maybe we should be 
+  #   able to rethink how we are gonna approach the day
+  def plan_for_today(self, availible_objects:list[WorldObject]):
     '''
     Must be called at the very begining of a new day
     ie. 00:00
     '''
+    self.__data.wake_up_time = self._wake_up_time()
+    important_points = self._get_important_points()
+    todays_broad_plan = self._get_broad_overview(important_points)
+
+    # Using the basic plan for today we again look for relevant concepts related to each plan.
+    # TODO Get only the most important point for each one, or the general most important points of all of them.
+
+    original_plan = self._detailed_plan('\n'.join(todays_broad_plan))
+    modified_plan = self._induce_variance(original_plan)
+    object_names =  [obj.name for obj in availible_objects]
+    for count, (time_slot, task) in enumerate(modified_plan):
+      next = None
+      if count != len(modified_plan) - 1:
+        next = modified_plan[count][0]
+      new_time,task = self._associate_object_with_task(time_slot,task,next,object_names)
+      self.__data.schedule[new_time] = task
+    #TODO Originally, a thought would be generated here about the plan.
+    # May or may not still do this.
+
+  def _wake_up_time(self)->datetime:
     date = self.__long_term_memory.get_current_time()
     if date.hour != 0 or date.minute != 0:
       raise RuntimeError(f"DailyPlanning.wake_up_time called when time is not 00:00 (start of a new day). Current time is: {date}")
@@ -94,60 +116,32 @@ class DailyPlanning:
                                         validate_hour_minute_time,
                                         fail_safe,
                                         special_instruction=special_instruction)
-    # Validated by validate_hour_minute_time
     hour,minute = map(int,output.split(":"))
-    # return new datetime object with wakeup time.
     return date.replace(hour=hour,minute=minute)
 
-  # TODO what if something bad happens, maybe we should be 
-  #   able to rethink how we are gonna approach the day
-  def plan_for_today(self):
-    # First, relevant memories related to planning are retrieved.
+
+  def _get_important_points(self):
     important_events = self.__short_term_memory._generate_embedding(
         f"{self.__personality.full_name}'s plan for today")
     plan_for_today = self.__short_term_memory._generate_embedding(f"{self.__personality.full_name}'s plan for today.")
-    
     retrieved_memories = self.__short_term_memory.retrieve_relevant_concepts([important_events,plan_for_today])
-
-    # Next, the most relevant concepts are passed into a prompt to determine things we should be aware of when going about our day.
-
-    #Seperating the process into two different calls will be slower but should (i speculate) provide better results.
     event_descriptions = "\n".join([concept.description for concept in retrieved_memories])
 
+    # TODO: refactor into a prompt file because this is disgusting.
     prompt=f"The following statements/memories contain potentialy useful information with regards to your day tommorow:\n{event_descriptions}\n is there anything here of importance that you want to keep in mind while planning your day? Write your response as notes to yourself."
     system_input = [self.__personality.get_summarized_identity()]
     example="Ron the HOD isn't very nice so I should spend as little time around the cafeteria as possible. Boss wants the project done by the end of the week. Im meeting with Sharon at 11:30 for brunch."
     fail_safe = "There is nothing special that demands my attention today."
     special_instruction = "If there is nothing special that demands your attention today, then you can respond with that"
-    important_points = self.__model.run_inference(prompt,
-                                                  [],
-                                                  system_input,
-                                                  example,
-                                                  no_validate,
-                                                  fail_safe,
-                                                  special_instruction=special_instruction)
-    # Next, using our memories and revised notes on what we think we should watch out for,
-    #   we plan out our day according to:
-    #   1. our normal day to day requirements
-    #   2. the revised requirements based on our experiences
-    #   3. the tasks that we meant to complete yesterday but were unable to?
-
-    todays_broad_plan = self.get_broad_overview(important_points)
-    # Using the basic plan for today we again look for relevant concepts related to each plan.
-    # TODO Get only the most important point for each one, or the general most important points of all of them.
-    embeddings = [self.__short_term_memory._generate_embedding(item) for item in todays_broad_plan]
-    most_important_concepts = self.__short_term_memory.retrieve_relevant_concepts(embeddings)
-    most_important_points = [concept.description for concept in most_important_concepts]
-
-    original_plan = self._detailed_plan(
-        '\n'.join(todays_broad_plan),
-        '\n'.join(most_important_points))
-    self.__data.schedule = self._induce_variance(original_plan)
-
-    #TODO Originally, a thought would be generated here about the plan.
-    # May or may not still do this.
-
-  def get_broad_overview(self,recent_knowledge:str,overwrite=False):
+    return self.__model.run_inference(prompt,
+                                      [],
+                                      system_input,
+                                      example,
+                                      no_validate,
+                                      fail_safe,
+                                      special_instruction=special_instruction)
+  
+  def _get_broad_overview(self,recent_knowledge:str,overwrite=False):
     '''
     we plan out our day according to:
     1. our normal day to day requirements
@@ -159,6 +153,7 @@ class DailyPlanning:
       lines = [line.rstrip() for line in response.split("\n")]
       actions = [line.split(")")[1] for line in lines]
       return ",".join(actions)
+
     date =  self.__short_term_memory.get_current_time()
     with open("daily_planning_templates/daily_plan_outline.txt","r") as file:
       prompt = file.read()
@@ -195,38 +190,28 @@ class DailyPlanning:
     return output
 
   def _validate_plan_format(self,response:str, _=""):
-    def validate_time(time:str)->bool:
-      '''
-      Assumes that the time is .strip()'d
-      '''
-      numbers = time.split(':')
-      if len(numbers) != 2:
-        raise ValueError("Time does not contain a ':' character")
-      hours,minutes = numbers
-      if int(hours) < 24 and int(hours) >= 0 and int(minutes) < 60 and int(minutes) >= 0:
-        return True
-      else:
-        raise ValueError(f"Time is malformed '{hours}:{minutes}'")
-
     tasks = [line.rstrip() for line in response.split("\n")]
     for task in tasks:
       parts = task.split("<->")
       if len(parts) != 3:
         raise ValueError(f"Response has malformed task: {task}")
       start,end,_ = parts
-      if validate_time(start.strip()) and validate_time(end.strip()):
+      if validate_hour_minute_time(start.strip()) and validate_hour_minute_time(end.strip()):
         continue
       else:
         raise ValueError(f"Response has malformed task: {task}")
     return response
 
 
-  def _detailed_plan(self,plan_outline:str, important_concepts:str):
+  def _detailed_plan(self,plan_outline:str):
     '''
     Formulates a detailed plan for the agent to follow that guides their
     behavior. This plan is more a prediction, as it includes time
     variances that aim to simulate human behavior.
     '''
+    embeddings = [self.__short_term_memory._generate_embedding(item) for item in plan_outline.split('\n')]
+    most_important_concepts = self.__short_term_memory.retrieve_relevant_concepts(embeddings)
+    most_important_points = [concept.description for concept in most_important_concepts]
     with open("daily_planning_templates/detailed_plan.txt","r") as file:
       prompt = file.read()
     prompt_input = [plan_outline,important_concepts]
@@ -269,7 +254,7 @@ class DailyPlanning:
     determined that placing this into a seperate prompt produces
     more consistent and superiour results
     '''
-    to_return:dict[TimePeriod,Task] = dict()
+    to_return:list[Tuple[TimePeriod,Task]] = []
     with open("daily_planning_templates/introduce_variance.txt","r") as file:
       prompt = file.read()
     prompt_input = [plan]
@@ -319,9 +304,20 @@ get ready for tomorrow's tasks
       new_task = Task(
           desc
           )
-      to_return[time] = new_task
-
+      to_return.append((time,new_task))
     return to_return
+
+  def _associate_object_with_task(self,
+                                  allocated_time_period:TimePeriod,
+                                  task:Task,
+                                  next_time:Union[TimePeriod,None],
+                                  availible_objects:list[str]
+                                  )->Tuple[TimePeriod,Task]:
+    '''
+    this is probably not the best place for this function but oh well.
+    '''
+    
+    raise NotImplementedError()
 
   @property
   def current_task(self):
