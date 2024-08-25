@@ -1,3 +1,7 @@
+'''
+After speaking with a colegue, this memory abstract class may become the single concrete
+memory class. For now, it will remain as is till the project is working.
+'''
 from abc import ABC, abstractmethod
 from datetime import datetime 
 from typing import Callable, Dict, Literal, Tuple, Union

@@ -26,3 +26,7 @@ class WorldObject:
     for more complex objects.
     '''
     return self.__status
+
+  @property
+  def id(self):
+    return self.__id

@@ -22,7 +22,7 @@ class Eyes:
         self.__spatial_memory.current_location,
         self.__vision_radius)
 
-    observed_events = self.__spatial_memory.process_environment(surrounding_environment)
+    observed_events = self.__spatial_memory.process_visual_input(surrounding_environment)
 
     # limit to attention bandwidth
     observed_events = observed_events[:self.__short_term_memory.attention_span]
@@ -30,14 +30,7 @@ class Eyes:
     # create a set of the observed events in the area so that we can filter duplicates
     observed_event_set = set()
     for event in observed_events: 
-      subject, proposition, obj, desc = event
-      if not proposition: 
-        # If the object is not present, then we default the event to "idle".
-        proposition = "is"
-        obj = "idle"
-        desc = "idle"
-      desc = f"{subject.split(':')[-1]} is {desc}"
-      observed_event_set.add((subject, proposition, obj, desc))
+      observed_event_set.add(event)
     # Process the events that are happening around us
 
       # We retrieve the latest persona.scratch.retention events. If there is  
