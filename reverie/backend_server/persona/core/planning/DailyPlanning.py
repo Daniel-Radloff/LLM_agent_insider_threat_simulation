@@ -24,33 +24,20 @@ class TimePeriod:
   end:datetime
 
   def __contains__(self, time:datetime) ->bool:
-    return self.start <= time <= self.end
+    return self.start <= time < self.end
 
 # ඞ
-@dataclass(frozen=True)
+@dataclass
 class Task:
   description:str
-  _target:Union[WorldObject,None] = field(default=None)
-
-  @property
-  def target(self):
-    return self._target
-  
-  # Reason why it should only be called once is so that the
-  #   agent can be penalized/feel stupid/feel bad for making
-  #   a mistake.
-  @target.setter
-  def set_target(self, target:WorldObject):
-    if self.target == None:
-      object.__setattr__(self, '_target',target)
-    else:
-      raise RuntimeError("set_target, should under no circumstances be called twice")
+  target:Union[WorldObject,None] = field(default=None)
 
 @dataclass
 class DailyPlanningData:
   wake_up_time:datetime
   # This includes variance, but is still subject to change.
-  basic_schedule_for_today:dict[TimePeriod,Task]
+  # This must be sorted
+  schedule:dict[TimePeriod,Task]
   incompleted_tasks:list[Task]
 
 
@@ -145,21 +132,22 @@ class DailyPlanning:
     #   2. the revised requirements based on our experiences
     #   3. the tasks that we meant to complete yesterday but were unable to?
 
-    todays_broad_plan = self.summarize_day_plan(important_points)
+    todays_broad_plan = self.get_broad_overview(important_points)
     # Using the basic plan for today we again look for relevant concepts related to each plan.
     # TODO Get only the most important point for each one, or the general most important points of all of them.
     embeddings = [self.__short_term_memory._generate_embedding(item) for item in todays_broad_plan]
     most_important_concepts = self.__short_term_memory.retrieve_relevant_concepts(embeddings)
     most_important_points = [concept.description for concept in most_important_concepts]
 
-    self.__data.basic_schedule_for_today = self._detailed_plan(
+    original_plan = self._detailed_plan(
         '\n'.join(todays_broad_plan),
         '\n'.join(most_important_points))
+    self.__data.schedule = self._induce_variance(original_plan)
 
     #TODO Originally, a thought would be generated here about the plan.
     # May or may not still do this.
 
-  def summarize_day_plan(self,recent_knowledge:str,overwrite=False):
+  def get_broad_overview(self,recent_knowledge:str,overwrite=False):
     '''
     we plan out our day according to:
     1. our normal day to day requirements
@@ -206,46 +194,46 @@ class DailyPlanning:
       self.__standard_tasks = output
     return output
 
+  def _validate_plan_format(self,response:str, _=""):
+    def validate_time(time:str)->bool:
+      '''
+      Assumes that the time is .strip()'d
+      '''
+      numbers = time.split(':')
+      if len(numbers) != 2:
+        raise ValueError("Time does not contain a ':' character")
+      hours,minutes = numbers
+      if int(hours) < 24 and int(hours) >= 0 and int(minutes) < 60 and int(minutes) >= 0:
+        return True
+      else:
+        raise ValueError(f"Time is malformed '{hours}:{minutes}'")
+
+    tasks = [line.rstrip() for line in response.split("\n")]
+    for task in tasks:
+      parts = task.split("<->")
+      if len(parts) != 3:
+        raise ValueError(f"Response has malformed task: {task}")
+      start,end,_ = parts
+      if validate_time(start.strip()) and validate_time(end.strip()):
+        continue
+      else:
+        raise ValueError(f"Response has malformed task: {task}")
+    return response
+
+
   def _detailed_plan(self,plan_outline:str, important_concepts:str):
     '''
     Formulates a detailed plan for the agent to follow that guides their
     behavior. This plan is more a prediction, as it includes time
     variances that aim to simulate human behavior.
     '''
-    def validate(response:str,_="")->str:
-      def validate_time(time:str)->bool:
-        '''
-        Assumes that the time is .strip()'d
-        '''
-        numbers = time.split(':')
-        if len(numbers) != 2:
-          raise ValueError("Time does not contain a ':' character")
-        hours,minutes = numbers
-        if int(hours) < 24 and int(hours) >= 0 and int(minutes) < 60 and int(minutes) >= 0:
-          return True
-        else:
-          raise ValueError(f"Time is malformed '{hours}:{minutes}'")
-
-      tasks = [line.rstrip() for line in response.split("\n")]
-      for task in tasks:
-        parts = task.split("<->")
-        if len(parts) != 3:
-          raise ValueError(f"Response has malformed task: {task}")
-        start,end,_ = parts
-        if validate_time(start.strip()) and validate_time(end.strip()):
-          continue
-        else:
-          raise ValueError(f"Response has malformed task: {task}")
-      return response
-
-    to_return:dict[TimePeriod,Task] = dict()
     with open("daily_planning_templates/detailed_plan.txt","r") as file:
       prompt = file.read()
     prompt_input = [plan_outline,important_concepts]
     example = '''
 07:00 <-> 07:15 <-> Wake up and get out of bed
 07:15 <-> 07:30 <-> Morning workout: Stretching exercises
-07:30 <-> 07:45 <-> Morning workout: Cardio session
+07:30 <-> 08:00 <-> Morning workout: Cardio session
 08:00 <-> 08:30 <-> Make and eat breakfast
 08:30 <-> 09:00 <-> Commute to the office
 09:00 <-> 09:30 <-> Team meeting: Project status updates
@@ -266,20 +254,25 @@ class DailyPlanning:
     '''
     # no failsafe for this stage
     failsafe = 'FAILURE'
-    response = self.__model.run_inference(prompt,
-                                        prompt_input,
-                                        [self.__personality.get_summarized_identity()],
-                                        example,
-                                        validate,
-                                        failsafe,
-                                        )
+    return self.__model.run_inference(prompt,
+                                      prompt_input,
+                                      [self.__personality.get_summarized_identity()],
+                                      example,
+                                      self._validate_plan_format,
+                                      failsafe,
+                                      )
 
-    # Introduce variance into the response, through testing, it has been
-    #   determined that placing this into a seperate prompt produces
-    #   more consistent and superiour results
+
+  def _induce_variance(self,plan:str):
+    '''
+    Introduce variance into the response, through testing, it has been
+    determined that placing this into a seperate prompt produces
+    more consistent and superiour results
+    '''
+    to_return:dict[TimePeriod,Task] = dict()
     with open("daily_planning_templates/introduce_variance.txt","r") as file:
       prompt = file.read()
-    prompt_input = [response]
+    prompt_input = [plan]
     example = '''
 06:25 <-> 07:00 <-> Wake up and complete morning routine
 07:02 <-> 07:17 <-> Eat breakfast
@@ -291,17 +284,16 @@ feedback, and collaborate with team members
 11:05 <-> 11:20 <-> Break to grab a snack
 11:17 <-> 12:07 <-> Review and finalize the project proposal: Revise sections based
 on team feedback and comments from previous version
-12:10 <-> 13:00 <-> Lunch break (ended up being 50 minutes instead of 1 hour)
+12:10 <-> 13:00 <-> Lunch break
 13:02 <-> 14:32 <-> Continue working on the weekly report: Refine data analysis, add
 visualizations, and make any necessary changes to draft sections
 14:35 <-> 15:05 <-> Break and review project proposal for finalization
 15:10 <-> 16:30 <-> Finalize and submit the project proposal: Make sure all
-requirements are met and document is perfect before submission (ended up taking
-longer than expected)
+requirements are met and document is perfect before submission
 16:32 <-> 17:00 <-> Wrap up any remaining tasks: Respond to urgent emails, update
 project management tool, and make sure everything is up-to-date
 17:05 <-> 18:10 <-> Relax and prepare for the next day: Take a break, recharge, and
-get ready for tomorrow's tasks (ended up being longer than expected)
+get ready for tomorrow's tasks
     '''
     # no failsafe for this stage
     failsafe = 'FAILURE'
@@ -310,14 +302,14 @@ get ready for tomorrow's tasks (ended up being longer than expected)
                                         prompt_input,
                                         [self.__personality.get_summarized_identity()],
                                         example,
-                                        validate,
+                                        self._validate_plan_format,
                                         failsafe,
                                         )
 
     tasks = [line.strip() for line in response.split('\n')]
+    current_time = self.__short_term_memory.get_current_time()
     for task in tasks:
       start,end,desc = [component.strip() for component in task.split('<->')]
-      current_time = self.__short_term_memory.get_current_time()
       start_hour,start_minute = map(int, start.split(":"))
       end_hour,end_minute = map(int,end.split(":"))
       time = TimePeriod(
@@ -330,3 +322,23 @@ get ready for tomorrow's tasks (ended up being longer than expected)
       to_return[time] = new_task
 
     return to_return
+
+  @property
+  def current_task(self):
+    '''
+    Returns the first task for which the current_time is
+    with in the bounds of the tasks TimePeriod.
+    '''
+    for time,task in self.__data.schedule.items():
+      if self. __short_term_memory.get_current_time() in time:
+        return task
+
+  @property
+  def next_task(self):
+    '''
+    Returns the first task for which the current_time is
+    with in the bounds of the tasks TimePeriod.
+    '''
+    for time,task in self.__data.schedule.items():
+      if self. __short_term_memory.get_current_time() in time:
+        return task
