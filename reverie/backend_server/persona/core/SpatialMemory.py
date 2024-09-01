@@ -54,7 +54,10 @@ class SpatialMemory:
     return self.__current_location
 
   def get_known_objects(self):
-    return [obj for obj in self.__object_locations.keys()]
+    return [(obj,(location.x,location.y))for obj,location in self.__object_locations.items()]
 
   def get_known_people(self):
-    return [agent for agent in self.__agent_locations.keys()]
+    return [(agent,(location.x,location.y)) for agent,location in self.__agent_locations.items()]
+
+  def get_distance_from_position(self,):
+

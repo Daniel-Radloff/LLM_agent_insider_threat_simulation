@@ -14,6 +14,7 @@ from reverie.backend_server.persona.core.Concept import Concept
 from reverie.backend_server.persona.core.LongTermMemory import LongTermMemory
 from reverie.backend_server.persona.core.Personality import Personality
 from reverie.backend_server.persona.core.ShortTermMemory import ShortTermMemory
+from reverie.backend_server.persona.core.SpatialMemory import SpatialMemory
 from reverie.backend_server.persona.core.helpers import no_validate, validate_hour_minute_time
 from reverie.backend_server.persona.models.model import Model
 from reverie.backend_server.world.world_objects.WorldObject import WorldObject
@@ -37,7 +38,7 @@ class DailyPlanningData:
   wake_up_time:datetime
   # This includes variance, but is still subject to change.
   # This must be sorted
-  schedule:dict[TimePeriod,Task]
+  schedule:list[Tuple[TimePeriod,Task]]
   incompleted_tasks:list[Task]
 
 
@@ -56,6 +57,7 @@ class DailyPlanning:
                personality:Personality,
                long_term_memory:LongTermMemory,
                short_term_memory:ShortTermMemory,
+               spatial_memory:SpatialMemory,
                standard_tasks:list[str],
                data: DailyPlanningData,
                previous_days_data:DailyPlanningData) -> None:
@@ -63,6 +65,7 @@ class DailyPlanning:
     self.__personality  = personality
     self.__long_term_memory = long_term_memory
     self.__short_term_memory = short_term_memory
+    self.__spatial_memory = spatial_memory
     self.__standard_tasks = standard_tasks
     self.__data = data
     self.__previous_day = previous_days_data
@@ -71,10 +74,14 @@ class DailyPlanning:
 
   # TODO what if something bad happens, maybe we should be 
   #   able to rethink how we are gonna approach the day
-  def plan_for_today(self, availible_objects:list[WorldObject]):
+  def plan_for_today(self):
     '''
     Must be called at the very begining of a new day
     ie. 00:00
+
+    TODO: this function is very messy and really long, there must
+    be a better way to do this or consolidate things but for now
+    'it is what it is'.
     '''
     self.__data.wake_up_time = self._wake_up_time()
     important_points = self._get_important_points()
@@ -85,12 +92,11 @@ class DailyPlanning:
 
     original_plan = self._detailed_plan('\n'.join(todays_broad_plan))
     modified_plan = self._induce_variance(original_plan)
-    object_names =  [obj.name for obj in availible_objects]
     for count, (time_slot, task) in enumerate(modified_plan):
       next = None
       if count != len(modified_plan) - 1:
         next = modified_plan[count][0]
-      new_time,task = self._associate_object_with_task(time_slot,task,next,object_names)
+      new_time,task = self._associate_object_with_task(time_slot,task,next)
       self.__data.schedule[new_time] = task
     #TODO Originally, a thought would be generated here about the plan.
     # May or may not still do this.
@@ -214,7 +220,7 @@ class DailyPlanning:
     most_important_points = [concept.description for concept in most_important_concepts]
     with open("daily_planning_templates/detailed_plan.txt","r") as file:
       prompt = file.read()
-    prompt_input = [plan_outline,important_concepts]
+    prompt_input = [plan_outline,'\n'.join(most_important_points)]
     example = '''
 07:00 <-> 07:15 <-> Wake up and get out of bed
 07:15 <-> 07:30 <-> Morning workout: Stretching exercises
@@ -284,12 +290,11 @@ get ready for tomorrow's tasks
     failsafe = 'FAILURE'
       
     response = self.__model.run_inference(prompt,
-                                        prompt_input,
-                                        [self.__personality.get_summarized_identity()],
-                                        example,
-                                        self._validate_plan_format,
-                                        failsafe,
-                                        )
+                                          prompt_input,
+                                          [self.__personality.get_summarized_identity()],
+                                          example,
+                                          self._validate_plan_format,
+                                          failsafe)
 
     tasks = [line.strip() for line in response.split('\n')]
     current_time = self.__short_term_memory.get_current_time()
@@ -307,17 +312,61 @@ get ready for tomorrow's tasks
       to_return.append((time,new_task))
     return to_return
 
+  # TODO, this funciton for now just returns the object, it doesn't adjust times
+  # based on the object distance etc.
+  # TODO, this should maybe be used later down the line instead of when the
+  # tasks are initialized.
   def _associate_object_with_task(self,
                                   allocated_time_period:TimePeriod,
                                   task:Task,
                                   next_time:Union[TimePeriod,None],
-                                  availible_objects:list[str]
                                   )->Tuple[TimePeriod,Task]:
     '''
     this is probably not the best place for this function but oh well.
+    What needs to happen is, we need to look at the time allocated for us, and also look at the time when the next task is planned to start.
     '''
+    ''' 
+    i send them for now to the LLM in a prompt asking it which object it wants to use.
+        we have times and descriptions.
+        and we should be able to return them. (lets return them as a tuple)
+
+        Should I add distances? distances in minutes?
+        (That way, i can account for distance during the schedule process.)
+    once it decides on the object, I associate the task with the object.
+    '''
+    availible_objects = self.__spatial_memory.get_known_objects()
+    current_location = self.__spatial_memory.current_location
+    object_names = [obj[0].name for obj in availible_objects]
+    def validate(response:str,_:str)->str:
+      compare = response.strip()
+      if compare in object_names:
+        return compare
+      else:
+        raise ValueError("Response does not correspond with one of the availible objects")
+
+    with open("daily_planning_templates/associate_object_with_task.txt","r") as file:
+      prompt = file.read()
+      prompt_input = [task.description,object_names]
+    example_response = object_names[0]
+    special_instruction = "If there is no relevant object (such as if the task requires a talk in person with someone else), write: 'None' as your response."
+    failsafe = "None"
+
+    response = self.__model.run_inference(prompt,
+                                          prompt_input,
+                                          [self.__personality.get_summarized_identity()],
+                                          example_response,
+                                          validate,
+                                          failsafe,
+                                          special_instruction=special_instruction)
     
-    raise NotImplementedError()
+    # TODO: Impliment some kind of movement constant to calculate travel distances.
+    if response == "None":
+      raise NotImplementedError()
+    else:
+      index = object_names.index(response)
+      selected_object = availible_objects[index][0]
+      task.target = selected_object
+      return (allocated_time_period, task)
 
   @property
   def current_task(self):
