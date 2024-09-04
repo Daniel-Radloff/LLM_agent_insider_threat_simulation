@@ -20,6 +20,7 @@ from collections.abc import Callable
 import json
 from typing import Any, Literal, Self, Tuple, Union
 import math
+import itertools
 
 from global_methods import *
 from reverie.backend_server.world.world_objects.ObjectList import object_classes
@@ -111,12 +112,12 @@ class Tile:
 
 class World: 
   def __init__(self, maze_name): 
-    self.maze_name = maze_name
+    self._maze_name = maze_name
     with json.load(open(f"{env_matrix}/maze_meta_info.json")) as meta_info:
-      self.maze_width = int(meta_info["maze_width"])
-      self.maze_height = int(meta_info["maze_height"])
+      self._maze_length = int(meta_info["maze_length"])
+      self._maze_width = int(meta_info["maze_width"])
         # <sq_tile_size> denotes the pixel height/width of a tile. 
-      self.sq_tile_size = int(meta_info["sq_tile_size"])
+      self._sq_tile_size = int(meta_info["sq_tile_size"])
 
 
     def csv_to_list(location:str)->list[list[str]]:
@@ -133,11 +134,11 @@ class World:
 
     sb_rows = csv_to_list(f"{blocks_folder}/sector_blocks.csv")
     sb_dict = dict()
-    for i in sb_rows: sb_dict[i[0]] = i[-1] 
+    for y in sb_rows: sb_dict[y[0]] = y[-1] 
     
     ab_rows = csv_to_list(f"{blocks_folder}/arena_blocks.csv")
     ab_dict = dict()
-    for i in ab_rows: ab_dict[i[0]] = i[-1]
+    for y in ab_rows: ab_dict[y[0]] = y[-1]
     
     game_object_directory = f"{blocks_folder}/game_object_blocks"
 
@@ -154,7 +155,7 @@ class World:
 
     slb_rows = csv_to_list(f"{blocks_folder}/spawning_location_blocks.csv")
     slb_dict = dict()
-    for i in slb_rows: slb_dict[i[0]] = i[-1]
+    for y in slb_rows: slb_dict[y[0]] = y[-1]
 
     # Revision Comments:
     # The world is represented as a big 2D array, 
@@ -170,28 +171,28 @@ class World:
     game_object_maze = csv_to_list(f"{maze_folder}/game_object_maze.csv")
     spawning_location_maze = csv_to_list(f"{maze_folder}/spawning_location_maze.csv")
 
-    self.tiles:list[list[Tile]] = []
-    for i in range(self.maze_height): 
+    self.__tiles:list[list[Tile]] = []
+    for x in range(self._maze_width):
       row:list[Tile] = []
-      for j in range(self.maze_width):
-        sector = sb_dict.get(sector_maze[i][j],"")
-        arena = ab_dict.get(arena_maze[i][j],"")
+      for y in range(self._maze_length):
+        sector = sb_dict.get(sector_maze[x][y],"")
+        arena = ab_dict.get(arena_maze[x][y],"")
         # TODO: Refactor game object maze so that multiple objects can be stored per tile
         # TODO: game_object_maze must have its id's validated before we assign, for now this will crash.
-        game_object = gob_dict[game_object_maze[i][j]]
-        spawning_location = slb_dict.get(spawning_location_maze[i][j],"")
-        if collision_maze[i][j] == "0": 
+        game_object = gob_dict[game_object_maze[x][y]]
+        spawning_location = slb_dict.get(spawning_location_maze[x][y],"")
+        if collision_maze[x][y] == "0": 
           collide = False
         else:
           collide = True
 
         # Note: im keeping the tile orientation the same, 
         #   don't want to cause issues.
-        tile = Tile(sector,arena,(i,j),collide,{game_object_maze[i][j] : game_object})
+        tile = Tile(sector,arena,(x,y),collide,{game_object_maze[x][y] : game_object})
 
         # Note: Events used to be stored in the tile. Now: objects and agents should have a status, and the tile will emit those statuses as events.
         row += [tile]
-      self.tiles += [row]
+      self.__tiles += [row]
 
   # Review Notes:
   # Surely this is frontend related?
@@ -208,8 +209,8 @@ class World:
     EXAMPLE OUTPUT 
       Given (1600, 384), outputs (50, 12)
     """
-    x = math.ceil(px_coordinate[0]/self.sq_tile_size)
-    y = math.ceil(px_coordinate[1]/self.sq_tile_size)
+    x = math.ceil(px_coordinate[0]/self._sq_tile_size)
+    y = math.ceil(px_coordinate[1]/self._sq_tile_size)
     return (x, y)
 
 
@@ -222,35 +223,31 @@ class World:
     OUTPUT
       The tile at the specified location.
     """
-    row,col = tile
-    return self.tiles[col][row]
+    x,y = tile
+    return self.__tiles[x][y]
 
   def get_surrounding_environment(self,
                                   center:Tuple[int,int],
                                   vision_radius:int):
-    row,col = center
-    left_end = 0
-    if row - vision_radius > left_end: 
-      left_end = row - vision_radius
+    x,y = center
+    min_x = 0
+    if x - vision_radius > min_x: 
+      min_x = x - vision_radius
 
-    right_end = self.maze_width - 1
-    if row + vision_radius + 1 < right_end: 
-      right_end = row + vision_radius + 1
+    max_x = self._maze_width - 1
+    if x + vision_radius + 1 < max_x: 
+      max_x = x + vision_radius + 1
 
-    bottom_end = self.maze_height - 1
-    if col + vision_radius + 1 < bottom_end: 
-      bottom_end = col + vision_radius + 1
+    min_y = 0
+    if y - vision_radius > min_y: 
+      min_y = y - vision_radius 
 
-    top_end = 0
-    if col - vision_radius > top_end: 
-      top_end = col - vision_radius 
+    max_y = self._maze_length - 1
+    if y + vision_radius + 1 < max_y: 
+      max_y = y + vision_radius + 1
 
-    nearby_tiles:list[Tile] = []
-    for i in range(left_end, right_end): 
-      for j in range(top_end, bottom_end): 
-        nearby_tiles.append(self.get_tile((i,j)))
+    return list(itertools.chain.from_iterable(self.__tiles[min_x:max_x][min_y:max_y]))
 
-    to_return:list[Tile] = []
-    for tile in nearby_tiles:
-      to_return.append(tile)
-    return to_return
+  @property
+  def dimentions(self):
+    return (self._maze_length,self._maze_width)
