@@ -4,7 +4,7 @@ class Personality:
     try:
       self.__first_name = personality['first_name']
       self.__last_name = personality['last_name']
-      self.__age = int(personality['age'])
+      self.__age = personality['age']
       self.__innate_traits = personality['innate_traits']
       self.__lifestyle = personality['lifestyle']
       self.__learned_traits = personality['learned_traits']

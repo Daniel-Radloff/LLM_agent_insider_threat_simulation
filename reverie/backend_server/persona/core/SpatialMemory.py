@@ -23,7 +23,7 @@ class SpatialMemory:
       self.__current_location:Tile = spatial_memory['current_location']
       self.__environment = environment
       self.__object_locations:dict[WorldObject,Tile] = spatial_memory['object_locations']
-      self.__agent_locations:dict[Agent,Tile] = spatial_memory['agent']
+      self.__agent_locations:dict[str,Tile] = spatial_memory['agent']
       self.__current_path:List[Tile] = []
     except:
       raise ValueError("Dictionary does not contain expected value")
@@ -41,7 +41,7 @@ class SpatialMemory:
         for game_object in game_objects:
           self.__object_locations[game_object] = tile
         for agent in agents:
-          self.__agent_locations[agent] = tile
+          self.__agent_locations[agent.name] = tile
         # This calculates the distance between the persona's current tile, 
         # and the target tile.
         dist = math.dist([tile.x, tile.x], 
