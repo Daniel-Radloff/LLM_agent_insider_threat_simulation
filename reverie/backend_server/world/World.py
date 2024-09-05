@@ -66,6 +66,18 @@ class Tile:
     self.__agents:list[Agent] = []
     # TODO see if we can store agents in the tiles, but I suspect there will be a circular dependency
 
+  def is_in_same_arena(self,to_compare:Self):
+    if self.__sector == to_compare.__sector:
+      if self.__arena == to_compare.__arena:
+        return True
+    return False
+
+  def _add_agent(self,agent:Agent):
+    self.__agents.append(agent)
+
+  def _remove_agent(self,agent:Agent):
+    self.__agents.remove(agent)
+
   @property
   def sector(self):
     return self.__sector
@@ -107,12 +119,6 @@ class Tile:
   @property
   def wall(self):
     return self.__colidable
-
-  def is_in_same_arena(self,to_compare:Self):
-    if self.__sector == to_compare.__sector:
-      if self.__arena == to_compare.__arena:
-        return True
-    return False
 
 
 class World: 
