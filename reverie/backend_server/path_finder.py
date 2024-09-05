@@ -32,6 +32,7 @@ def path_finder_v2(maze, start, end, collision_block_char, verbose=False):
           if col<len(blind_maze[row])-1 and blind_maze[row][col+1] == 0 and maze[row][col+1] == 0:
              blind_maze[row][col+1] = step_number + 1
 
+  # this can be reworked
   new_maze = []
   for row in maze: 
     new_row = []

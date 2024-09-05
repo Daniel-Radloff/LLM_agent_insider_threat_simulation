@@ -5,6 +5,7 @@ File: maze.py
 Description: Defines the Maze class, which represents the map of the simulated
 world in a 2-dimensional matrix. 
 """
+import numpy as np
 
 '''
 Important:
@@ -103,6 +104,10 @@ class Tile:
 
     return to_return
 
+  @property
+  def wall(self):
+    return self.__colidable
+
   def is_in_same_arena(self,to_compare:Self):
     if self.__sector == to_compare.__sector:
       if self.__arena == to_compare.__arena:
@@ -180,7 +185,6 @@ class World:
         # TODO: Refactor game object maze so that multiple objects can be stored per tile
         # TODO: game_object_maze must have its id's validated before we assign, for now this will crash.
         game_object = gob_dict[game_object_maze[x][y]]
-        spawning_location = slb_dict.get(spawning_location_maze[x][y],"")
         if collision_maze[x][y] == "0": 
           collide = False
         else:
@@ -191,8 +195,8 @@ class World:
         tile = Tile(sector,arena,(x,y),collide,{game_object_maze[x][y] : game_object})
 
         # Note: Events used to be stored in the tile. Now: objects and agents should have a status, and the tile will emit those statuses as events.
-        row += [tile]
-      self.__tiles += [row]
+        row.append(tile)
+      self.__tiles.append(row)
 
   # Review Notes:
   # Surely this is frontend related?
@@ -250,4 +254,13 @@ class World:
 
   @property
   def dimentions(self):
-    return (self._maze_length,self._maze_width)
+    return (self._maze_width,self._maze_length)
+
+  @property
+  def collision_map(self):
+    collision_map = np.ones(self.dimentions, dtype=np.int32)
+    for x,row in enumerate(self.__tiles):
+      for y,tile in enumerate(row):
+        if tile.wall:
+          collision_map[x][y] = 0
+    return collision_map
