@@ -4,8 +4,7 @@ Author: Joon Sung Park (joonspk@stanford.edu)
 File: path_finder.py
 Description: Implements various path finding functions for generative agents.
 Some of the functions are defunct. 
-"""
-import numpy as np
+,spatial_memory:SpatialMemory"""
 
 # Review Note:
 # Removing unused code

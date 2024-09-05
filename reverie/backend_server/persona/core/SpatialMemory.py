@@ -5,12 +5,17 @@ in favor for conceptualizing the entire world and all information about it withi
 Concept objects.
 For now, this class will remain just to get the project to a workable state.
 '''
-from typing import Tuple
+from typing import List, Tuple
 
+import numpy as np
 from numpy.lib import math
 from reverie.backend_server.persona.Agent import Agent
 from reverie.backend_server.world.World import Tile, World
 from reverie.backend_server.world.world_objects.WorldObject import WorldObject
+
+from pathfinding.core.diagonal_movement import DiagonalMovement
+from pathfinding.core.grid import Grid
+from pathfinding.finder.a_star import AStarFinder
 
 class SpatialMemory:
   def __init__(self, spatial_memory:dict, environment:World) -> None:
@@ -19,6 +24,7 @@ class SpatialMemory:
       self.__environment = environment
       self.__object_locations:dict[WorldObject,Tile] = spatial_memory['object_locations']
       self.__agent_locations:dict[Agent,Tile] = spatial_memory['agent']
+      self.__current_path:List[Tile] = []
     except:
       raise ValueError("Dictionary does not contain expected value")
     raise NotImplementedError()
@@ -48,6 +54,29 @@ class SpatialMemory:
     events_in_observable_environment.sort(key=lambda pair: pair[0])
     return [event for _,event in events_in_observable_environment]
 
+
+  def _path_finding(self,target:Tile):
+    collision_maze = Grid(matrix=self.__environment.collision_map.tolist())
+    current_position = collision_maze.node(
+        self.__current_location.x, 
+        self.__current_location.y)
+    target_position = collision_maze.node(target.x, target.y)
+    # optimal movement, we should probably make it more 
+    # inefficient some how to make the movements more human, 
+    # or just design the map in a way that its more human
+    a_star = AStarFinder(diagonal_movement=DiagonalMovement.always)
+    path,_ = a_star.find_path(current_position,target_position,collision_maze)
+    path_co_ordinates:list[tuple[int,int]] = [(node.x,node.y) for node in path]
+    path_co_ordinates.reverse()
+    self.__current_path = []
+    for tile in path_co_ordinates:
+      self.__current_path.append(self.__environment.get_tile(tile))
+
+  def get_next_step(self)->Tile|None:
+    if self.__current_path == []:
+      return None
+    else:
+      return self.__current_path.pop()
 
   @property
   def current_location(self):
