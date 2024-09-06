@@ -1,3 +1,4 @@
+from datetime import datetime
 import json
 from reverie.backend_server.world.World import Tile, World
 from reverie.backend_server.world.world_objects.WorldObject import WorldObject
@@ -35,6 +36,9 @@ class WorldFactory:
       world_name = meta_info['name']
       map_length = int(meta_info["map_length"])
       map_width = int(meta_info["map_width"])
+
+      time_format = "%Y-%m-%d %H:%M:%S"
+      world_time = datetime.strptime(meta_info['world_time'],time_format)
 
     blocks_folder = f"{location}/blocks"
     sector_info = json.load(open(f"{blocks_folder}/sectors.json",'r'))
@@ -77,7 +81,7 @@ class WorldFactory:
       tiles.append(row)
 
     # Create world
-    return World(world_name,map_width,map_length,tiles)
+    return World(world_name,map_width,map_length,tiles,world_time)
 
   def __create_game_objects(self,game_object_info:dict[str,dict])->dict[str,WorldObject]:
     to_return:dict = {}

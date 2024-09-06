@@ -5,6 +5,7 @@ File: maze.py
 Description: Defines the Maze class, which represents the map of the simulated
 world in a 2-dimensional matrix. 
 """
+from datetime import datetime
 import numpy as np
 
 '''
@@ -117,11 +118,12 @@ class Tile:
 
 
 class World: 
-  def __init__(self, world_name:str,width:int,length:int,tiles:list[list[Tile]]):
+  def __init__(self, world_name:str,width:int,length:int,tiles:list[list[Tile]],time:datetime):
     self._maze_name = world_name
     self._maze_length = length
     self._maze_width = width
     self.__tiles = tiles
+    self.__world_time = time
 
   def get_tile(self, tile:Tuple[int,int]): 
     """
