@@ -94,16 +94,15 @@ class Memory(ABC):
     # Review Note:
     # its an insert because the items closest to the start are assumed to be the items most recently added, but this is irrelevant because nodes are ranked on when last they were accessed, not when they were added.
 
-    getattr(self, f"seq_{node_type}").insert(0,node)
+    getattr(self, f"_seq_{node_type}").insert(0,node)
     keywords = [i.lower() for i in node.keywords]
     for kw in keywords: 
-      kw_list = getattr(self, f"kw_to_{node_type}")
+      kw_list = getattr(self, f"_kw_to_{node_type}")
       if kw in kw_list:
         kw_list[kw].insert(0,node)
       else: 
         kw_list[kw] = [node]
     self._id_to_node[node_id] = node 
-
     return node
 
   def _remove_node(self,node_id:str):

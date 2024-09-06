@@ -32,7 +32,7 @@ class ShortTermMemory(Memory):
       raise ValueError(f"Dictionary does not contain correct type:\n {e}")
 
   def process_events(self,new_events:list[str]):
-    recent_events = [event.description() for event in self._seq_event]
+    recent_events = [event.description for event in self._seq_event]
     for desc in new_events:
       # If the event is related to ourselves, it is assumed to already be registered
       #   In the event that hypothetically you would want to play out a scenario where
