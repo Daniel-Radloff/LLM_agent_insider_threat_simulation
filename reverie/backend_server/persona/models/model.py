@@ -41,10 +41,16 @@ Often, prompts will ask you how you would react in different situations, or how 
 
   @abstractmethod
   def __format_final_prompt(self,user_prompt:str,system_prompt:str)->dict[str,str]:
+    '''
+    This is where the json body of the prompt should be specified.
+    '''
     pass
 
   @abstractmethod
   def __call_model(self,prompt_arguments:dict)->str:
+    '''
+    This is where the request to the model should happen.
+    '''
     pass
 
   def run_inference(self,
