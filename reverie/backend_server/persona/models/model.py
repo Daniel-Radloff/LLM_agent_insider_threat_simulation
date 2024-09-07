@@ -19,7 +19,6 @@ Often, prompts will ask you how you would react in different situations, or how 
 
   def __fill_in_prompt(self,prompt:str, prompt_parameters:list)->str:
     '''
-    Loads a prompt from a relative file location and fills in parameters from provided list.
     Throws ValueError if list does not fill in all the inputs in the prompt.
     '''
     # For all the files, there is an optional comment section describing what the inputs do

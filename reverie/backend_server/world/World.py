@@ -163,6 +163,10 @@ class World:
   def dimentions(self):
     return (self._maze_width,self._maze_length)
 
+  @property 
+  def current_time(self):
+    return self.__world_time
+
   @property
   def collision_map(self):
     collision_map = np.ones(self.dimentions, dtype=np.int32)

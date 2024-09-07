@@ -11,13 +11,13 @@ import numpy as np
 
 class ShortTermMemory(Memory):
   def __init__(self,
-               concepts:dict, 
+               short_term:dict,
                time_func:Callable[[],datetime],
                emotion_regulator:EmotionalRegulator,
-               short_term:dict[str,str],
                personality:Personality
                ) -> None:
     try:
+      concepts = short_term['concepts']
       super().__init__(concepts,emotion_regulator,time_func)
       self.__currently = short_term['currently']
       self.__attention_span = int(short_term['attention_span'])
