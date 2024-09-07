@@ -3,6 +3,7 @@ from datetime import datetime
 import json
 from reverie.backend_server.persona.core.Personality import Personality
 from reverie.backend_server.persona.core.ShortTermMemory import ShortTermMemory
+from reverie.backend_server.persona.core.SpatialMemory import SpatialMemory
 from reverie.backend_server.persona.core.social.EmotionRegulator import EmotionalRegulator
 from reverie.backend_server.persona.models.Llama3Instruct import LLama3Instruct
 from reverie.backend_server.persona.models.model import Model
@@ -17,9 +18,16 @@ class AgentBuilder:
   def initialize_agent(self,target:str)->Agent:
     # TODO: test this
     time_func = lambda : self.__world.current_time
-    personality = self.__create_personality(f'{target}/personality.json')
+    personality = self.__create_personality(
+        f'{target}/personality.json')
     emotional_regulator = EmotionalRegulator(personality,self.__llm)
-    short_term_memory = self.__create_memory
+    short_term_memory = self.__create_memory(
+        f'{target}/short_term_memory.json',
+        time_func,
+        emotional_regulator,personality)
+    spatial_memory = self.__create_spatial_memory(
+        f'{target}/spatial_memory.json')
+
     raise NotImplementedError()
 
   def __create_personality(self,target:str):
@@ -32,11 +40,12 @@ class AgentBuilder:
                       emotional_regulator:EmotionalRegulator,
                       personality:Personality,
                       )->ShortTermMemory:
-    short_term_data = json.load(open(f'{target}/short_term_memory.json','r'))
+    short_term_data = json.load(open(target,'r'))
     return ShortTermMemory(short_term_data,time_func,emotional_regulator,personality)
 
   def __create_spatial_memory(self,target:str):
-    raise NotImplementedError()
+    data = json.load(open(target,'r'))
+    return SpatialMemory(data,self.__world)
 
   def __create_daily_planner(self,target:str):
     raise NotImplementedError()

@@ -9,7 +9,6 @@ from typing import List, Tuple
 
 import numpy as np
 from numpy.lib import math
-from reverie.backend_server.persona.Agent import Agent
 from reverie.backend_server.world.World import Tile, World
 from reverie.backend_server.world.world_objects.WorldObject import WorldObject
 

@@ -55,7 +55,6 @@ class DailyPlanning:
   def __init__(self, 
                llm:Model,
                personality:Personality,
-               long_term_memory:LongTermMemory,
                short_term_memory:ShortTermMemory,
                spatial_memory:SpatialMemory,
                standard_tasks:list[str],
@@ -63,7 +62,6 @@ class DailyPlanning:
                previous_days_data:DailyPlanningData) -> None:
     self.__model = llm
     self.__personality  = personality
-    self.__long_term_memory = long_term_memory
     self.__short_term_memory = short_term_memory
     self.__spatial_memory = spatial_memory
     self.__standard_tasks = standard_tasks
@@ -92,17 +90,19 @@ class DailyPlanning:
 
     original_plan = self._detailed_plan('\n'.join(todays_broad_plan))
     modified_plan = self._induce_variance(original_plan)
+    new_schedule:list[Tuple[TimePeriod,Task]] = []
     for count, (time_slot, task) in enumerate(modified_plan):
       next = None
       if count != len(modified_plan) - 1:
         next = modified_plan[count][0]
       new_time,task = self._associate_object_with_task(time_slot,task,next)
-      self.__data.schedule[new_time] = task
+      new_schedule.append((new_time,task))
+    self.__data.schedule = new_schedule
     #TODO Originally, a thought would be generated here about the plan.
     # May or may not still do this.
 
   def _wake_up_time(self)->datetime:
-    date = self.__long_term_memory.get_current_time()
+    date = self.__short_term_memory.get_current_time()
     if date.hour != 0 or date.minute != 0:
       raise RuntimeError(f"DailyPlanning.wake_up_time called when time is not 00:00 (start of a new day). Current time is: {date}")
       
@@ -374,7 +374,7 @@ get ready for tomorrow's tasks
     Returns the first task for which the current_time is
     with in the bounds of the tasks TimePeriod.
     '''
-    for time,task in self.__data.schedule.items():
+    for time,task in self.__data.schedule:
       if self. __short_term_memory.get_current_time() in time:
         return task
 
@@ -384,6 +384,6 @@ get ready for tomorrow's tasks
     Returns the first task for which the current_time is
     with in the bounds of the tasks TimePeriod.
     '''
-    for time,task in self.__data.schedule.items():
+    for time,task in self.__data.schedule:
       if self. __short_term_memory.get_current_time() in time:
         return task
