@@ -13,6 +13,12 @@ import sys
 import datetime
 import random
 
+from reverie.backend_server.persona.core.Personality import Personality
+from reverie.backend_server.persona.core.ShortTermMemory import ShortTermMemory
+from reverie.backend_server.persona.core.SpatialMemory import SpatialMemory
+from reverie.backend_server.persona.core.environment.Eyes import Eyes
+from reverie.backend_server.persona.core.planning.DailyPlanning import DailyPlanning
+from reverie.backend_server.persona.core.social.EmotionRegulator import EmotionalRegulator
 from reverie.backend_server.world.World import World
 sys.path.append('../')
 
@@ -29,28 +35,19 @@ from persona.cognitive_modules.converse import *
 from persona.cognitive_modules.plan import *
 
 class Agent: 
-  def __init__(self, name, folder_mem_saved=False):
-    # PERSONA BASE STATE 
-    # <name> is the full name of the persona. This is a unique identifier for
-    # the persona within Reverie. 
-    self.name = name
-
-    # PERSONA MEMORY 
-    # If there is already memory in folder_mem_saved, we load that. Otherwise,
-    # we create new memory instances. 
-    # <s_mem> is the persona's spatial memory. 
-    # Review Note:
-    # Why is folder_mem_saved defaulted to a boolean and then used in a string
-    # to access persona specific information if i understand correctly?
-    f_s_mem_saved = f"{folder_mem_saved}/bootstrap_memory/spatial_memory.json"
-    self.s_mem = MemoryTree(f_s_mem_saved)
-    # <s_mem> is the persona's associative memory. 
-    f_a_mem_saved = f"{folder_mem_saved}/bootstrap_memory/associative_memory"
-    self.a_mem = AssociativeMemory(f_a_mem_saved)
-    # <scratch> is the persona's scratch (short term memory) space. 
-    scratch_saved = f"{folder_mem_saved}/bootstrap_memory/scratch.json"
-    self.scratch = Scratch(scratch_saved)
-
+  def __init__(self,
+               personality:Personality, 
+               emotional_regulator:EmotionalRegulator,
+               short_term_memory:ShortTermMemory,
+               spatial_memory:SpatialMemory,
+               daily_planner:DailyPlanning,
+               eyes:Eyes):
+    self.__personality = personality
+    self.__emotional_regulator = emotional_regulator
+    self.__short_term_memory = short_term_memory
+    self.__spatial_memory = spatial_memory
+    self.__daily_planner = daily_planner
+    self.__eyes = eyes
 
   def save(self, save_folder): 
     """

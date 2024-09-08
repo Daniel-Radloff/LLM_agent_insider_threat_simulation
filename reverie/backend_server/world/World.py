@@ -118,12 +118,19 @@ class Tile:
 
 
 class World: 
-  def __init__(self, world_name:str,width:int,length:int,tiles:list[list[Tile]],time:datetime):
+  def __init__(self,
+               world_name:str,
+               width:int,
+               length:int,
+               tiles:list[list[Tile]],
+               time:datetime,
+               world_objects:dict[str,WorldObject]):
     self._maze_name = world_name
     self._maze_length = length
     self._maze_width = width
     self.__tiles = tiles
     self.__world_time = time
+    self.__objects = world_objects
 
   def get_tile(self, tile:Tuple[int,int]): 
     """
@@ -159,6 +166,9 @@ class World:
 
     return list(itertools.chain.from_iterable(self.__tiles[min_x:max_x][min_y:max_y]))
 
+  def _objects(self):
+    return self.__objects
+
   @property
   def dimentions(self):
     return (self._maze_width,self._maze_length)
@@ -175,3 +185,4 @@ class World:
         if tile.wall:
           collision_map[x][y] = 0
     return collision_map
+

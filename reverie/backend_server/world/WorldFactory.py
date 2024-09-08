@@ -81,7 +81,7 @@ class WorldFactory:
       tiles.append(row)
 
     # Create world
-    return World(world_name,map_width,map_length,tiles,world_time)
+    return World(world_name,map_width,map_length,tiles,world_time,game_objects)
 
   def __create_game_objects(self,game_object_info:dict[str,dict])->dict[str,WorldObject]:
     to_return:dict = {}

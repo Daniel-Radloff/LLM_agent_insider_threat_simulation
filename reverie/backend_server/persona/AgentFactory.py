@@ -4,10 +4,13 @@ import json
 from reverie.backend_server.persona.core.Personality import Personality
 from reverie.backend_server.persona.core.ShortTermMemory import ShortTermMemory
 from reverie.backend_server.persona.core.SpatialMemory import SpatialMemory
+from reverie.backend_server.persona.core.environment.Eyes import Eyes
+from reverie.backend_server.persona.core.planning.DailyPlanning import DailyPlanning, DailyPlanningData, Task, TimePeriod
 from reverie.backend_server.persona.core.social.EmotionRegulator import EmotionalRegulator
 from reverie.backend_server.persona.models.Llama3Instruct import LLama3Instruct
 from reverie.backend_server.persona.models.model import Model
 from reverie.backend_server.world.World import World
+from reverie.backend_server.world.world_objects.WorldObject import WorldObject
 
 
 class AgentBuilder:
@@ -27,7 +30,16 @@ class AgentBuilder:
         emotional_regulator,personality)
     spatial_memory = self.__create_spatial_memory(
         f'{target}/spatial_memory.json')
-
+    daily_planner = self.__create_daily_planner(
+        f'{target}/daily_planner.json',
+        personality,
+        short_term_memory,
+        spatial_memory,
+        self.__world._objects())
+    eyes = self.__create_eyes(
+        f'{target}/eyes.json',
+        spatial_memory,
+        short_term_memory)
     raise NotImplementedError()
 
   def __create_personality(self,target:str):
@@ -47,11 +59,51 @@ class AgentBuilder:
     data = json.load(open(target,'r'))
     return SpatialMemory(data,self.__world)
 
-  def __create_daily_planner(self,target:str):
-    raise NotImplementedError()
+  def __create_daily_planner(self,
+                             target:str,
+                             personality:Personality,
+                             short_term_memory:ShortTermMemory,
+                             spatial_memory:SpatialMemory,
+                             world_objects:dict[str,WorldObject],
+                             )->DailyPlanning:
+    def create_daily_planning_data_object(data:dict):
+      time_format = "%Y-%m-%d %H:%M:%S"
+      wake_up_time = datetime.strptime(data['wake_up_time'],time_format)
 
-  def __create_eyes(self,target:str):
-    raise NotImplementedError()
+      schedule = []
+      for time_period_data,task_data in data['schedule']:
+        start = datetime.strptime(time_period_data['start'],time_format)
+        end = datetime.strptime(time_period_data['end'],time_format)
+        time_period = TimePeriod(start,end)
+        if 'target' in task_data:
+          target = world_objects[task_data['target']]
+        else:
+          target = None
+        task = Task(task_data['description'],target)
+        schedule.append((time_period, target))
+
+      incompleted_tasks = []
+      for task_data in data['incompleted_tasks']:
+        if 'target' in task_data:
+          target = world_objects[task_data['target']]
+        else:
+          target = None
+        task = Task(task_data['description'],target)
+        incompleted_tasks.append(target)
+      return DailyPlanningData(wake_up_time,schedule,incompleted_tasks)
+
+    daily_planning_data = json.load(open(target,'r'))
+    standard_tasks = daily_planning_data['standard_tasks']
+    current_daily_plan = create_daily_planning_data_object(daily_planning_data['data'])
+    previous_daily_plan = create_daily_planning_data_object(daily_planning_data['previous'])
+    return DailyPlanning(self.__llm,personality,short_term_memory,spatial_memory,standard_tasks,current_daily_plan,previous_daily_plan)
+
+  def __create_eyes(self,
+                    target:str,
+                    spatial_memory:SpatialMemory,
+                    short_term_memory:ShortTermMemory):
+    eye_data = json.load(open(target,'r'))
+    return Eyes(eye_data,self.__world,spatial_memory,short_term_memory)
 
   def __create_legs(self,target:str):
     raise NotImplementedError()
