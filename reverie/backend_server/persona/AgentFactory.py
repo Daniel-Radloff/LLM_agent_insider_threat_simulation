@@ -1,10 +1,13 @@
 from collections.abc import Callable
 from datetime import datetime
 import json
+from reverie.backend_server.persona.Agent import Agent
+from reverie.backend_server.persona.core.Cognition import Cognition
 from reverie.backend_server.persona.core.Personality import Personality
 from reverie.backend_server.persona.core.ShortTermMemory import ShortTermMemory
 from reverie.backend_server.persona.core.SpatialMemory import SpatialMemory
 from reverie.backend_server.persona.core.environment.Eyes import Eyes
+from reverie.backend_server.persona.core.environment.Legs import Legs
 from reverie.backend_server.persona.core.planning.DailyPlanning import DailyPlanning, DailyPlanningData, Task, TimePeriod
 from reverie.backend_server.persona.core.social.EmotionRegulator import EmotionalRegulator
 from reverie.backend_server.persona.models.Llama3Instruct import LLama3Instruct
@@ -40,7 +43,17 @@ class AgentBuilder:
         f'{target}/eyes.json',
         spatial_memory,
         short_term_memory)
-    raise NotImplementedError()
+    cognition = Cognition(short_term_memory,daily_planner,spatial_memory)
+
+    # Make agent
+
+    agent = Agent(personality,emotional_regulator,short_term_memory,spatial_memory,daily_planner,eyes)
+
+    # Attach other objects to agent
+    legs = Legs(self.__world,spatial_memory,agent)
+
+    # End
+    return agent
 
   def __create_personality(self,target:str):
     identity_dict = json.load(open(target,'r'))
@@ -105,10 +118,10 @@ class AgentBuilder:
     eye_data = json.load(open(target,'r'))
     return Eyes(eye_data,self.__world,spatial_memory,short_term_memory)
 
-  def __create_legs(self,target:str):
+  def __create_cognition(self,target:str):
     raise NotImplementedError()
 
-  def __create_cognition(self,target:str):
+  def __create_legs(self,target:str):
     raise NotImplementedError()
 
   def __build_agent(self,target:str):
