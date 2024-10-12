@@ -32,6 +32,7 @@ class ShortTermMemory(Memory):
       raise ValueError(f"Dictionary does not contain correct type:\n {e}")
 
   def process_events(self,new_events:list[str]):
+    to_return:list[Concept] = []
     recent_events = [event.description for event in self._seq_event]
     for desc in new_events:
       # If the event is related to ourselves, it is assumed to already be registered
@@ -44,22 +45,26 @@ class ShortTermMemory(Memory):
       if self.__personality.full_name.lower() in desc.lower():
         raise NotImplementedError()
 
+      # We need to do something to describe more similar events.
       if desc in recent_events:
         #TODO: update the most recently accessed?
         # Seeing the same thing twice can hold value.
         raise NotImplementedError()
       # TODO: We should see if there are similar concepts to the thing
       #   we saw (something we see reminds us of something else).
-      self._add_conceptnode(
+      to_return.append(self._add_conceptnode(
           "event",
           self.get_current_time(),
           desc,
           [],
-          )
+          ))
       # TODO: review how importance triggers work because its not clear yet how this is relevant and if i want to keep or initialize them here like in the initial code
       # TODO: return embeddings so that we can pass on to long term memory and refresh
       #   Those memories if there are any relevant memories.
       raise NotImplementedError()
+
+    return to_return
+    
 
   def _retrieval_score(self, concept: np.ndarray, potential_candidate: Concept) -> Tuple[float,...]:
     @njit

@@ -60,45 +60,33 @@ class Agent:
   def _plan_day(self):
     self.__daily_planner.plan_for_today()
 
-  def take_action(self):
+  def tick(self):
       """
       This is the main cognitive function where our main sequence is called. 
-
-      INPUT: 
-        maze: The Maze class of the current world. 
-        personas: A dictionary that contains all persona names as keys, and the 
-                  Persona instance as values. 
-        curr_tile: A tuple that designates the persona's current tile location 
-                   in (row, col) form. e.g., (58, 39)
-        curr_time: datetime instance that indicates the game's current time. 
-      OUTPUT: 
-        execution: A triple set that contains the following components: 
-          <next_tile> is a x,y coordinate. e.g., (58, 9)
-          <pronunciatio> is an emoji.
-          <description> is a string description of the movement. e.g., 
-          writing her next novel (editing her novel) 
-          @ double studio:double studio:common room:sofa
       """
-      # Main cognitive sequence begins here. 
-      self.__eyes.observe_environment()
-      # retrieve relevent thoughts related to what we just saw.
+      events_around_us = self.__eyes.observe_environment()
+      # some importance threshhold is needed to decide the following conditions
+      #   being spoken to is not something we worry about because 
+      #   that gets handled by the ear and mouth systems.
 
-      # Process these thoughts based on what we are currently doing,
-      #   whats happening around us, and what we are trying to do.
-      next_task = self.__daily_planner.next_task
-      if next_task == None:
-        # not doing anything? Find something to do.
-        raise NotImplementedError()
-      if next_task.target == None:
-        # no target? find a memory that can give the location of something.
-        raise NotImplementedError()
-      possible_location = self.__spatial_memory.get_object_location(next_task.target)
-      if self.__spatial_memory.current_location != possible_location:
-        # Move to the location?
-      # For the action we have determined to take, do we need to reflect on it before we act?
+      # IF we see something we need to respond to:
+        # we decide if we continue what we currently doing or respond
+        # set action
+      # else:
+        # If doing something:
+          # Determine next action to take
+        # Else:
+          # Determine next task and action to take
 
       # Perform selected action, be that an interaction of some kind or movement around the map.
       raise NotImplementedError()
+
+
+  def simulated_world(self):
+    '''
+    This is a replacement for movement around the world. Instead, all the actions
+    take place via communication with the LLM.
+    '''
 
   def open_convo_session(self, convo_mode): 
     open_convo_session(self, convo_mode)

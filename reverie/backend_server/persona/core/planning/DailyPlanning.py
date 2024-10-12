@@ -9,6 +9,7 @@ the system to be used as data for other methods in different objects.
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Tuple, Union
+from collections import deque
 
 from reverie.backend_server.persona.core.Concept import Concept
 from reverie.backend_server.persona.core.LongTermMemory import LongTermMemory
@@ -59,7 +60,8 @@ class DailyPlanning:
                spatial_memory:SpatialMemory,
                standard_tasks:list[str],
                data: DailyPlanningData,
-               previous_days_data:DailyPlanningData) -> None:
+               previous_days_data:DailyPlanningData,
+               current_steps:list[str]) -> None:
     self.__model = llm
     self.__personality  = personality
     self.__short_term_memory = short_term_memory
@@ -67,6 +69,7 @@ class DailyPlanning:
     self.__standard_tasks = standard_tasks
     self.__data = data
     self.__previous_day = previous_days_data
+    self.__steps = deque(current_steps,maxlen=15)
     pass
 
 
@@ -100,6 +103,30 @@ class DailyPlanning:
     self.__data.schedule = new_schedule
     #TODO Originally, a thought would be generated here about the plan.
     # May or may not still do this.
+
+  def simulate_day(self):
+    '''
+    Called at 00:00
+
+    This function is used to simulate a day taking place
+    entirely within the LLM.
+    '''
+    self.__data.wake_up_time = self._wake_up_time()
+    important_points = self._get_important_points()
+    todays_broad_plan = self._get_broad_overview(important_points)
+
+    original_plan = self._detailed_plan('\n'.join(todays_broad_plan))
+    modified_plan = self._induce_variance(original_plan)
+
+    self.__data.schedule = modified_plan
+
+  def get_next_action(self):
+    '''
+    This takes in the current time and gets the task 
+    we are doing and breaks it down into smaller parts.
+    '''
+
+    pass
 
   def _wake_up_time(self)->datetime:
     date = self.__short_term_memory.get_current_time()
@@ -367,6 +394,13 @@ get ready for tomorrow's tasks
       selected_object = availible_objects[index][0]
       task.target = selected_object
       return (allocated_time_period, task)
+
+  def determine_next_action(self):
+    '''
+    Determine if we should use an object, talk, or move etc to complete the next step in what we are doing.
+    '''
+
+    raise NotImplementedError()
 
   @property
   def current_task(self):

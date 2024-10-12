@@ -109,7 +109,8 @@ class AgentBuilder:
     standard_tasks = daily_planning_data['standard_tasks']
     current_daily_plan = create_daily_planning_data_object(daily_planning_data['data'])
     previous_daily_plan = create_daily_planning_data_object(daily_planning_data['previous'])
-    return DailyPlanning(self.__llm,personality,short_term_memory,spatial_memory,standard_tasks,current_daily_plan,previous_daily_plan)
+    current_steps = daily_planning_data['steps']
+    return DailyPlanning(self.__llm,personality,short_term_memory,spatial_memory,standard_tasks,current_daily_plan,previous_daily_plan,current_steps)
 
   def __create_eyes(self,
                     target:str,

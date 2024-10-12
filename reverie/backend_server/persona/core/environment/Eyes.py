@@ -38,7 +38,7 @@ class Eyes:
       # then we add that event to the a_mem and return it. 
       # Review Note:
       # Surely the same event cannot occur in two places, if this is the case, then why call this every time?
-    self.__short_term_memory.process_events(list(observed_event_set))
+    return self.__short_term_memory.process_events(list(observed_event_set))
 
   @property
   def vision_radius(self):
