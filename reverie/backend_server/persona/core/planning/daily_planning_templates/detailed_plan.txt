@@ -7,7 +7,7 @@ You need to determine the actions that !<INPUT 0>! is going to take today.
 An outline of the actions that you have planned to do today is shown bellow:
 !<INPUT 1>!
 
-lan out the tasks with time frames that you plan on doing today. Include the time that you wake up.
+Plan out the tasks with time frames that you plan on doing today. Include the time that you wake up.
 Your responses should be in the format of:
 {start} <-> {end} <-> {description}
 Where start and end are 24-hour times that you plan on taking action, and the description is the description of what you're going to do.

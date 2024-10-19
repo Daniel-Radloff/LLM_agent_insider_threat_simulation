@@ -1,0 +1,22 @@
+deconstruct.txt
+Variables: 
+!<INPUT 0>! -- task
+<commentblockmarker>###</commentblockmarker>
+Deconstruct the following task into smaller tasks/parts/steps:
+!<INPUT 0>!
+Your responses should be in the format of:
+{start} <-> {end} <-> {description}
+Where start and end are 24-hour times that you plan on taking action, and the description is the description of what you're going to do.
+
+An example response is:
+13:00 <-> 13:05 <-> Open the weekly report document and review the progress made so far.
+13:05 <-> 13:10 <-> Log into the project management tool to gather any new data or updates for the report.
+13:10 <-> 13:25 <-> Summarize the new data into the report, updating relevant sections (e.g., performance metrics, team updates).
+13:25 <-> 13:35 <-> Cross-check data against the current week’s objectives and deadlines, making any necessary corrections.
+13:35 <-> 13:45 <-> Review the visual elements (charts, graphs) in the report, ensuring they are up-to-date with the latest data.
+13:45 <-> 14:00 <-> Format the document to ensure consistent styling (fonts, headers, footnotes) throughout the report.
+14:00 <-> 14:10 <-> Take a short break to rest eyes and refocus.
+14:10 <-> 14:25 <-> Update the report’s executive summary to reflect current status and major changes from last week.
+14:25 <-> 14:40 <-> Double-check the report for any missing sections or incomplete information.
+14:40 <-> 14:55 <-> Proofread the entire document for spelling, grammar, and clarity.
+14:55 <-> 15:00 <-> Save and back up the report, then email a draft to your supervisor for feedback.

@@ -1,0 +1,5 @@
+Variables:
+!<INPUT 0>! -- Task description 
+<commentblockmarker>###</commentblockmarker>
+Does the following task involve interaction with the agent you are simulating's computer?
+!<INPUT 0>!

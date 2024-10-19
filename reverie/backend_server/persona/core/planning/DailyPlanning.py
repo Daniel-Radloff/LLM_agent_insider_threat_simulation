@@ -120,13 +120,74 @@ class DailyPlanning:
 
     self.__data.schedule = modified_plan
 
-  def get_next_action(self):
+  def _extrapulate_computer_interactions(self):
     '''
-    This takes in the current time and gets the task 
-    we are doing and breaks it down into smaller parts.
+    This looks at the schedule for today and extrapulates all tasks that require
+    interaction with a computer.
     '''
+    def validate(response:str,_="")->str:
+      if response.rstrip() not in ['yes','no']:
+        raise ValueError(f'Invalid answer provided. Got:"{response}", expected: yes or no')
+      return response 
 
-    pass
+    with open("daily_planning_templates/detect_computer_interaction.txt","r") as file:
+        prompt = file.read()
+    system_input = [self.__personality.get_summarized_identity()]
+    example_output = "yes"
+    fail_safe = "no"
+    special_instruction = "Answer only with either 'yes', or 'no'."
+    for index,(_,action) in enumerate(self.__data.schedule):
+      output = self.__model.run_inference(prompt,
+                                          [action.description],
+                                          system_input,
+                                          example_output,
+                                          validate,
+                                          fail_safe,
+                                          special_instruction=special_instruction)
+      if output == 'yes':
+        # create mini actions
+        # take this task, and break it down into smaller components of how the task is going to be performed.
+        complete_task = action.description
+        detailed_plan = self._break_up_actions(complete_task)
+        detailed_plan = self._induce_variance(detailed_plan)
+        # either we can return the plan here and attach objects then, 
+        # or we can modifiy the self.__data.schedule. That is probably the correct call in this situation.
+        # for now, self.__data.schedule is modified in place.
+        schedule = self.__data.schedule
+        if index != len(self.__data.schedule)-1:
+          self.__data.schedule = schedule[:index] + detailed_plan + schedule[index+1:]
+        else:
+          self.__data.schedule = schedule + detailed_plan
+
+
+  def _break_up_actions(self,action:str)->str:
+    with open("daily_planning_templates/deconstruct_high_level_action.txt","r") as file:
+      prompt = file.read()
+    prompt_input = [action]
+    system_input = [self.__personality.get_summarized_identity()]
+    example = f'''
+13:00 <-> 13:05 <-> Open the weekly report document and review the sections completed in the previous sessions.
+13:05 <-> 13:15 <-> Log into the project management tool and check for any new updates or data from team members or system reports.
+13:15 <-> 13:30 <-> Input any new data from the project management tool into the report, updating sections like project milestones, task statuses, and progress metrics.
+13:30 <-> 13:40 <-> Cross-reference this week’s report against last week’s to ensure that all progress is accurately reflected and major changes are captured.
+13:40 <-> 13:55 <-> Adjust and update any charts or graphs in the report with the most recent data.
+13:55 <-> 14:05 <-> Reformat the document to maintain consistent structure and layout, checking for font consistency and heading formats.
+14:05 <-> 14:15 <-> Take a quick break from the computer to rest and refocus.
+14:15 <-> 14:30 <-> Update the executive summary section with new key points from this week’s progress, including any challenges or accomplishments.
+14:30 <-> 14:45 <-> Review the report for any incomplete sections or missing data, ensuring all objectives have been covered.
+14:45 <-> 14:55 <-> Proofread the report for errors in grammar, spelling, and clarity.
+14:55 <-> 15:00 <-> Save the report, back it up, and email the draft to your supervisor for feedback or approval.
+    '''
+    failsafe = 'ERROR'
+    special_instruction = 'Place emphasis on actions that require interaction with work computers.'
+    return self.__model.run_inference(prompt,
+                                      prompt_input,
+                                      system_input,
+                                      example,
+                                      self._validate_plan_format,
+                                      failsafe,
+                                      special_instruction,
+                                      )
 
   def _wake_up_time(self)->datetime:
     date = self.__short_term_memory.get_current_time()
