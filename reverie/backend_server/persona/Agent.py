@@ -38,13 +38,15 @@ class Agent:
                short_term_memory:ShortTermMemory,
                spatial_memory:SpatialMemory,
                daily_planner:DailyPlanning,
-               eyes:Eyes):
+               eyes:Eyes,
+               simulate=True):
     self.__personality = personality
     self.__emotional_regulator = emotional_regulator
     self.__short_term_memory = short_term_memory
     self.__spatial_memory = spatial_memory
     self.__daily_planner = daily_planner
     self.__eyes = eyes
+    self.__simulated = simulate
 
   def save(self, save_folder): 
     """
@@ -58,35 +60,37 @@ class Agent:
     raise NotImplementedError()
 
   def _plan_day(self):
-    self.__daily_planner.plan_for_today()
+    if self.__simulated:
+      self.__daily_planner.simulate_day()
+    else:
+      self.__daily_planner.plan_for_today()
 
   def tick(self):
       """
       This is the main cognitive function where our main sequence is called. 
       """
-      events_around_us = self.__eyes.observe_environment()
-      # some importance threshhold is needed to decide the following conditions
-      #   being spoken to is not something we worry about because 
-      #   that gets handled by the ear and mouth systems.
+      current_time = self.__short_term_memory.get_current_time()
+      if current_time.minute + current_time.hour + current_time.second == 0:
+        self._plan_day()
+      if self.__simulated:
+        raise NotImplementedError()
+      else:
+        events_around_us = self.__eyes.observe_environment()
+        # some importance threshhold is needed to decide the following conditions
+        #   being spoken to is not something we worry about because 
+        #   that gets handled by the ear and mouth systems.
 
-      # IF we see something we need to respond to:
-        # we decide if we continue what we currently doing or respond
-        # set action
-      # else:
-        # If doing something:
-          # Determine next action to take
-        # Else:
-          # Determine next task and action to take
+        # IF we see something we need to respond to:
+          # we decide if we continue what we currently doing or respond
+          # set action
+        # else:
+          # If doing something:
+            # Determine next action to take
+          # Else:
+            # Determine next task and action to take
 
-      # Perform selected action, be that an interaction of some kind or movement around the map.
-      raise NotImplementedError()
-
-
-  def simulated_world(self):
-    '''
-    This is a replacement for movement around the world. Instead, all the actions
-    take place via communication with the LLM.
-    '''
+        # Perform selected action, be that an interaction of some kind or movement around the map.
+        raise NotImplementedError()
 
   def open_convo_session(self, convo_mode): 
     open_convo_session(self, convo_mode)

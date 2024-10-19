@@ -119,11 +119,21 @@ class DailyPlanning:
     modified_plan = self._induce_variance(original_plan)
 
     self.__data.schedule = modified_plan
+    self._extrapulate_computer_interactions()
+    new_schedule:list[Tuple[TimePeriod,Task]] = []
+    for count, (time_slot, task) in enumerate(modified_plan):
+      next = None
+      if count != len(modified_plan) - 1:
+        next = modified_plan[count][0]
+      new_time,task = self._associate_object_with_task(time_slot,task,next)
+      new_schedule.append((new_time,task))
+    self.__data.schedule = new_schedule
 
   def _extrapulate_computer_interactions(self):
     '''
     This looks at the schedule for today and extrapulates all tasks that require
     interaction with a computer.
+    Its not implimented in the best way from engineering standpoint. But its fine for now.
     '''
     def validate(response:str,_="")->str:
       if response.rstrip() not in ['yes','no']:
