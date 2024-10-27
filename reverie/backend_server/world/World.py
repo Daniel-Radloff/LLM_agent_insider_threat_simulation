@@ -167,6 +167,9 @@ class World:
 
   def _tick(self):
     self.__world_time = self.__world_time + timedelta(minutes=1)
+
+  def _tick_back(self):
+    self.__world_time = self.__world_time + timedelta(minutes=-1)
   @property
   def dimentions(self):
     return (self._maze_width,self._maze_length)

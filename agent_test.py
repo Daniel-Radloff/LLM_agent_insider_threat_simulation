@@ -6,10 +6,16 @@ import sys
 import os
 
 
+def tick_test(agent:Agent, world:World):
+  '''
+  Testing how the agent handles ticking 
+  '''
+  agent.tick()
+
 if __name__ == '__main__':
   # testing init methods, does not guarantee that all the stuff is working obviously
   world_factory = WorldFactory()
-  world = world_factory.produce_world('./assets/world/original')
+  world = world_factory.produce_world('./assets/world/testing')
   agent_factory = AgentBuilder(world)
   agent = agent_factory.initialize_agent('./assets/personalities/test')
 
@@ -19,3 +25,6 @@ if __name__ == '__main__':
   world._tick()
   print(agent._test_time())
   print(world.current_time)
+  world._tick_back()
+
+  tick_test(agent,world)

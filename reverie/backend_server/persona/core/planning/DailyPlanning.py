@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Tuple, Union
 from collections import deque
+import os
 
 from reverie.backend_server.persona.core.Concept import Concept
 from reverie.backend_server.persona.core.LongTermMemory import LongTermMemory
@@ -70,6 +71,7 @@ class DailyPlanning:
     self.__data = data
     self.__previous_day = previous_days_data
     self.__steps = deque(current_steps,maxlen=15)
+    self._template_dir = os.path.join(os.path.dirname(__file__), 'templates')
     pass
 
 
@@ -140,7 +142,7 @@ class DailyPlanning:
         raise ValueError(f'Invalid answer provided. Got:"{response}", expected: yes or no')
       return response 
 
-    with open("daily_planning_templates/detect_computer_interaction.txt","r") as file:
+    with open(os.path.join(self._template_dir, "detect_computer_interaction.txt"),"r") as file:
         prompt = file.read()
     system_input = [self.__personality.get_summarized_identity()]
     example_output = "yes"
@@ -171,7 +173,7 @@ class DailyPlanning:
 
 
   def _break_up_actions(self,action:str)->str:
-    with open("daily_planning_templates/deconstruct_high_level_action.txt","r") as file:
+    with open(os.path.join(self._template_dir, "deconstruct_high_level_action.txt"),"r") as file:
       prompt = file.read()
     prompt_input = [action]
     system_input = [self.__personality.get_summarized_identity()]
@@ -205,7 +207,7 @@ class DailyPlanning:
       raise RuntimeError(f"DailyPlanning.wake_up_time called when time is not 00:00 (start of a new day). Current time is: {date}")
       
     # TODO check project board
-    with open("daily_planning_templates/wake_up_hour.txt","r") as file:
+    with open(os.path.join(self._template_dir, "wake_up_hour.txt"),"r") as file:
         prompt = file.read()
     prompt_input = [self.__personality.lifestyle,
                     self.__personality.full_name]
@@ -259,7 +261,7 @@ class DailyPlanning:
       return ",".join(actions)
 
     date =  self.__short_term_memory.get_current_time()
-    with open("daily_planning_templates/daily_plan_outline.txt","r") as file:
+    with open(os.path.join(self._template_dir, "daily_plan_outline.txt"),"r") as file:
       prompt = file.read()
     prompt_input = ["\n".join(self.__standard_tasks),
                     f"{date.year} {date.strftime("%B")} {date.day}",
@@ -317,7 +319,7 @@ class DailyPlanning:
     embeddings = [self.__short_term_memory._generate_embedding(item) for item in plan_outline.split('\n')]
     most_important_concepts = self.__short_term_memory.retrieve_relevant_concepts(embeddings)
     most_important_points = [concept.description for concept in most_important_concepts]
-    with open("daily_planning_templates/detailed_plan.txt","r") as file:
+    with open(os.path.join(self._template_dir, "detailed_plan.txt"),"r") as file:
       prompt = file.read()
     prompt_input = [plan_outline,'\n'.join(most_important_points)]
     example = '''
@@ -360,7 +362,7 @@ class DailyPlanning:
     more consistent and superiour results
     '''
     to_return:list[Tuple[TimePeriod,Task]] = []
-    with open("daily_planning_templates/introduce_variance.txt","r") as file:
+    with open(os.path.join(self._template_dir, "introduce_variance.txt"),"r") as file:
       prompt = file.read()
     prompt_input = [plan]
     example = '''
@@ -443,7 +445,7 @@ get ready for tomorrow's tasks
       else:
         raise ValueError("Response does not correspond with one of the availible objects")
 
-    with open("daily_planning_templates/associate_object_with_task.txt","r") as file:
+    with open(os.path.join(self._template_dir, "associate_object_with_task.txt"),"r") as file:
       prompt = file.read()
       prompt_input = [task.description,object_names]
     example_response = object_names[0]
@@ -492,6 +494,6 @@ get ready for tomorrow's tasks
     Returns the first task for which the current_time is
     with in the bounds of the tasks TimePeriod.
     '''
-    for (time,task) in enumerate(self.__data.schedule):
+    for (time,task) in self.__data.schedule:
       if self. __short_term_memory.get_current_time() in time:
         return task
