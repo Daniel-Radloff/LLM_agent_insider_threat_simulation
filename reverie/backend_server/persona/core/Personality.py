@@ -2,12 +2,12 @@ class Personality:
   def __init__(self,
                personality:dict[str,str]) -> None:
     try:
-      self.__first_name = personality['first_name']
-      self.__last_name = personality['last_name']
-      self.__age = personality['age']
-      self.__innate_traits = personality['innate_traits']
-      self.__lifestyle = personality['lifestyle']
-      self.__learned_traits = personality['learned_traits']
+      self.__first_name:str = personality['first_name']
+      self.__last_name:str = personality['last_name']
+      self.__age:str = personality['age']
+      self.__innate_traits:str = personality['innate_traits']
+      self.__lifestyle:str = personality['lifestyle']
+      self.__learned_traits:str = personality['learned_traits']
     except TypeError:
       raise ValueError("Recieved dict is malformed")
     pass
@@ -47,7 +47,7 @@ class Personality:
   # Getters
   @property
   def full_name(self):
-    return self.__first_name + self.__last_name
+    return self.__first_name + " " + self.__last_name
 
   @property
   def first_name(self):

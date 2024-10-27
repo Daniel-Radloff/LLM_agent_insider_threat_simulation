@@ -1,17 +1,19 @@
 from reverie.backend_server.persona.core.Personality import Personality
 from reverie.backend_server.persona.core.helpers import validate_number
 from reverie.backend_server.persona.models.model import Model
+import os
 
 
 class EmotionalRegulator:
   def __init__(self,personality:Personality,llm:Model) -> None:
     self.__personality = personality
     self.__model = llm
+    self._template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 
   def determine_emotional_impact(self, event_type:str, description:str)->int:
     if event_type not in ["event","chat","thought"]:
       raise ValueError("event type must be an event,chat,or thought")
-    with open(f"templates/impact_{event_type}.txt","r") as file:
+    with open(os.path.join(self._template_dir, f"impact_{event_type}.txt"),"r") as file:
       prompt = file.read()
     prompt_input = [self.__personality.full_name,
                     description]

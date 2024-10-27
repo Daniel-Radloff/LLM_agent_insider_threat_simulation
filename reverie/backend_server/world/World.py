@@ -5,7 +5,7 @@ File: maze.py
 Description: Defines the Maze class, which represents the map of the simulated
 world in a 2-dimensional matrix. 
 """
-from datetime import datetime
+from datetime import datetime, timedelta
 import numpy as np
 
 '''
@@ -19,15 +19,10 @@ Important:
 
 # TODO all the pathing is going to be cooked, so once it runs and breaks, fix it.
 from collections.abc import Callable
-import json
 from typing import Any, Literal, Self, Tuple, Union
-import math
 import itertools
 
-from global_methods import *
 from reverie.backend_server.world.world_objects.WorldObject import WorldObject
-from utils import *
-from reverie.backend_server.persona.Agent import Agent
 
 
 class Tile:
@@ -52,6 +47,7 @@ class Tile:
                collide:bool,
                objects:list[WorldObject],
                ) -> None:
+    from reverie.backend_server.persona.Agent import Agent
     self.__sector = sector
     self.__arena = arena
     self.__x, self.__y = location
@@ -68,10 +64,10 @@ class Tile:
         return True
     return False
 
-  def _add_agent(self,agent:Agent):
+  def _add_agent(self,agent):
     self.__agents.append(agent)
 
-  def _remove_agent(self,agent:Agent):
+  def _remove_agent(self,agent):
     self.__agents.remove(agent)
 
   @property
@@ -169,6 +165,8 @@ class World:
   def _objects(self):
     return self.__objects
 
+  def _tick(self):
+    self.__world_time = self.__world_time + timedelta(minutes=1)
   @property
   def dimentions(self):
     return (self._maze_width,self._maze_length)
@@ -185,4 +183,3 @@ class World:
         if tile.wall:
           collision_map[x][y] = 0
     return collision_map
-

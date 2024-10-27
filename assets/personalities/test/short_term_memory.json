@@ -1,0 +1,17 @@
+{
+  "concepts" : [
+    {
+      "type": "event",
+      "created": "2024-10-25 07:00:10",
+      "last_accessed": "2024-10-25 07:00:10",
+      "description": "I'm in my bed.",
+      "keywords": [
+        "bed",
+        "used"
+      ],
+      "filling": []
+    }
+  ],
+  "currently" : "Sleeping",
+  "attention_span" : 15
+}

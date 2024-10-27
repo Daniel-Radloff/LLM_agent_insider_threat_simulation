@@ -280,6 +280,7 @@ class DailyPlanning:
 10) Relax and prepare for the next day starting at 18:00
     '''
     failsafe = 'eat breakfast at 7:00,read a book from 8:00 to 12:00,have lunch at 12:00,take a nap from 13:00 to 16:00,relax and watch TV from 19:00 to 20:00,go to bed at 23:00'
+    # TODO refactor into own method because prompt will be lower quality
     special_instruction = "This plan that you generate now will replace and become your new default strategy, so don't make too drastic changes unless they are generally applicable."
     output = self.__model.run_inference(prompt,
                                         prompt_input,
@@ -483,12 +484,14 @@ get ready for tomorrow's tasks
       if self. __short_term_memory.get_current_time() in time:
         return task
 
+    raise NotImplementedError('No task in timeframe')
+
   @property
   def next_task(self):
     '''
     Returns the first task for which the current_time is
     with in the bounds of the tasks TimePeriod.
     '''
-    for time,task in self.__data.schedule:
+    for (time,task) in enumerate(self.__data.schedule):
       if self. __short_term_memory.get_current_time() in time:
         return task

@@ -1,0 +1,26 @@
+{
+  "standard_tasks" : ["Go to work","Brush teeth"],
+  "data" : {
+    "wake_up_time" : "2024-10-25 07:00:00",
+    "schedule" : [
+      {
+        "start" : "2024-10-25 07:00:00",
+        "end" : "2024-10-25 07:30:00",
+        "description": "Brush teeth"
+      }
+    ],
+    "incompleted_tasks" : []
+  },
+  "previous" : {
+    "wake_up_time" : "2024-10-25 07:00:00",
+    "schedule" : [
+      {
+        "start" : "2024-10-25 07:00:00",
+        "end" : "2024-10-25 07:30:00",
+        "description": "Brush teeth"
+      }
+    ],
+    "incompleted_tasks" : []
+  },
+  "steps" : []
+}

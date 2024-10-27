@@ -1,0 +1,186 @@
+{
+  "32227" : {
+    "type_id" : "32227",
+    "name" : "bed"
+  },
+  "32237" : {
+    "type_id" : "32237",
+    "name" : "desk"
+  },
+  "32247" : {
+    "type_id" : "32247",
+    "name" : "closet"
+  },
+  "32257" : {
+    "type_id" : "32257",
+    "name" : "shelf"
+  },
+  "32267" : {
+    "type_id" : "32267",
+    "name" : "easel"
+  },
+  "32277" : {
+    "type_id" : "32277",
+    "name" : "bathroom sink"
+  },
+  "32208" : {
+    "type_id" : "32208",
+    "name" : "shower"
+  },
+  "32218" : {
+    "type_id" : "32218",
+    "name" : "toilet"
+  },
+  "32228" : {
+    "type_id" : "32228",
+    "name" : "kitchen sink"
+  },
+  "32238" : {
+    "type_id" : "32238",
+    "name" : "refrigerator"
+  },
+  "32248" : {
+    "type_id" : "32248",
+    "name" : "toaster"
+  },
+  "32258" : {
+    "type_id" : "32258",
+    "name" : "cooking area"
+  },
+  "32268" : {
+    "type_id" : "32268",
+    "name" : "common room table"
+  },
+  "32278" : {
+    "type_id" : "32278",
+    "name" : "common room sofa"
+  },
+  "32209" : {
+    "type_id" : "32209",
+    "name" : "guitar"
+  },
+  "32219" : {
+    "type_id" : "32219",
+    "name" : "microphone"
+  },
+  "32229" : {
+    "type_id" : "32229",
+    "name" : "bar customer seating"
+  },
+  "32239" : {
+    "type_id" : "32239",
+    "name" : "behind the bar counter"
+  },
+  "32249" : {
+    "type_id" : "32249",
+    "name" : "behind the cafe counter"
+  },
+  "32259" : {
+    "type_id" : "32259",
+    "name" : "cafe customer seating"
+  },
+  "32269" : {
+    "type_id" : "32269",
+    "name" : "piano"
+  },
+  "32279" : {
+    "type_id" : "32279",
+    "name" : "blackboard"
+  },
+  "32210" : {
+    "type_id" : "32210",
+    "name" : "game console"
+  },
+  "32220" : {
+    "type_id" : "32220",
+    "name" : "computer desk"
+  },
+  "32230" : {
+    "type_id" : "32230",
+    "name" : "computer"
+  },
+  "32240" : {
+    "type_id" : "32240",
+    "name" : "library sofa"
+  },
+  "32250" : {
+    "type_id" : "32250",
+    "name" : "bookshelf"
+  },
+  "32260" : {
+    "type_id" : "32260",
+    "name" : "library table"
+  },
+  "32270" : {
+    "type_id" : "32270",
+    "name" : "classroom student seating"
+  },
+  "32280" : {
+    "type_id" : "32280",
+    "name" : "classroom podium"
+  },
+  "32211" : {
+    "type_id" : "32211",
+    "name" : "behind the pharmacy counter"
+  },
+  "32221" : {
+    "type_id" : "32221",
+    "name" : "behind the grocery counter"
+  },
+  "32231" : {
+    "type_id" : "32231",
+    "name" : "pharmacy store shelf"
+  },
+  "32241" : {
+    "type_id" : "32241",
+    "name" : "grocery store shelf"
+  },
+  "32251" : {
+    "type_id" : "32251",
+    "name" : "pharmacy store counter"
+  },
+  "32261" : {
+    "type_id" : "32261",
+    "name" : "grocery store counter"
+  },
+  "32271" : {
+    "type_id" : "32271",
+    "name" : "supply store product shelf"
+  },
+  "32281" : {
+    "type_id" : "32281",
+    "name" : "behind the supply store counter"
+  },
+  "32212" : {
+    "type_id" : "32212",
+    "name" : "supply store counter"
+  },
+  "32222" : {
+    "type_id" : "32222",
+    "name" : "dorm garden"
+  },
+  "32232" : {
+    "type_id" : "32232",
+    "name" : "house garden"
+  },
+  "32242" : {
+    "type_id" : "32242",
+    "name" : "garden chair"
+  },
+  "32252" : {
+    "type_id" : "32252",
+    "name" : "park garden"
+  },
+  "32262" : {
+    "type_id" : "32262",
+    "name" : "harp"
+  },
+  "32272" : {
+    "type_id" : "32272",
+    "name" : "lifting weight"
+  },
+  "32282" : {
+    "type_id" : "32282",
+    "name" : "pool table"
+  }
+}

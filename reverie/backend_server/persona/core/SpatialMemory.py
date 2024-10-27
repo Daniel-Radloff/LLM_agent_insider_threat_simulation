@@ -18,15 +18,11 @@ from pathfinding.finder.a_star import AStarFinder
 
 class SpatialMemory:
   def __init__(self, spatial_memory:dict, environment:World) -> None:
-    try:
-      self.__current_location:Tile = spatial_memory['current_location']
-      self.__environment = environment
-      self.__object_locations:dict[WorldObject,Tile] = spatial_memory['object_locations']
-      self.__agent_locations:dict[str,Tile] = spatial_memory['agent']
-      self.__current_path:List[Tile] = []
-    except:
-      raise ValueError("Dictionary does not contain expected value")
-    raise NotImplementedError()
+    self.__current_location:Tile = spatial_memory['current_location']
+    self.__environment = environment
+    self.__object_locations:dict[WorldObject,Tile] = spatial_memory['object_locations']
+    self.__agent_locations:dict[str,Tile] = spatial_memory['agents']
+    self.__current_path:List[Tile] = []
 
   def process_visual_input(self,surrounding_environment:list[Tile])->list[str]:
     events_in_observable_environment:list[Tuple[float,str]] = []

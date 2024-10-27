@@ -55,8 +55,8 @@ class ShortTermMemory(Memory):
       to_return.append(self._add_conceptnode(
           "event",
           self.get_current_time(),
+          self.get_current_time(),
           desc,
-          [],
           ))
       # TODO: review how importance triggers work because its not clear yet how this is relevant and if i want to keep or initialize them here like in the initial code
       # TODO: return embeddings so that we can pass on to long term memory and refresh

@@ -20,17 +20,6 @@ from reverie.backend_server.persona.core.environment.Eyes import Eyes
 from reverie.backend_server.persona.core.planning.DailyPlanning import DailyPlanning
 from reverie.backend_server.persona.core.social.EmotionRegulator import EmotionalRegulator
 from reverie.backend_server.world.World import World
-
-from persona.memory_structures.spatial_memory import *
-from persona.memory_structures.associative_memory import *
-from persona.memory_structures.scratch import *
-
-from persona.cognitive_modules.retrieve import *
-from persona.cognitive_modules.reflect import *
-from persona.cognitive_modules.execute import *
-from persona.cognitive_modules.converse import *
-from persona.cognitive_modules.plan import *
-
 class Agent: 
   def __init__(self,
                personality:Personality, 
@@ -68,12 +57,28 @@ class Agent:
   def tick(self):
       """
       This is the main cognitive function where our main sequence is called. 
+      Each tick is 1 minute.
       """
       current_time = self.__short_term_memory.get_current_time()
       if current_time.minute + current_time.hour + current_time.second == 0:
         self._plan_day()
+      current_action = self.__daily_planner.current_task
+
       if self.__simulated:
-        raise NotImplementedError()
+        # get current action
+        # tick current action using object.
+        if current_action.target is None:
+          # here we must mock percieve
+
+          print(f'logs some memory for: {current_action.description}')
+          # what, how, and when do we generate memories here, should we even?
+          # maybe a method that decides if we should regenerate or continue on from some point? else we can just chill.
+          # for this we need to associate task with the completed tasks and keep in mind when it should be completed.
+        else:
+          # here we must tick the selected object and generate a memory from that.
+          # start of the interaction must be dealt with seperate to the other interaction.
+          # we interact with the object till we reach the tick bound.
+          print(f'performs interaction with: {current_action.target.name}')
       else:
         events_around_us = self.__eyes.observe_environment()
         # some importance threshhold is needed to decide the following conditions
@@ -93,7 +98,7 @@ class Agent:
         raise NotImplementedError()
 
   def open_convo_session(self, convo_mode): 
-    open_convo_session(self, convo_mode)
+    raise NotImplementedError()
 
   @property
   def name(self)->str:
@@ -102,3 +107,7 @@ class Agent:
   @property
   def status(self)->str:
     raise NotImplementedError()
+
+  def _test_time(self):
+    current_time = self.__short_term_memory.get_current_time()
+    return current_time

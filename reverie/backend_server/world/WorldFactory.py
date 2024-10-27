@@ -32,7 +32,8 @@ class WorldFactory:
           raise ValueError(f"Map metadata miss matches defined map '{location}': meta data map length:{map_length}, real map width: {len(row)} on line {count + 1}")
       return to_return
 
-    with json.load(open(f"{location}/world_meta_info.json",'r')) as meta_info:
+    with open(f"{location}/world_meta_info.json",'r') as file:
+      meta_info = json.load(file)
       world_name = meta_info['name']
       map_length = int(meta_info["map_length"])
       map_width = int(meta_info["map_width"])
@@ -66,7 +67,11 @@ class WorldFactory:
         arena = area_info.get(arena_locations[x][y],"")
         # TODO: Refactor game object maze so that multiple objects can be stored per tile
         # TODO: game_object_maze must have its id's validated before we assign, for now this will crash.
-        game_object = game_objects[game_object_locations[x][y]]
+        game_object = game_objects.get(game_object_locations[x][y],None)
+        if game_object is None:
+          game_object = []
+        else:
+          game_object = [game_object]
         if collision_map[x][y] == "0": 
           collide = False
         else:
@@ -74,7 +79,7 @@ class WorldFactory:
 
         # Note: im keeping the tile orientation the same, 
         #   don't want to cause issues.
-        tile = Tile(sector,arena,(x,y),collide,[game_object])
+        tile = Tile(sector,arena,(x,y),collide,game_object)
 
         # Note: Events used to be stored in the tile. Now: objects and agents should have a status, and the tile will emit those statuses as events.
         row.append(tile)
@@ -89,5 +94,5 @@ class WorldFactory:
       if game_object['type_id'] in object_class_initializers:
         to_return[id] = object_class_initializers[game_object['type_id']](id,game_object)
       else:
-        to_return[id] = object_class_initializers[game_object['default']](id,game_object)
+        to_return[id] = object_class_initializers['default'](id,game_object)
     return to_return

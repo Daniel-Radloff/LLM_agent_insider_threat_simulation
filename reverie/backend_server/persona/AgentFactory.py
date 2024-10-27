@@ -69,7 +69,22 @@ class AgentBuilder:
     return ShortTermMemory(short_term_data,time_func,emotional_regulator,personality)
 
   def __create_spatial_memory(self,target:str):
-    data = json.load(open(target,'r'))
+    raw_data = json.load(open(target,'r'))
+    current_location = self.__world.get_tile(raw_data['current_location'])
+    object_locations = {}
+    objects = self.__world._objects()
+    for object_id, tile_pos in raw_data['object_locations'].items():
+
+      object_locations[objects[object_id]] = self.__world.get_tile(tile_pos)
+    agent_locations = {}
+    for name, tile_pos in raw_data['agents'].items():
+      agent_locations[name] = self.__world.get_tile(tile_pos)
+
+    data = {
+        'current_location' : current_location,
+        'object_locations' : object_locations,
+        'agents' : agent_locations
+        }
     return SpatialMemory(data,self.__world)
 
   def __create_daily_planner(self,
@@ -84,16 +99,16 @@ class AgentBuilder:
       wake_up_time = datetime.strptime(data['wake_up_time'],time_format)
 
       schedule = []
-      for time_period_data,task_data in data['schedule']:
-        start = datetime.strptime(time_period_data['start'],time_format)
-        end = datetime.strptime(time_period_data['end'],time_format)
+      for raw_task in data['schedule']:
+        start = datetime.strptime(raw_task['start'],time_format)
+        end = datetime.strptime(raw_task['end'],time_format)
         time_period = TimePeriod(start,end)
-        if 'target' in task_data:
-          target = world_objects[task_data['target']]
+        if 'target' in raw_task:
+          target = world_objects[raw_task['target']]
         else:
           target = None
-        task = Task(task_data['description'],target)
-        schedule.append((time_period, target))
+        task = Task(raw_task['description'],target)
+        schedule.append((time_period, task))
 
       incompleted_tasks = []
       for task_data in data['incompleted_tasks']:
@@ -102,7 +117,7 @@ class AgentBuilder:
         else:
           target = None
         task = Task(task_data['description'],target)
-        incompleted_tasks.append(target)
+        incompleted_tasks.append(task)
       return DailyPlanningData(wake_up_time,schedule,incompleted_tasks)
 
     daily_planning_data = json.load(open(target,'r'))

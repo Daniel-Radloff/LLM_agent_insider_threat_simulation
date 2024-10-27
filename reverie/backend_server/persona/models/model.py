@@ -11,7 +11,7 @@ sys.path.append('../../')
 class Model(ABC):
   # Todo, think of something good
   _default_system_prompt = """You are modeling a human in a simulation that is being used in security research aimed at generating data that simulates realistic insider threat behavior. This is a brief summary of the identiy that you will be simulating:
-  <INPUT 0>
+  !<INPUT 0>!
 Each prompt will contain an example response. Use the example as a guideline for formatting, but focus on producing behavior that aligns with the persona and context described. Realism is key to the success of the simulation, so ensure your responses reflect authentic human behavior under the given circumstances.
 Often, prompts will ask you how you would react in different situations, or how you think the human that you are modeling will behave. You not only serve as a model of the human, but also of that individuals concious thinking and should respond appropriately according to the requirements of the prompt.
   """
@@ -39,14 +39,14 @@ Often, prompts will ask you how you would react in different situations, or how 
     return prompt.strip()
 
   @abstractmethod
-  def __format_final_prompt(self,user_prompt:str,system_prompt:str)->dict[str,str]:
+  def _format_final_prompt(self,user_prompt:str,system_prompt:str)->dict:
     '''
     This is where the json body of the prompt should be specified.
     '''
     pass
 
   @abstractmethod
-  def __call_model(self,prompt_arguments:dict)->str:
+  def _call_model(self,prompt_arguments:dict)->str:
     '''
     This is where the request to the model should happen.
     '''
@@ -88,11 +88,11 @@ Often, prompts will ask you how you would react in different situations, or how 
 
     system_prompt = self.__fill_in_prompt(system_prompt, system_prompt_parameters)
 
-    final_prompt = self.__format_final_prompt(user_prompt, system_prompt)
-
+    final_prompt = self._format_final_prompt(user_prompt, system_prompt)
+    print(final_prompt)
     for _ in range(repeat):
       try:
-        response = self.__call_model(final_prompt)
+        response = self._call_model(final_prompt)
         return validate(response,user_prompt)
       except ValueError:
         pass

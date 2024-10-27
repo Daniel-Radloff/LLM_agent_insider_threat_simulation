@@ -8,26 +8,23 @@ class Concept:
                node_id:str,
                node_type:Literal["chat","event","thought"],
                created:datetime, 
+               last_accessed:datetime,
                description:str, 
                embedding:np.ndarray,
                impact:int,
-               chat_history): 
+               ): 
     self._id = node_id
     self._type_of_concept = node_type # thought / event / chat
 
     self._created = created
-    self._last_accessed = self._created
+    self._last_accessed = last_accessed
     self._description = description
     # Maybe change to just the embedding per concept?
     self._embedding = np.array(embedding)
     self._impact = impact
 
-    # TODO: refactor into a chat node or something because this is stupid
-    self._chat_history = chat_history
-
     # TODO: determine how to handle keywords
     self._keywords = list(set())
-    raise NotImplementedError()
 
   def __eq__(self, value: object, /) -> bool:
     if isinstance(value, Concept):

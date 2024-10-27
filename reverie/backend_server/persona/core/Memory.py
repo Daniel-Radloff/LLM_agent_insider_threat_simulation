@@ -11,6 +11,7 @@ from reverie.backend_server.persona.core.social.EmotionRegulator import Emotiona
 
 from numba import njit
 import numpy as np
+import requests
 
 
 class Memory(ABC):
@@ -19,51 +20,48 @@ class Memory(ABC):
                emotion_regulator:EmotionalRegulator,
                current_time_func:Callable[[],datetime]) -> None:
     super().__init__()
-    try:
-      self._id_to_node:Dict[str,Concept] = dict()
+    self._id_to_node:Dict[str,Concept] = dict()
 
-      self._seq_event:list[Concept] = []
-      self._seq_thought:list[Concept] = []
-      self._seq_chat:list[Concept] = []
+    self._seq_event:list[Concept] = []
+    self._seq_thought:list[Concept] = []
+    self._seq_chat:list[Concept] = []
 
-      self._kw_to_event:Dict[str,list[Concept]] = dict()
-      self._kw_to_thought:Dict[str,list[Concept]] = dict()
-      self._kw_to_chat:Dict[str,list[Concept]] = dict()
+    self._kw_to_event:Dict[str,list[Concept]] = dict()
+    self._kw_to_thought:Dict[str,list[Concept]] = dict()
+    self._kw_to_chat:Dict[str,list[Concept]] = dict()
 
-      self._kw_strength_event:Dict[str,int] = dict()
-      self._kw_strength_thought:Dict[str,int] = dict()
-      self._kw_strength_chat:Dict[str,int] = dict()
-      self._emotions = emotion_regulator
+    self._kw_strength_event:Dict[str,int] = dict()
+    self._kw_strength_thought:Dict[str,int] = dict()
+    self._kw_strength_chat:Dict[str,int] = dict()
+    self._emotions = emotion_regulator
 
-      # For those unfamiliar, see https://datasciencedojo.com/blog/embeddings-and-llm/ or any
-      # other resource on embeddings related to LLM's
-      # Any embedding model can be used, all that is important is that the same model is used.
-      # Makes all the event nodes
-      for _,concept in concepts:
-        node_type = concept["type"]
-        created = datetime.strptime(concept["created"], 
-                                             '%Y-%m-%d %H:%M:%S')
-
-        description = concept["description"]
-        embedding = concept["embedding"]
-        impact = concept["poignancy"]
-        previous_chats = concept["filling"]
-        
-        self._add_conceptnode(node_type,
-                              created,
-                              description,
-                              impact,
-                              previous_chats,
-                              embedding=embedding)
-    except:
-      raise ValueError("Dictionary does not contain expect value")
+    # For those unfamiliar, see https://datasciencedojo.com/blog/embeddings-and-llm/ or any
+    # other resource on embeddings related to LLM's
+    # Any embedding model can be used, all that is important is that the same model is used.
+    # Makes all the event nodes
+    for concept in concepts:
+      node_type = concept["type"]
+      created = datetime.strptime(concept["created"], 
+                                           '%Y-%m-%d %H:%M:%S')
+      last_accessed = datetime.strptime(concept["last_accessed"], 
+                                           '%Y-%m-%d %H:%M:%S')
+      description = concept["description"]
+      impact = concept.get("impact",None)
+      embedding = concept.get("embedding",None)
+      
+      self._add_conceptnode(node_type,
+                            created,
+                            last_accessed,
+                            description,
+                            impact=impact,
+                            embedding=embedding)
     self.__time_func:Callable[[],datetime] = current_time_func
 
   def _add_conceptnode(self, 
                        node_type:Literal["chat","event","thought"],
                        created:datetime,
+                       last_accessed:datetime,
                        description:str, 
-                       previous_chats,
                        impact:Union[None,int] = None,
                        embedding:Union[None,np.ndarray] = None)->Concept:
     # For this refactor, we use getattr a lot because its convenient
@@ -85,10 +83,10 @@ class Memory(ABC):
     node = Concept(node_id,
                    node_type,
                    created, 
+                   last_accessed,
                    description,
                    embedding, 
-                   impact,
-                   previous_chats)
+                   impact)
 
     # Creating various dictionary cache for fast access. 
     # Review Note:
@@ -137,7 +135,12 @@ class Memory(ABC):
   # Placeholder TODO
   # Will do embedding call here for now without the model thing, bad practice might TODO and fix later but for now its good enough.
   def _generate_embedding(self, phrase:str)->np.ndarray:
-    raise NotImplementedError()
+    prompt_arguments = {
+        'model' : 'nomic-embed-text',
+        'prompt' : phrase
+        }
+    response = requests.post('http://localhost:11434/api/embeddings', json=prompt_arguments).json()
+    return np.array(response['embedding'])
 
   def get_current_time(self)->datetime:
     return self.__time_func()
