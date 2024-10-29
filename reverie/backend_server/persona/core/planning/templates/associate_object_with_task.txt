@@ -6,7 +6,7 @@ Variables:
 You need to decide what object you want to associate with the following task you have planned on doing today:
 !<INPUT 0>!
 
-The objects that may or may not be useful in performing this task that are availible to you are the following:
+The objects that may or may not be useful in performing this task that are available to you are the following:
 !<INPUT 1>!
 
-Select the object you wish to use to perform this task.
+Select the object you wish to use to perform this task, with preference toward using intractable objects such as work computers if they are relevant to the task.

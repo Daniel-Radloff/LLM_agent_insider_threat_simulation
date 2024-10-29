@@ -112,6 +112,10 @@ class Tile:
   def wall(self):
     return self.__colidable
 
+  @property
+  def x_y_pair(self):
+    return self.__x, self.__y
+
 
 class World: 
   def __init__(self,

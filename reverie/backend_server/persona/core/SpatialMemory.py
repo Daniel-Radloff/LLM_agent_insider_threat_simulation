@@ -85,3 +85,14 @@ class SpatialMemory:
 
   def get_object_location(self,obj:WorldObject):
     return self.__object_locations[obj]
+
+  def state(self):
+    return {
+        'current_location' : self.__current_location.x_y_pair,
+        'object_locations' : {
+          obj.id : tile.x_y_pair for obj,tile in self.__object_locations.items()
+        },
+        'agents' : {
+          name : tile.x_y_pair for name,tile in self.__agent_locations.items()
+        }
+      }

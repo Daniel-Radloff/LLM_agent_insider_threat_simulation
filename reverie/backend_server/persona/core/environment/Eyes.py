@@ -43,3 +43,8 @@ class Eyes:
   @property
   def vision_radius(self):
     return self.__vision_radius
+
+  def state(self):
+    return {
+        'vision_radius' : self.__vision_radius
+      }

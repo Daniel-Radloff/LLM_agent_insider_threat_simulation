@@ -7,6 +7,7 @@ Tasks are Immutable except for setting the target, so it is safe to move them ar
 the system to be used as data for other methods in different objects.
 '''
 from dataclasses import dataclass, field
+from itertools import chain
 from datetime import datetime
 from typing import Tuple, Union
 from collections import deque
@@ -29,11 +30,20 @@ class TimePeriod:
   def __contains__(self, time:datetime) ->bool:
     return self.start <= time < self.end
 
+  def __str__(self) -> str:
+    return f"{self.start}-{self.end}"
+
+  def hour_min_str(self) -> str:
+    return f"from {self.start.strftime("%H:%M")} to {self.end.strftime("%H:%M")}"
+
 # ඞ
 @dataclass
 class Task:
   description:str
   target:Union[WorldObject,None] = field(default=None)
+
+  def __str__(self) -> str:
+    return f'{self.description}{f' using {self.target}' if self.target is not None else ''}'
 
 @dataclass
 class DailyPlanningData:
@@ -42,6 +52,11 @@ class DailyPlanningData:
   # This must be sorted
   schedule:list[Tuple[TimePeriod,Task]]
   incompleted_tasks:list[Task]
+
+  def to_dict(self):
+    return {
+        'schedule' : [f'{time}: {task}'for time,task in self.schedule]
+        }
 
 
 class DailyPlanning:
@@ -122,11 +137,12 @@ class DailyPlanning:
 
     self.__data.schedule = modified_plan
     self._extrapulate_computer_interactions()
+    print(self.__data.schedule)
     new_schedule:list[Tuple[TimePeriod,Task]] = []
-    for count, (time_slot, task) in enumerate(modified_plan):
+    for count, (time_slot, task) in enumerate(self.__data.schedule):
       next = None
-      if count != len(modified_plan) - 1:
-        next = modified_plan[count][0]
+      if count != len(self.__data.schedule) - 1:
+        next = self.__data.schedule[count][0]
       new_time,task = self._associate_object_with_task(time_slot,task,next)
       new_schedule.append((new_time,task))
     self.__data.schedule = new_schedule
@@ -142,13 +158,24 @@ class DailyPlanning:
         raise ValueError(f'Invalid answer provided. Got:"{response}", expected: yes or no')
       return response 
 
+    def flatten_schedule(schedule):
+      flattened = []
+      for item in schedule:
+        if isinstance(item, list):  # Only flatten lists, leave tuples intact
+          flattened.extend(item)
+        else:
+          flattened.append(item)
+      return flattened
+
     with open(os.path.join(self._template_dir, "detect_computer_interaction.txt"),"r") as file:
         prompt = file.read()
     system_input = [self.__personality.get_summarized_identity()]
     example_output = "yes"
     fail_safe = "no"
-    special_instruction = "Answer only with either 'yes', or 'no'."
-    for index,(_,action) in enumerate(self.__data.schedule):
+    special_instruction = "Answer only in lowercase with either 'yes', or 'no'."
+    new_schedule = []
+
+    for time,action in self.__data.schedule:
       output = self.__model.run_inference(prompt,
                                           [action.description],
                                           system_input,
@@ -160,45 +187,47 @@ class DailyPlanning:
         # create mini actions
         # take this task, and break it down into smaller components of how the task is going to be performed.
         complete_task = action.description
-        detailed_plan = self._break_up_actions(complete_task)
-        detailed_plan = self._induce_variance(detailed_plan)
+        detailed_plan = self._break_up_actions(complete_task+ f" {time.hour_min_str()}")
+        detailed_plan = self._induce_variance(detailed_plan,True,time.hour_min_str())
         # either we can return the plan here and attach objects then, 
         # or we can modifiy the self.__data.schedule. That is probably the correct call in this situation.
         # for now, self.__data.schedule is modified in place.
-        schedule = self.__data.schedule
-        if index != len(self.__data.schedule)-1:
-          self.__data.schedule = schedule[:index] + detailed_plan + schedule[index+1:]
-        else:
-          self.__data.schedule = schedule + detailed_plan
+        new_schedule.extend(detailed_plan)
+      else:
+        new_schedule.append((time,action))
+    print(new_schedule)
+    self.__data.schedule = flatten_schedule(new_schedule)
+    print(self.__data.schedule)
 
 
   def _break_up_actions(self,action:str)->str:
+    print(action)
     with open(os.path.join(self._template_dir, "deconstruct_high_level_action.txt"),"r") as file:
       prompt = file.read()
     prompt_input = [action]
     system_input = [self.__personality.get_summarized_identity()]
     example = f'''
-13:00 <-> 13:05 <-> Open the weekly report document and review the sections completed in the previous sessions.
-13:05 <-> 13:15 <-> Log into the project management tool and check for any new updates or data from team members or system reports.
-13:15 <-> 13:30 <-> Input any new data from the project management tool into the report, updating sections like project milestones, task statuses, and progress metrics.
-13:30 <-> 13:40 <-> Cross-reference this week’s report against last week’s to ensure that all progress is accurately reflected and major changes are captured.
-13:40 <-> 13:55 <-> Adjust and update any charts or graphs in the report with the most recent data.
-13:55 <-> 14:05 <-> Reformat the document to maintain consistent structure and layout, checking for font consistency and heading formats.
-14:05 <-> 14:15 <-> Take a quick break from the computer to rest and refocus.
-14:15 <-> 14:30 <-> Update the executive summary section with new key points from this week’s progress, including any challenges or accomplishments.
-14:30 <-> 14:45 <-> Review the report for any incomplete sections or missing data, ensuring all objectives have been covered.
-14:45 <-> 14:55 <-> Proofread the report for errors in grammar, spelling, and clarity.
-14:55 <-> 15:00 <-> Save the report, back it up, and email the draft to your supervisor for feedback or approval.
+13:00 <-> 13:07 <-> Open the weekly report document and review the sections completed in the previous sessions.
+13:07 <-> 13:17 <-> Log into the project management tool and check for any new updates or data from team members or system reports.
+13:17 <-> 13:33 <-> Input any new data from the project management tool into the report, updating sections like project milestones, task statuses, and progress metrics.
+13:33 <-> 13:42 <-> Cross-reference this week’s report against last week’s to ensure that all progress is accurately reflected and major changes are captured.
+13:42 <-> 13:58 <-> Adjust and update any charts or graphs in the report with the most recent data.
+13:58 <-> 14:09 <-> Reformat the document to maintain consistent structure and layout, checking for font consistency and heading formats.
+14:09 <-> 14:19 <-> Take a quick break from the computer to rest and refocus.
+14:19 <-> 14:34 <-> Update the executive summary section with new key points from this week’s progress, including any challenges or accomplishments.
+14:34 <-> 14:49 <-> Review the report for any incomplete sections or missing data, ensuring all objectives have been covered.
+14:49 <-> 15:00 <-> Proofread the report for errors in grammar, spelling, and clarity.
+15:00 <-> 15:04 <-> Save the report, back it up, and email the draft to your supervisor for feedback or approval.
     '''
     failsafe = 'ERROR'
-    special_instruction = 'Place emphasis on actions that require interaction with work computers.'
+    special_instruction = 'Place emphasis on actions that require interaction with work computers. Do NOT prefix, or postfix your answer, and adhear strictly to the format provided in the example. Do not pad your answer with extra newline characters. Do NOT exceed the time frame allocated to the task.'
     return self.__model.run_inference(prompt,
                                       prompt_input,
                                       system_input,
                                       example,
                                       self._validate_plan_format,
                                       failsafe,
-                                      special_instruction,
+                                      special_instruction=special_instruction,
                                       )
 
   def _wake_up_time(self)->datetime:
@@ -290,7 +319,7 @@ class DailyPlanning:
                                         example,
                                         validate,
                                         failsafe,
-                                        special_instruction if overwrite else None
+                                        special_instruction if overwrite else  "Do NOT prefix your response with any comments."
                                         ).split(",")
     if overwrite:
       self.__standard_tasks = output
@@ -301,11 +330,13 @@ class DailyPlanning:
     for task in tasks:
       parts = task.split("<->")
       if len(parts) != 3:
+        print('plan validation failed')
         raise ValueError(f"Response has malformed task: {task}")
       start,end,_ = parts
       if validate_hour_minute_time(start.strip()) and validate_hour_minute_time(end.strip()):
         continue
       else:
+        print('plan validation failed')
         raise ValueError(f"Response has malformed task: {task}")
     return response
 
@@ -321,7 +352,7 @@ class DailyPlanning:
     most_important_points = [concept.description for concept in most_important_concepts]
     with open(os.path.join(self._template_dir, "detailed_plan.txt"),"r") as file:
       prompt = file.read()
-    prompt_input = [plan_outline,'\n'.join(most_important_points)]
+    prompt_input = [self.__personality.full_name, plan_outline,'\n'.join(most_important_points)]
     example = '''
 07:00 <-> 07:15 <-> Wake up and get out of bed
 07:15 <-> 07:30 <-> Morning workout: Stretching exercises
@@ -344,6 +375,7 @@ class DailyPlanning:
 21:00 <-> 22:00 <-> Prepare for bed and wind down
 22:00 <-> 22:30 <-> Go to sleep
     '''
+    special_instruction = "Do NOT prefix or postfix your response with anything other than the format specified by the example."
     # no failsafe for this stage
     failsafe = 'FAILURE'
     return self.__model.run_inference(prompt,
@@ -352,50 +384,49 @@ class DailyPlanning:
                                       example,
                                       self._validate_plan_format,
                                       failsafe,
+                                      special_instruction=special_instruction
                                       )
 
 
-  def _induce_variance(self,plan:str):
+  def _induce_variance(self,plan:str,strict_time_bound=False,time_bound=""):
     '''
     Introduce variance into the response, through testing, it has been
     determined that placing this into a seperate prompt produces
     more consistent and superiour results
     '''
     to_return:list[Tuple[TimePeriod,Task]] = []
-    with open(os.path.join(self._template_dir, "introduce_variance.txt"),"r") as file:
+    with open(os.path.join(self._template_dir, f"introduce_variance{"_strict" if strict_time_bound else ""}.txt"),"r") as file:
       prompt = file.read()
-    prompt_input = [plan]
+    prompt_input = [plan,time_bound] if strict_time_bound else [plan]
     example = '''
 06:25 <-> 07:00 <-> Wake up and complete morning routine
 07:02 <-> 07:17 <-> Eat breakfast
-08:05 <-> 09:55 <-> Work on the weekly report: Review project progress, gather data,
-and start drafting sections
+08:05 <-> 09:55 <-> Work on the weekly report: Review project progress, gather data, and start drafting sections
 09:58 <-> 10:13 <-> Break to get a drink and stretch
-10:16 <-> 11:00 <-> Attend the team meeting: Discuss project updates, client
-feedback, and collaborate with team members
+10:16 <-> 11:00 <-> Attend the team meeting: Discuss project updates, client feedback, and collaborate with team members
 11:05 <-> 11:20 <-> Break to grab a snack
-11:17 <-> 12:07 <-> Review and finalize the project proposal: Revise sections based
-on team feedback and comments from previous version
+11:17 <-> 12:07 <-> Review and finalize the project proposal: Revise sections based on team feedback and comments from previous version
 12:10 <-> 13:00 <-> Lunch break
-13:02 <-> 14:32 <-> Continue working on the weekly report: Refine data analysis, add
-visualizations, and make any necessary changes to draft sections
+13:02 <-> 14:32 <-> Continue working on the weekly report: Refine data analysis, add visualizations, and make any necessary changes to draft sections
 14:35 <-> 15:05 <-> Break and review project proposal for finalization
-15:10 <-> 16:30 <-> Finalize and submit the project proposal: Make sure all
-requirements are met and document is perfect before submission
-16:32 <-> 17:00 <-> Wrap up any remaining tasks: Respond to urgent emails, update
-project management tool, and make sure everything is up-to-date
-17:05 <-> 18:10 <-> Relax and prepare for the next day: Take a break, recharge, and
-get ready for tomorrow's tasks
+15:10 <-> 16:30 <-> Finalize and submit the project proposal: Make sure all requirements are met and document is perfect before submission
+16:32 <-> 17:00 <-> Wrap up any remaining tasks: Respond to urgent emails, update project management tool, and make sure everything is up-to-date
+17:05 <-> 18:10 <-> Relax and prepare for the next day: Take a break, recharge, and get ready for tomorrow's tasks
     '''
     # no failsafe for this stage
     failsafe = 'FAILURE'
+    special_instruction = "Do NOT prefix or postfix your response with anything other than the format specified by the example."
+    if strict_time_bound:
+      special_instruction = special_instruction + " Do NOT change the START time of the first task, and the END time of the last task."
       
     response = self.__model.run_inference(prompt,
                                           prompt_input,
                                           [self.__personality.get_summarized_identity()],
                                           example,
                                           self._validate_plan_format,
-                                          failsafe)
+                                          failsafe,
+                                          special_instruction=special_instruction
+                                          )
 
     tasks = [line.strip() for line in response.split('\n')]
     current_time = self.__short_term_memory.get_current_time()
@@ -442,12 +473,14 @@ get ready for tomorrow's tasks
       compare = response.strip()
       if compare in object_names:
         return compare
+      elif compare == "None":
+        return compare
       else:
         raise ValueError("Response does not correspond with one of the availible objects")
 
     with open(os.path.join(self._template_dir, "associate_object_with_task.txt"),"r") as file:
       prompt = file.read()
-      prompt_input = [task.description,object_names]
+      prompt_input = [task.description,"\n".join(object_names)]
     example_response = object_names[0]
     special_instruction = "If there is no relevant object (such as if the task requires a talk in person with someone else), write: 'None' as your response."
     failsafe = "None"
@@ -462,7 +495,7 @@ get ready for tomorrow's tasks
     
     # TODO: Impliment some kind of movement constant to calculate travel distances.
     if response == "None":
-      raise NotImplementedError()
+      return (allocated_time_period, task)
     else:
       index = object_names.index(response)
       selected_object = availible_objects[index][0]
@@ -476,6 +509,13 @@ get ready for tomorrow's tasks
 
     raise NotImplementedError()
 
+  def to_dict(self):
+    return {
+        'current' : self.__data.to_dict(),
+        'previous' : self.__previous_day.to_dict(),
+        'standard' : self.__standard_tasks
+        }
+
   @property
   def current_task(self):
     '''
@@ -485,8 +525,7 @@ get ready for tomorrow's tasks
     for time,task in self.__data.schedule:
       if self. __short_term_memory.get_current_time() in time:
         return task
-
-    raise NotImplementedError('No task in timeframe')
+    return None
 
   @property
   def next_task(self):
@@ -497,3 +536,37 @@ get ready for tomorrow's tasks
     for (time,task) in self.__data.schedule:
       if self. __short_term_memory.get_current_time() in time:
         return task
+  
+  def state(self):
+    def return_schedule(x):
+      return [
+          {
+            "start" : time.start,
+            "end" : time.end,
+            "description" : task.description,
+            **({"target": task.target} if task.target is not None else {})
+          } for time,task in x
+        ]
+
+    def return_incompleted(x):
+      return [
+          {
+            "description" : task.description,
+            **({"target": task.target} if task.target is not None else {})
+          } for task in x
+        ]
+
+    return {
+        "standard_tasks" : self.__standard_tasks,
+        "data" : {
+          "wake_up_time" : self.__data.wake_up_time,
+          "schedule" : return_schedule(self.__data.schedule),
+          "incompleted_tasks" : return_incompleted(self.__data.incompleted_tasks)
+        },
+        "previous" : {
+          "wake_up_time" : self.__previous_day.wake_up_time,
+          "schedule" : return_schedule(self.__previous_day.schedule),
+          "incompleted_tasks" : return_incompleted(self.__previous_day.schedule)
+        },
+        "steps" : list(self.__steps)
+      }

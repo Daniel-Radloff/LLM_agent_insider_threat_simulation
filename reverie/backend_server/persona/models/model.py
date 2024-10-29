@@ -89,7 +89,6 @@ Often, prompts will ask you how you would react in different situations, or how 
     system_prompt = self.__fill_in_prompt(system_prompt, system_prompt_parameters)
 
     final_prompt = self._format_final_prompt(user_prompt, system_prompt)
-    print(final_prompt)
     for _ in range(repeat):
       try:
         response = self._call_model(final_prompt)

@@ -169,7 +169,7 @@ class Memory(ABC):
     # could be a list but better safe than sorry
     relevance_scores:list[Tuple[float,Concept]] = []
     for _, concept_candidate in self._id_to_node.items():
-      if concept == concept_candidate.embedding:
+      if np.array_equal(concept,concept_candidate.embedding):
         continue
       raw_score = self._retrieval_score(concept,concept_candidate)
 
@@ -222,8 +222,9 @@ class Memory(ABC):
     raise NotImplementedError(f"concrete class: {type(self)} must impliment abstract method: retrieve_relevant_concepts. See core/Memory.py:retrieve_relevant_concepts")
 
 
+  @staticmethod
   @njit
-  def __similarity_score_function(self,a, b):
+  def _similarity_score_function(a, b):
     '''
     This function can return a negative value, but the likely hood is
     very low after testing, and if a negative value does occur, then it means

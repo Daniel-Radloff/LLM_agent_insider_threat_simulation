@@ -11,6 +11,10 @@ def tick_test(agent:Agent, world:World):
   Testing how the agent handles ticking 
   '''
   agent.tick()
+  for _ in range(60*7):
+    world._tick()
+
+  agent.tick()
 
 if __name__ == '__main__':
   # testing init methods, does not guarantee that all the stuff is working obviously

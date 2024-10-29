@@ -3,7 +3,7 @@ Variables:
 !<INPUT 1>! -- Plan Outline
 !<INPUT 2>! -- Most important concepts related to today
 <commentblockmarker>###</commentblockmarker>
-You need to determine the actions that !<INPUT 0>! is going to take today.
+Determine the actions that !<INPUT 0>! is going to take today.
 An outline of the actions that you have planned to do today is shown bellow:
 !<INPUT 1>!
 

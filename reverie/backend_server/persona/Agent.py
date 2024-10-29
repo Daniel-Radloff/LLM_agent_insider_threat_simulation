@@ -62,8 +62,12 @@ class Agent:
       current_time = self.__short_term_memory.get_current_time()
       if current_time.minute + current_time.hour + current_time.second == 0:
         self._plan_day()
+        print(self.__daily_planner.to_dict())
       current_action = self.__daily_planner.current_task
 
+      if current_action is None:
+        print(f'No action is currently selected.')
+        return
       if self.__simulated:
         # get current action
         # tick current action using object.
@@ -111,3 +115,12 @@ class Agent:
   def _test_time(self):
     current_time = self.__short_term_memory.get_current_time()
     return current_time
+
+  def state(self):
+    return {
+        "daily_planner" : self.__daily_planner.state(),
+        "eyes" : self.__eyes.state(),
+        "personality" : self.__personality.state(),
+        "short_term_memory" : self.__short_term_memory.state(),
+        "spatial_memory" : self.__spatial_memory.state()
+      }

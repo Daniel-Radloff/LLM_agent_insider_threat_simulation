@@ -64,3 +64,13 @@ class Personality:
   @property
   def lifestyle(self):
     return self.__lifestyle
+
+  def state(self):
+    return {
+        'first_name' : self.__first_name,
+        'last_name' : self.__last_name,
+        'age' : self.__age,
+        'innate_traits' : self.__innate_traits,
+        'lifestyle' : self.__lifestyle,
+        'learned_traits' : self.__learned_traits,
+      }

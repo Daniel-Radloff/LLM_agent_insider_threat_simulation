@@ -25,5 +25,6 @@ class LLama3Instruct(Model):
 
   def _call_model(self,prompt_arguments:dict)->str:
     response = requests.post(self._address, json=prompt_arguments).json()
+    print(response['response'])
     return response['response']
 

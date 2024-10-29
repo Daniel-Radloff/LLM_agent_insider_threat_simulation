@@ -67,11 +67,11 @@ class ShortTermMemory(Memory):
     
 
   def _retrieval_score(self, concept: np.ndarray, potential_candidate: Concept) -> Tuple[float,...]:
-    @njit
+    @njit(cache=True)
     def last_accessed_decay_function(x)->float:
         return 1.1 ** (-4 * x ** 2)
 
-    @njit
+    @njit(cache=True)
     def importance_gradient_function(x)->float:
         return 0.5 * (np.exp(0.85 * (x - 1)) - np.exp(0.4 * (x - 1))) / (np.exp(0.8 * (x - 1)) + np.exp(-0.2 * (x - 1))) + 0.2
 
@@ -81,7 +81,7 @@ class ShortTermMemory(Memory):
     time_delta = (current_time - last_accessed).total_seconds()/86400
     return (last_accessed_decay_function(time_delta),
             importance_gradient_function(potential_candidate.impact),
-            self.__similarity_score_function(concept,potential_candidate.embedding))
+            self._similarity_score_function(concept,potential_candidate.embedding))
   
   def retrieve_relevant_concepts(self, concepts: list[np.ndarray]) -> list[Concept]:
     # Factors: 
@@ -105,3 +105,20 @@ class ShortTermMemory(Memory):
   @property
   def currently(self):
     return self.__currently
+
+  def state(self):
+    return {
+        'concepts' : [
+          {
+            "type": concept._type_of_concept,
+            "created": concept._created,
+            "last_accessed": concept._last_accessed,
+            "description": concept._description,
+            "keywords": concept._keywords,
+            "embedding" : concept._embedding,
+            "impact" : concept._impact
+          } for concept in self._id_to_node.values()
+        ], 
+        'currently' : self.__currently,
+        'attention_span' : self.__attention_span
+      }
