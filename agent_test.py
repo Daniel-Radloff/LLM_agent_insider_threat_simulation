@@ -31,7 +31,7 @@ def save(name, agent):
 if __name__ == '__main__':
   # Setting up argument parsing
   parser = argparse.ArgumentParser(description='Run tests on the agent and world.')
-  parser.add_argument('--test_type', type=str, required=True, 
+  parser.add_argument('--test_type', nargs='+', type=str, required=True, 
                       help='Specify the type of test to run (e.g., tick, save).')
   parser.add_argument('--world_path', type=str, required=True, 
                       help='Path to the world assets.')
@@ -41,9 +41,9 @@ if __name__ == '__main__':
 
   # Initializing world and agent
   world_factory = WorldFactory()
-  world = world_factory.produce_world(args.world_path)
+  world = world_factory.produce_world(f'./assets/world/{args.world_path}')
   agent_factory = AgentBuilder(world)
-  agent = agent_factory.initialize_agent(args.personality_path)
+  agent = agent_factory.initialize_agent(f'./assets/personalities/{args.personality_path}')
 
   # Testing world time with agent time synchronization
   print(agent._test_time())
@@ -54,9 +54,14 @@ if __name__ == '__main__':
   world._tick_back()
 
   # Running the specified test type
-  if args.test_type == 'tick':
-    tick_test(agent, world)
-  elif args.test_type == 'save':
-    save('output', agent)  # You can customize the output directory name if needed
-  else:
-    print(f"Unknown test type: {args.test_type}. Please specify 'tick' or 'save'.")
+  for test_type in args.test_types:
+    if test_type == 'tick':
+      print("Running tick test...")
+      tick_test(agent, world)
+    elif test_type == 'save':
+      print("Running save test...")
+      save('output', agent)  # You can customize the output directory name if needed
+    else:
+      print(f"Unknown test type: {test_type}. Skipping.")
+
+  print("All tests completed.")
