@@ -58,6 +58,8 @@ class DailyPlanningData:
         'schedule' : [f'{time}: {task}'for time,task in self.schedule]
         }
 
+  def schedule_prompt_format(self):
+    return '\n'.join([f"{time.start} <-> {time.end} <-> {task.description}" for (time,task) in self.schedule])
 
 class DailyPlanning:
   '''
@@ -137,7 +139,6 @@ class DailyPlanning:
 
     self.__data.schedule = modified_plan
     self._extrapulate_computer_interactions()
-    print(self.__data.schedule)
     new_schedule:list[Tuple[TimePeriod,Task]] = []
     for count, (time_slot, task) in enumerate(self.__data.schedule):
       next = None
@@ -188,17 +189,14 @@ class DailyPlanning:
         # take this task, and break it down into smaller components of how the task is going to be performed.
         complete_task = action.description
         detailed_plan = self._break_up_actions(complete_task+ f" {time.hour_min_str()}")
-        detailed_plan = self._induce_variance(detailed_plan,True,time.hour_min_str())
+        detailed_plan = self._induce_variance(detailed_plan,time)
         # either we can return the plan here and attach objects then, 
         # or we can modifiy the self.__data.schedule. That is probably the correct call in this situation.
         # for now, self.__data.schedule is modified in place.
         new_schedule.extend(detailed_plan)
       else:
         new_schedule.append((time,action))
-    print(new_schedule)
     self.__data.schedule = flatten_schedule(new_schedule)
-    print(self.__data.schedule)
-
 
   def _break_up_actions(self,action:str)->str:
     print(action)
@@ -220,7 +218,7 @@ class DailyPlanning:
 15:00 <-> 15:04 <-> Save the report, back it up, and email the draft to your supervisor for feedback or approval.
     '''
     failsafe = 'ERROR'
-    special_instruction = 'Place emphasis on actions that require interaction with work computers. Do NOT prefix, or postfix your answer, and adhear strictly to the format provided in the example. Do not pad your answer with extra newline characters. Do NOT exceed the time frame allocated to the task.'
+    special_instruction = 'Respond with the format provided in the example and nothing else. Do NOT pad your answer with extra newline characters. Do NOT exceed the time frame allocated to the task.'
     return self.__model.run_inference(prompt,
                                       prompt_input,
                                       system_input,
@@ -375,7 +373,7 @@ class DailyPlanning:
 21:00 <-> 22:00 <-> Prepare for bed and wind down
 22:00 <-> 22:30 <-> Go to sleep
     '''
-    special_instruction = "Do NOT prefix or postfix your response with anything other than the format specified by the example."
+    special_instruction = "Only respond using the format provided in the example and nothing else."
     # no failsafe for this stage
     failsafe = 'FAILURE'
     return self.__model.run_inference(prompt,
@@ -387,17 +385,16 @@ class DailyPlanning:
                                       special_instruction=special_instruction
                                       )
 
-
-  def _induce_variance(self,plan:str,strict_time_bound=False,time_bound=""):
+  def _induce_variance(self,plan:str,time_bound:Union[TimePeriod,None]=None):
     '''
     Introduce variance into the response, through testing, it has been
     determined that placing this into a seperate prompt produces
     more consistent and superiour results
     '''
     to_return:list[Tuple[TimePeriod,Task]] = []
-    with open(os.path.join(self._template_dir, f"introduce_variance{"_strict" if strict_time_bound else ""}.txt"),"r") as file:
+    with open(os.path.join(self._template_dir, f"introduce_variance{"_strict" if time_bound is not None else ""}.txt"),"r") as file:
       prompt = file.read()
-    prompt_input = [plan,time_bound] if strict_time_bound else [plan]
+    prompt_input = [plan,time_bound.hour_min_str()] if time_bound is not None else [plan]
     example = '''
 06:25 <-> 07:00 <-> Wake up and complete morning routine
 07:02 <-> 07:17 <-> Eat breakfast
@@ -415,9 +412,9 @@ class DailyPlanning:
     '''
     # no failsafe for this stage
     failsafe = 'FAILURE'
-    special_instruction = "Do NOT prefix or postfix your response with anything other than the format specified by the example."
-    if strict_time_bound:
-      special_instruction = special_instruction
+    special_instruction = "Output only with the format provided in the example and nothing else."
+    if time_bound is not None:
+      special_instruction = special_instruction + " Do not remove any tasks. Do not change the first tasks original starting time, and the last tasks original ending time."
       
     response = self.__model.run_inference(prompt,
                                           prompt_input,
@@ -430,13 +427,17 @@ class DailyPlanning:
 
     tasks = [line.strip() for line in response.split('\n')]
     current_time = self.__short_term_memory.get_current_time()
-    for task in tasks:
+    for index,task in enumerate(tasks):
       start,end,desc = [component.strip() for component in task.split('<->')]
       start_hour,start_minute = map(int, start.split(":"))
       end_hour,end_minute = map(int,end.split(":"))
       time = TimePeriod(
-          current_time.replace(hour=start_hour, minute=start_minute),
-          current_time.replace(hour=end_hour, minute=end_minute)
+          current_time.replace(
+            hour=start_hour if index != 0 or time_bound is None else time_bound.start.hour,
+            minute=start_minute if index != 0 or time_bound is None else time_bound.start.minute),
+          current_time.replace(
+            hour=end_hour if index != len(tasks)-1 or time_bound is None else time_bound.end.hour,
+            minute=end_minute if index != len(tasks)-1 or time_bound is None else time_bound.end.minute)
           )
       new_task = Task(
           desc

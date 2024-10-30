@@ -4,7 +4,7 @@ Variables:
 <commentblockmarker>###</commentblockmarker>
 Deconstruct the following task into smaller tasks/parts/steps:
 !<INPUT 0>!
-Take note of the start and end times provided in the task.
+The sub-tasks must take place within the time frame provided for the task.
 Your responses should be in the format of:
 {start} <-> {end} <-> {description}
 Where start and end are 24-hour times that you plan on taking action, and the description is the description of what you're going to do.

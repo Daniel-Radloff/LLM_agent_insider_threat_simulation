@@ -1,6 +1,6 @@
 Variables:
 !<INPUT 0>! -- Plan
 <commentblockmarker>###</commentblockmarker>
-The following is a piece of a schedule that you have come up with for today that takes place between !<INPUT 1>!:
+The following is a piece of a schedule that you have come up with for today that takes place !<INPUT 1>!:
 !<INPUT 0>!
-Induce small variances in the start and end times in order to simulate human like behavior. However, keep the actions the same, and note that all events must take place !<INPUT 1>!.
+Induce small variances in the start and end times in order to simulate human like behavior. All events must take place !<INPUT 1>!.
