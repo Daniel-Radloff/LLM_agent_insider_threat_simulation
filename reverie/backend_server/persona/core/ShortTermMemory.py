@@ -111,11 +111,11 @@ class ShortTermMemory(Memory):
         'concepts' : [
           {
             "type": concept._type_of_concept,
-            "created": concept._created,
-            "last_accessed": concept._last_accessed,
+            "created": str(concept._created),
+            "last_accessed": str(concept._last_accessed),
             "description": concept._description,
             "keywords": concept._keywords,
-            "embedding" : concept._embedding,
+            "embedding" : concept._embedding.tolist(),
             "impact" : concept._impact
           } for concept in self._id_to_node.values()
         ], 

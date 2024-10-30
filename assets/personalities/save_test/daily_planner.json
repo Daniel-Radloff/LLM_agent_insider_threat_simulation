@@ -1,0 +1,364 @@
+{
+  "standard_tasks": [
+    "Go to work",
+    "Brush teeth"
+  ],
+  "data": {
+    "wake_up_time": "2024-10-23 06:30:00",
+    "schedule": [
+      {
+        "start": "2024-10-23 06:32:00",
+        "end": "2024-10-23 07:20:00",
+        "description": "Wake up and get out of bed, brush teeth and wash face"
+      },
+      {
+        "start": "2024-10-23 07:15:00",
+        "end": "2024-10-23 07:30:00",
+        "description": "Morning routine: Shower, get dressed, make bed"
+      },
+      {
+        "start": "2024-10-23 08:07:00",
+        "end": "2024-10-23 08:12:00",
+        "description": "Open phone app to check emails"
+      },
+      {
+        "start": "2024-10-23 08:11:00",
+        "end": "2024-10-23 08:25:00",
+        "description": "Review work emails on phone, respond to any urgent messages if possible"
+      },
+      {
+        "start": "2024-10-23 08:24:00",
+        "end": "2024-10-23 08:32:00",
+        "description": "Swipe through remaining emails to stay up-to-date on work matters"
+      },
+      {
+        "start": "2024-10-23 08:33:00",
+        "end": "2024-10-23 08:38:00",
+        "description": "Send a quick response to any colleagues who have reached out for assistance before leaving for the day"
+      },
+      {
+        "start": "2024-10-23 08:12:00",
+        "end": "2024-10-23 08:25:00",
+        "description": "Walk over to the coffee machine area to grab a cup of coffee from the break room."
+      },
+      {
+        "start": "2024-10-23 08:22:00",
+        "end": "2024-10-23 08:27:00",
+        "description": "Interact with the coffee machine to select my preferred coffee and wait for it to dispense."
+      },
+      {
+        "start": "2024-10-23 08:28:00",
+        "end": "2024-10-23 08:32:00",
+        "description": "Take a sip of the coffee while walking back to my workstation, getting settled at my desk."
+      },
+      {
+        "start": "2024-10-23 08:33:00",
+        "end": "2024-10-23 08:38:00",
+        "description": "Open the company's internal email platform on my computer to catch up on any emails I might have missed since yesterday."
+      },
+      {
+        "start": "2024-10-23 08:40:00",
+        "end": "2024-10-23 08:45:00",
+        "description": "Scan through the inbox for any urgent or priority messages that require attention before starting work on today's tasks."
+      },
+      {
+        "start": "2024-10-23 08:22:00",
+        "end": "2024-10-23 08:27:00",
+        "description": "Arrive at work and enter building."
+      },
+      {
+        "start": "2024-10-23 08:25:00",
+        "end": "2024-10-23 08:30:00",
+        "description": "Walk to the office area and greet colleagues with a friendly \"good morning\"."
+      },
+      {
+        "start": "2024-10-23 08:20:00",
+        "end": "2024-10-23 08:23:00",
+        "description": "Take out laptop from backpack and boot it up, waiting for the login screen to appear."
+      },
+      {
+        "start": "2024-10-23 08:26:00",
+        "end": "2024-10-23 08:35:00",
+        "description": "Log in to the company's network using my username and password."
+      },
+      {
+        "start": "2024-10-23 08:58:00",
+        "end": "2024-10-23 09:03:00",
+        "description": "Boot up computer and log in with credentials."
+      },
+      {
+        "start": "2024-10-23 09:07:00",
+        "end": "2024-10-23 09:22:00",
+        "description": "Open the company's intranet portal and access the employee handbook to familiarize myself with any new policies or procedures."
+      },
+      {
+        "start": "2024-10-23 09:24:00",
+        "end": "2024-10-23 09:34:00",
+        "description": "Organize digital files and folders on my desktop, ensuring all necessary documents are easily accessible for the day's tasks."
+      },
+      {
+        "start": "2024-10-23 09:25:00",
+        "end": "2024-10-23 09:50:00",
+        "description": "Check in with Alex about project progress via phone call"
+      },
+      {
+        "start": "2024-10-23 09:48:00",
+        "end": "2024-10-23 09:55:00",
+        "description": "Log into my computer and open the Johnson report project folder on our shared drive."
+      },
+      {
+        "start": "2024-10-23 09:54:00",
+        "end": "2024-10-23 10:03:00",
+        "description": "Review the project files and locate the key documents, including meeting notes, task assignments, and progress updates."
+      },
+      {
+        "start": "2024-10-23 10:04:00",
+        "end": "2024-10-23 10:16:00",
+        "description": "Open the project management tool and check for any new updates or comments from team members regarding the Johnson report."
+      },
+      {
+        "start": "2024-10-23 10:15:00",
+        "end": "2024-10-23 10:26:00",
+        "description": "Take note of any new information or changes to the project scope, milestones, or deadlines."
+      },
+      {
+        "start": "2024-10-23 10:25:00",
+        "end": "2024-10-23 10:37:00",
+        "description": "Review the meeting notes from previous sessions to ensure that all key points and decisions are captured in the report."
+      },
+      {
+        "start": "2024-10-23 10:38:00",
+        "end": "2024-10-23 11:03:00",
+        "description": "Organize my thoughts and create an outline for the report, breaking down the content into sections and subheadings."
+      },
+      {
+        "start": "2024-10-23 11:05:00",
+        "end": "2024-10-23 11:22:00",
+        "description": "Begin writing the report, focusing on key points and progress made since the last update."
+      },
+      {
+        "start": "2024-10-23 11:24:00",
+        "end": "2024-10-23 11:32:00",
+        "description": "Take a short break to stretch and refresh my mind before finishing up the report."
+      },
+      {
+        "start": "2024-10-23 11:33:00",
+        "end": "2024-10-23 11:35:00",
+        "description": "Finalize the report by reviewing for completeness and accuracy, making any necessary edits or adjustments."
+      },
+      {
+        "start": "2024-10-23 11:22:00",
+        "end": "2024-10-23 11:32:00",
+        "description": "Log into my work computer and open the project management tool to review any updates from team members or system reports."
+      },
+      {
+        "start": "2024-10-23 11:35:00",
+        "end": "2024-10-23 11:45:00",
+        "description": "Check for any new messages or notifications in our internal chat platform, as well as review my email inbox for any relevant discussions or topics that need addressing before the meeting."
+      },
+      {
+        "start": "2024-10-23 11:42:00",
+        "end": "2024-10-23 11:57:00",
+        "description": "Review the agenda and previous meeting notes to get a clear understanding of what will be discussed during the meeting and any actions I need to take."
+      },
+      {
+        "start": "2024-10-23 11:59:00",
+        "end": "2024-10-23 12:04:00",
+        "description": "Arrive at the conference room, log in my laptop, and make sure all necessary documents are easily accessible for reference during the meeting."
+      },
+      {
+        "start": "2024-10-23 12:10:00",
+        "end": "2024-10-23 13:00:00",
+        "description": "Lunch break, grab food from cafeteria and eat with coworkers"
+      },
+      {
+        "start": "2024-10-23 13:20:00",
+        "end": "2024-10-23 13:25:00",
+        "description": "Open the Johnson report document on my work computer and review any sections completed in previous sessions."
+      },
+      {
+        "start": "2024-10-23 13:30:00",
+        "end": "2024-10-23 13:40:00",
+        "description": "Check for any new updates or comments from team members or system reports within our project management tool."
+      },
+      {
+        "start": "2024-10-23 13:45:00",
+        "end": "2024-10-23 14:00:00",
+        "description": "Begin drafting the report, starting with a summary of key points and objectives."
+      },
+      {
+        "start": "2024-10-23 14:02:00",
+        "end": "2024-10-23 14:20:00",
+        "description": "Continue writing the report, focusing on specific sections such as project milestones and task statuses."
+      },
+      {
+        "start": "2024-10-23 14:22:00",
+        "end": "2024-10-23 14:32:00",
+        "description": "Review the current draft and make any necessary adjustments to the structure or content."
+      },
+      {
+        "start": "2024-10-23 14:38:00",
+        "end": "2024-10-23 14:45:00",
+        "description": "Take a moment to review the progress made so far and ensure it aligns with the team's objectives."
+      },
+      {
+        "start": "2024-10-23 14:45:00",
+        "end": "2024-10-23 15:02:00",
+        "description": "Log off from all work-related applications and tasks on my computer."
+      },
+      {
+        "start": "2024-10-23 14:48:00",
+        "end": "2024-10-23 14:55:00",
+        "description": "Stand up from my desk and take a short walk around the office to stretch and get some fresh air."
+      },
+      {
+        "start": "2024-10-23 14:59:00",
+        "end": "2024-10-23 15:04:00",
+        "description": "Return to my desk, sit down, and mentally prepare for the meeting with John by reviewing our agenda and tasks discussed previously."
+      },
+      {
+        "start": "2024-10-23 14:51:00",
+        "end": "2024-10-23 14:57:00",
+        "description": "Check my email and respond to any urgent messages that may have come in during my break."
+      },
+      {
+        "start": "2024-10-23 14:54:00",
+        "end": "2024-10-23 15:03:00",
+        "description": "Quickly save and close any work-related documents or tabs on my computer, ensuring everything is up-to-date and secure before the meeting."
+      },
+      {
+        "start": "2024-10-23 14:57:00",
+        "end": "2024-10-23 15:02:00",
+        "description": "Double-check my calendar and make sure I have a clear understanding of where our meeting is taking place (assuming it's an in-person meeting) or how to join remotely if necessary."
+      },
+      {
+        "start": "2024-10-23 15:00:00",
+        "end": "2024-10-23 15:03:00",
+        "description": "Take a few deep breaths, grab any materials I need (such as the Johnson report), and head to our designated meeting area."
+      },
+      {
+        "start": "2024-10-23 15:02:00",
+        "end": "2024-10-23 15:17:00",
+        "description": "Review any relevant data or metrics from the Johnson report, such as key findings or recommendations, to ensure I'm prepared for our discussion."
+      },
+      {
+        "start": "2024-10-23 15:05:00",
+        "end": "2024-10-23 15:10:00",
+        "description": "Open a new document in my word processor and start drafting some initial thoughts on how I'd like to approach discussing the Johnson report with John during our meeting."
+      },
+      {
+        "start": "2024-10-23 15:07:00",
+        "end": "2024-10-23 15:12:00",
+        "description": "Log into our company's intranet portal to access relevant documents related to the Johnson report, such as progress updates or team discussions."
+      },
+      {
+        "start": "2024-10-23 15:10:00",
+        "end": "2024-10-23 15:20:00",
+        "description": "Attend the meeting with John and engage in a discussion about the Johnson report."
+      },
+      {
+        "start": "2024-10-23 15:27:00",
+        "end": "2024-10-23 16:02:00",
+        "description": "Open the project plan document on my computer and locate the section that needs updating."
+      },
+      {
+        "start": "2024-10-23 15:41:00",
+        "end": "2024-10-23 15:55:00",
+        "description": "Review the tasks completed from 15:25 to 17:10, making note of any significant progress, challenges, or changes."
+      },
+      {
+        "start": "2024-10-23 15:58:00",
+        "end": "2024-10-23 16:14:00",
+        "description": "Update the task statuses in the project management tool to reflect the work done during this period."
+      },
+      {
+        "start": "2024-10-23 16:04:00",
+        "end": "2024-10-23 16:24:00",
+        "description": "Input new data into the report, updating sections like project milestones, task statuses, and progress metrics based on the updated task statuses."
+      },
+      {
+        "start": "2024-10-23 16:23:00",
+        "end": "2024-10-23 16:38:00",
+        "description": "Cross-reference this week\u2019s report against last week\u2019s to ensure that all progress is accurately reflected and major changes are captured."
+      },
+      {
+        "start": "2024-10-23 16:37:00",
+        "end": "2024-10-23 17:03:00",
+        "description": "Adjust and update any charts or graphs in the report with the most recent data."
+      },
+      {
+        "start": "2024-10-23 17:07:00",
+        "end": "2024-10-23 17:10:00",
+        "description": "Review the updated project plan for completeness, accuracy, and consistency before finalizing it."
+      },
+      {
+        "start": "2024-10-23 17:06:00",
+        "end": "2024-10-23 17:11:00",
+        "description": "Review open tabs on computer to ensure all work is saved and closed appropriately"
+      },
+      {
+        "start": "2024-10-23 17:12:00",
+        "end": "2024-10-23 17:22:00",
+        "description": "Log out of secure systems and close project management tool"
+      },
+      {
+        "start": "2024-10-23 17:24:00",
+        "end": "2024-10-23 17:29:00",
+        "description": "Back up any remaining data from the day, including emails and documents"
+      },
+      {
+        "start": "2024-10-23 17:30:00",
+        "end": "2024-10-23 17:35:00",
+        "description": "Shut down computer and prepare it for transportation home"
+      },
+      {
+        "start": "2024-10-23 17:36:00",
+        "end": "2024-10-23 17:41:00",
+        "description": "Pack up office belongings, including bag, lunchbox, and water bottle"
+      },
+      {
+        "start": "2024-10-23 17:42:00",
+        "end": "2024-10-23 18:00:00",
+        "description": "Double-check that all work-related items are packed and accounted for"
+      },
+      {
+        "start": "2024-10-23 18:04:00",
+        "end": "2024-10-23 18:05:00",
+        "description": "Lock desk drawer, turn off monitor, and head out the door"
+      },
+      {
+        "start": "2024-10-23 18:11:00",
+        "end": "2024-10-23 18:14:00",
+        "description": "Check emails from my work account to see if there are any new messages related to setting up new employee orientation."
+      },
+      {
+        "start": "2024-10-23 18:16:00",
+        "end": "2024-10-23 18:25:00",
+        "description": "Open the company's intranet page and navigate to the HR section to gather information on the new employee orientation process, taking a brief moment to review the benefits package for the new hires."
+      },
+      {
+        "start": "2024-10-23 18:24:00",
+        "end": "2024-10-23 18:33:00",
+        "description": "Compose an email to Emily with a list of required documents and materials needed for the new employee orientation, using my company's email template as a guide and adding a personal touch with a few words of encouragement."
+      },
+      {
+        "start": "2024-10-23 18:34:00",
+        "end": "2024-10-23 18:39:00",
+        "description": "Send a follow-up phone call to Emily to confirm receipt of the email and answer any immediate questions she may have about the setup process, double-checking that I've covered all necessary details."
+      }
+    ],
+    "incompleted_tasks": []
+  },
+  "previous": {
+    "wake_up_time": "2024-10-25 07:00:00",
+    "schedule": [
+      {
+        "start": "2024-10-25 07:00:00",
+        "end": "2024-10-25 07:30:00",
+        "description": "Brush teeth"
+      }
+    ],
+    "incompleted_tasks": []
+  },
+  "steps": []
+}

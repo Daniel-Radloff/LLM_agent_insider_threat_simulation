@@ -14,9 +14,18 @@ def tick_test(agent: Agent, world: World):
     world._tick()
   agent.tick()
 
+def action_tick_test(agent: Agent, world: World):
+  for _ in range(60 * 7):
+    world._tick()
+  for _ in range(100):
+    for _ in range(1):
+      world._tick()
+    agent.tick()
+
 def save(name, agent):
   os.makedirs(name, exist_ok=True)
   state = agent.state()
+  print(state)
   with open(f'{name}/daily_planner.json', 'w') as file:
     json.dump(state['daily_planner'], file, indent=2)
   with open(f'{name}/eyes.json', 'w') as file:
@@ -54,13 +63,17 @@ if __name__ == '__main__':
   world._tick_back()
 
   # Running the specified test type
-  for test_type in args.test_types:
-    if test_type == 'tick':
-      print("Running tick test...")
+  for test_type in args.test_type:
+    if test_type == 'planning':
+      print("Running planning test...")
       tick_test(agent, world)
+    elif test_type == 'action_test':
+      print("Running action test...")
+      action_tick_test(agent, world)
     elif test_type == 'save':
       print("Running save test...")
-      save('output', agent)  # You can customize the output directory name if needed
+      save('./assets/personalities/save_test', agent)  # You can customize the output directory name if needed
+      agent_factory.initialize_agent(f'./assets/personalities/save_test')
     else:
       print(f"Unknown test type: {test_type}. Skipping.")
 

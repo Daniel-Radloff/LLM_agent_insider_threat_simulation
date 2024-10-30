@@ -417,7 +417,7 @@ class DailyPlanning:
     failsafe = 'FAILURE'
     special_instruction = "Do NOT prefix or postfix your response with anything other than the format specified by the example."
     if strict_time_bound:
-      special_instruction = special_instruction + " Do NOT change the START time of the first task, and the END time of the last task."
+      special_instruction = special_instruction
       
     response = self.__model.run_inference(prompt,
                                           prompt_input,
@@ -538,35 +538,35 @@ class DailyPlanning:
         return task
   
   def state(self):
-    def return_schedule(x):
+    def return_schedule(x:list):
       return [
           {
-            "start" : time.start,
-            "end" : time.end,
+            "start" : str(time.start),
+            "end" : str(time.end),
             "description" : task.description,
-            **({"target": task.target} if task.target is not None else {})
-          } for time,task in x
+            **({"target": task.target.id} if task.target is not None else {})
+          } for (time,task) in x
         ]
 
     def return_incompleted(x):
       return [
           {
             "description" : task.description,
-            **({"target": task.target} if task.target is not None else {})
+            **({"target": task.target.id} if task.target is not None else {})
           } for task in x
         ]
 
     return {
         "standard_tasks" : self.__standard_tasks,
         "data" : {
-          "wake_up_time" : self.__data.wake_up_time,
+          "wake_up_time" : str(self.__data.wake_up_time),
           "schedule" : return_schedule(self.__data.schedule),
           "incompleted_tasks" : return_incompleted(self.__data.incompleted_tasks)
         },
         "previous" : {
-          "wake_up_time" : self.__previous_day.wake_up_time,
+          "wake_up_time" : str(self.__previous_day.wake_up_time),
           "schedule" : return_schedule(self.__previous_day.schedule),
-          "incompleted_tasks" : return_incompleted(self.__previous_day.schedule)
+          "incompleted_tasks" : return_incompleted(self.__previous_day.incompleted_tasks)
         },
         "steps" : list(self.__steps)
       }
