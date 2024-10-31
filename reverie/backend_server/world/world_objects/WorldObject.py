@@ -1,3 +1,6 @@
+from typing import Union
+
+
 class WorldObject:
   '''
   This represents objects inside of the world. All non default objects must be
@@ -15,6 +18,12 @@ class WorldObject:
       self.__status:str = self.__data.get('status','idle')
     except:
       raise RuntimeError(f'WorldObject:__init__ for object{object_id}. Object source data does not contain required attributes.')
+
+  def interact(self,input:Union[str,None]=None)->str:
+    if input is None:
+      return f'You observe: {self.__name}'
+    else:
+      return f'You "{input}" using: {self.__name}'
 
   @property
   def name(self):
