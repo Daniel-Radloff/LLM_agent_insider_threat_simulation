@@ -1,5 +1,6 @@
 from typing import Union, List, Dict
 from reverie.backend_server.world.world_objects.WorldObject import WorldObject
+import copy
 
 class DiskDrive():
   '''
@@ -13,6 +14,23 @@ class DiskDrive():
     self.structure = structure  # The drive structure containing folders and files
     self.current_path = []  # Keeps track of the current path
 
+  @property
+  def availible_actions(self):
+    to_return = []
+    to_return.append("ls - lists the contents in the current directory")
+    to_return.append("cd <directory> - change to a given directory")
+    to_return.append("cd ../ - go up a directory (note you can only do ../ and not ../../)")
+    to_return.append("touch <file_name> - create a new file with a given name")
+    to_return.append("mkdir <dir_name> - create a new directory with given name")
+    to_return.append("pwd - print the current working directory")
+    to_return.append("open - open file in default editor to view and modify contents")
+    to_return.append("cp <file/dir name> <new location> - copy a directory or file, must use full path for target")
+    to_return.append("mv <file/dir name> <new location> - move a directory or file, must use full path for target")
+    to_return.append("rm <file> - remove a file")
+    to_return.append("rm -rf <directory> - remove a directory")
+
+    return '\n'.join(to_return)
+
   def _get_directory(self, path: List[str]) -> Dict:
     '''
     Internal method to retrieve a directory based on the current path.
@@ -25,7 +43,7 @@ class DiskDrive():
         else:
           raise ValueError(f'"{path[-1]}" is a file, not a directory.')
     except KeyError:
-      raise ValueError(f'Path not found: {" / ".join(path)}')
+      raise ValueError(f'Path not found: {"/".join(path)}')
     return directory
 
   def list_directory(self) -> str:
@@ -33,7 +51,7 @@ class DiskDrive():
     try:
       directory = self._get_directory(self.current_path)
       contents = "\n".join(directory.keys())
-      return f'Contents of directory {" / ".join(self.current_path)}:\n{contents}'
+      return f'Contents of directory {"/".join(self.current_path)}:\n{contents}'
     except ValueError as e:
       return str(e)
 
@@ -42,7 +60,7 @@ class DiskDrive():
     try:
       _ = self._get_directory([*self.current_path, folder_name])
       self.current_path.append(folder_name)
-      return f'Changed directory to: {" / ".join(self.current_path)}'
+      return f'Changed directory to: {"/".join(self.current_path)}'
     except ValueError as e:
       return str(e)
 
@@ -50,7 +68,7 @@ class DiskDrive():
     ''' Go up one level in the directory structure. '''
     if len(self.current_path) != 0:
       self.current_path.pop()
-      return f'Went up to: {" / ".join(self.current_path) or "root"}'
+      return f'Went up to: {"/".join(self.current_path) or "root"}'
     return 'Already at root.'
 
   def add_file(self, file_name: str) -> str:
@@ -58,7 +76,7 @@ class DiskDrive():
     try:
       directory = self._get_directory(self.current_path)
       directory[file_name] = ""
-      return f'File "{file_name}" added to {" / ".join(self.current_path)}.'
+      return f'File "{file_name}" added to {"/".join(self.current_path)}.'
     except ValueError as e:
       return str(e)
 
@@ -67,27 +85,89 @@ class DiskDrive():
     try:
       directory = self._get_directory(self.current_path)
       directory[folder_name] =  {}
-      return f'Folder "{folder_name}" added to {" / ".join(self.current_path)}.'
+      return f'Folder "{folder_name}" added to {"/".join(self.current_path)}.'
     except ValueError as e:
       return str(e)
 
   def get_current_path(self) -> str:
-      ''' Get the current path as a string. '''
-      return " / ".join(self.current_path) or "root"
+    ''' Get the current path as a string. '''
+    return "/".join(self.current_path) or "root"
+
+  def copy_file(self, file_name: str, dest_path: List[str]) -> str:
+    ''' Copy a file from the current directory to another directory. '''
+    try:
+      # Get the current directory and destination directory
+      source_directory = self._get_directory(self.current_path)
+      dest_directory = self._get_directory(dest_path)
+      
+      # Copy the file
+      dest_directory[file_name] = copy.deepcopy(source_directory[file_name])
+      return f'File/Directory "{file_name}" copied to {"/".join(dest_path)}.'
+    except KeyError:
+      return f'File "{file_name}" does not exist in the current directory: {"/".join(self.current_path)}.'
+    except ValueError as e:
+      return str(e)
+
+  def move_file(self, file_name: str, dest_path: List[str]) -> str:
+    ''' Move a file from the current directory to another directory. '''
+    try:
+      # Get the current directory and destination directory
+      source_directory = self._get_directory(self.current_path)
+      dest_directory = self._get_directory(dest_path)
+      
+      # Copy the file
+      dest_directory[file_name] = source_directory.pop(file_name)
+      return f'File/Directory "{file_name}" moved to {"/".join(dest_path)}.'
+    except KeyError:
+      return f'File "{file_name}" does not exist in the current directory: {"/".join(self.current_path)}.'
+    except ValueError as e:
+      return str(e)
+
+  def delete_file(self, file_name: str) -> str:
+    ''' Delete a file from the current directory. '''
+    try:
+      directory = self._get_directory(self.current_path)
+      # Delete the file
+      del directory[file_name]
+      return f'File "{file_name}" deleted from {"/".join(self.current_path)}.'
+    except KeyError:
+      return f'File "{file_name}" does not exist in the current directory: {"/".join(self.current_path)}.'
+    except ValueError as e:
+        return str(e)
+
+  def delete_folder(self, folder_name: str) -> str:
+    ''' Delete a folder from the current directory. '''
+    return self.delete_file(folder_name)
+
+  def open_file(self,file_name:str) -> str:
+    try:
+      directory = self._get_directory(self.current_path)
+      file_contents = directory[file_name]
+      return f'{file_name}:\n{file_contents}'
+    except KeyError:
+      return f'File "{file_name}" does not exist in the current directory: "{"/".join(self.current_path)}"'
+    except ValueError as e:
+      return str(e)
 
 # Example usage
 drive_structure = {
-    "C:": [
-        "file1.txt",
-        "file2.docx",
-        {"Projects": ["project1.py", "project2.py"]},
-        {"Reports": ["report1.pdf", "report2.pdf"]},
-    ],
-    "D:": [
-        "backup.zip",
-        "game.iso"
-    ]
+    "C:": {
+      "file1.txt" : "data here",
+      "file2.docx" : "plain text in the document",
+      "Projects": {
+        "project1.xlxs": "some data",
+        "project2.xlxs": "other data"
+      },
+      "Reports": {
+        "report1.pdf" : "text contained in the pdf",
+        "report2.pdf": "plain text aswell"
+      },
+    },
+    "D:": {
+      "game.iso" : "some description of what it contains"
+    }
 }
+
 class Computer(WorldObject):
   '''
     A computer that an agent can interact with. It includes a simulated drive with different files and devices.
