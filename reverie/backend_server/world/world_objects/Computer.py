@@ -14,22 +14,68 @@ class DiskDrive():
     self.structure = structure  # The drive structure containing folders and files
     self.current_path = []  # Keeps track of the current path
 
+  def execute(self,action:str):
+    command = action.split(' ')
+    match command[0]:
+      case "ls":
+        return self.list_directory(None if len(command) == 1 else command[1])
+      case "cd":
+        if len(command) == 2:
+          return self.change_directory(command[1])
+        else:
+          return "Usage: cd <directory>"
+      case "touch":
+        if len(command) == 2:
+          return self.add_file(command[1])
+        else:
+          return "Usage: touch <file_name>, no spaces allowed for file names"
+      case "mkdir":
+        if len(command) == 2:
+          return self.add_folder(command[1])
+        else:
+          return "Usage: mkdir <dir_name>, no spaces allowed for directory names"
+      case "open":
+        if len(command) == 2:
+          return self.open_file(command[1])
+        else:
+          return "Usage: open <file_name>"
+      case "cp":
+        if len(command) == 3:
+          return self.copy_file(command[1], command[2])
+        else:
+            return "Usage: cp <file/dir name> <new location>, no spaces allowed for paths or names"
+      case "mv":
+        if len(command) == 3:
+          return self.move_file(command[1], command[2])
+        else:
+          return "Usage: mv <file/dir name> <new location>, no spaces allowed for paths or names"
+      case "rm":
+        if len(command) == 2:
+          return self.delete_file(command[1])
+        else:
+          return "Usage: rm <file>"
+      case "rm -rf":
+        if len(command) == 2:
+          return self.delete_folder(command[1])
+        else:
+          return "Usage: rm -rf <directory>"
+      case _:
+        raise ValueError(f"No supported operation for Disk found, command: '{" ".join(command)}' not supported")
+
   @property
   def availible_actions(self):
-    to_return = []
-    to_return.append("ls - lists the contents in the current directory")
-    to_return.append("cd <directory> - change to a given directory")
-    to_return.append("cd ../ - go up a directory (note you can only do ../ and not ../../)")
-    to_return.append("touch <file_name> - create a new file with a given name")
-    to_return.append("mkdir <dir_name> - create a new directory with given name")
-    to_return.append("pwd - print the current working directory")
-    to_return.append("open - open file in default editor to view and modify contents")
-    to_return.append("cp <file/dir name> <new location> - copy a directory or file, must use full path for target")
-    to_return.append("mv <file/dir name> <new location> - move a directory or file, must use full path for target")
-    to_return.append("rm <file> - remove a file")
-    to_return.append("rm -rf <directory> - remove a directory")
-
-    return '\n'.join(to_return)
+    return '\n'.join([
+        "Disk Operations",
+        "ls - lists the contents in the current directory",
+        "cd <directory> - change to a given directory",
+        "touch <file_name> - create a new file with a given name",
+        "mkdir <dir_name> - create a new directory with given name",
+        "open - open file in default editor to view and modify contents",
+        "cp <file/dir name> <new location> - copy a directory or file, must use full path for target",
+        "mv <file/dir name> <new location> - move a directory or file, must use full path for target",
+        "rm <file> - remove a file",
+        "rm -rf <directory> - remove a directory",
+      ])
 
   def _get_directory(self, path: List[str]) -> Dict:
     '''
@@ -46,92 +92,115 @@ class DiskDrive():
       raise ValueError(f'Path not found: {"/".join(path)}')
     return directory
 
-  def list_directory(self) -> str:
+  def _resolve_path(self,current_directory: List[str], target_directory: str) -> List[str]:
+    # if full path
+    if target_directory[0] == "/":
+      full_path = target_directory.split('/')
+    else:
+      full_path = [*current_directory,*target_directory.split('/')]
+    resolved_path = []
+    for name in full_path:
+      if name == '..':
+        if resolved_path:
+          resolved_path.pop()
+      else:
+        resolved_path.append(name)
+    # pop last so that original code logic remains unchanged.
+    resolved_path.pop()
+    return resolved_path
+
+  def list_directory(self,optional_target:Union[None,str]=None) -> str:
     ''' List the contents of the current directory. '''
     try:
-      directory = self._get_directory(self.current_path)
+      if optional_target is not None:
+        resolved_path = self._resolve_path(self.current_path, optional_target)
+      else:
+        resolved_path = self.current_path
+      directory = self._get_directory(resolved_path)
       contents = "\n".join(directory.keys())
-      return f'Contents of directory {"/".join(self.current_path)}:\n{contents}'
+      return f'Contents of directory {"/".join(resolved_path)}:\n{contents}'
     except ValueError as e:
       return str(e)
 
   def change_directory(self, folder_name: str) -> str:
     ''' Change the current directory to a specified folder. '''
     try:
-      _ = self._get_directory([*self.current_path, folder_name])
-      self.current_path.append(folder_name)
+      resolved_path = self._resolve_path(self.current_path, folder_name)
+      _ = self._get_directory(resolved_path)
+      resolved_path.append(folder_name)
+      self.current_path = resolved_path 
       return f'Changed directory to: {"/".join(self.current_path)}'
     except ValueError as e:
       return str(e)
 
-  def go_up(self) -> str:
-    ''' Go up one level in the directory structure. '''
-    if len(self.current_path) != 0:
-      self.current_path.pop()
-      return f'Went up to: {"/".join(self.current_path) or "root"}'
-    return 'Already at root.'
-
   def add_file(self, file_name: str) -> str:
     ''' Add a file to the current directory. '''
     try:
-      directory = self._get_directory(self.current_path)
+      resolved_path = self._resolve_path(self.current_path, file_name)
+      directory = self._get_directory(resolved_path)
       directory[file_name] = ""
-      return f'File "{file_name}" added to {"/".join(self.current_path)}.'
+      return f'File "{file_name}" added to {"/".join(resolved_path)}.'
     except ValueError as e:
       return str(e)
 
   def add_folder(self, folder_name: str) -> str:
     ''' Add a folder to the current directory. '''
     try:
-      directory = self._get_directory(self.current_path)
+      resolved_path = self._resolve_path(self.current_path, folder_name)
+      directory = self._get_directory(resolved_path)
       directory[folder_name] =  {}
-      return f'Folder "{folder_name}" added to {"/".join(self.current_path)}.'
+      return f'Folder "{folder_name}" added to {"/".join(resolved_path)}.'
     except ValueError as e:
       return str(e)
 
   def get_current_path(self) -> str:
     ''' Get the current path as a string. '''
-    return "/".join(self.current_path) or "root"
+    return "/".join(self.current_path) or "/"
 
-  def copy_file(self, file_name: str, dest_path: List[str]) -> str:
+  def copy_file(self, file_name: str, dest_path: str) -> str:
     ''' Copy a file from the current directory to another directory. '''
+    resolved_source_path = self._resolve_path(self.current_path, file_name)
+    resolved_dest_path = self._resolve_path(self.current_path, dest_path)
     try:
       # Get the current directory and destination directory
-      source_directory = self._get_directory(self.current_path)
-      dest_directory = self._get_directory(dest_path)
+      source_directory = self._get_directory(resolved_source_path)
+      dest_directory = self._get_directory(resolved_dest_path)
       
       # Copy the file
       dest_directory[file_name] = copy.deepcopy(source_directory[file_name])
       return f'File/Directory "{file_name}" copied to {"/".join(dest_path)}.'
     except KeyError:
-      return f'File "{file_name}" does not exist in the current directory: {"/".join(self.current_path)}.'
+      return f'File "{file_name}" does not exist in the current directory: {"/".join(resolved_source_path)}.'
     except ValueError as e:
       return str(e)
 
-  def move_file(self, file_name: str, dest_path: List[str]) -> str:
+  def move_file(self, file_name: str, dest_path: str) -> str:
     ''' Move a file from the current directory to another directory. '''
+    resolved_source_path = self._resolve_path(self.current_path, file_name)
+    resolved_dest_path = self._resolve_path(self.current_path, dest_path)
     try:
       # Get the current directory and destination directory
-      source_directory = self._get_directory(self.current_path)
-      dest_directory = self._get_directory(dest_path)
+      source_directory = self._get_directory(resolved_source_path)
+      dest_directory = self._get_directory(resolved_dest_path)
       
       # Copy the file
       dest_directory[file_name] = source_directory.pop(file_name)
       return f'File/Directory "{file_name}" moved to {"/".join(dest_path)}.'
     except KeyError:
-      return f'File "{file_name}" does not exist in the current directory: {"/".join(self.current_path)}.'
+      return f'File "{file_name}" does not exist in the current directory: {"/".join(resolved_source_path)}.'
     except ValueError as e:
       return str(e)
 
   def delete_file(self, file_name: str) -> str:
     ''' Delete a file from the current directory. '''
+    resolved_path = self._resolve_path(self.current_path, file_name)
     try:
-      directory = self._get_directory(self.current_path)
+      directory = self._get_directory(resolved_path)
       # Delete the file
       del directory[file_name]
-      return f'File "{file_name}" deleted from {"/".join(self.current_path)}.'
+      return f'File "{file_name}" deleted from {"/".join(resolved_path)}.'
     except KeyError:
-      return f'File "{file_name}" does not exist in the current directory: {"/".join(self.current_path)}.'
+      return f'File "{file_name}" does not exist in the current directory: {"/".join(resolved_path)}.'
     except ValueError as e:
         return str(e)
 
@@ -140,12 +209,13 @@ class DiskDrive():
     return self.delete_file(folder_name)
 
   def open_file(self,file_name:str) -> str:
+    resolved_path = self._resolve_path(self.current_path, file_name)
     try:
-      directory = self._get_directory(self.current_path)
+      directory = self._get_directory(resolved_path)
       file_contents = directory[file_name]
       return f'{file_name}:\n{file_contents}'
     except KeyError:
-      return f'File "{file_name}" does not exist in the current directory: "{"/".join(self.current_path)}"'
+      return f'File "{file_name}" does not exist in the current directory: "{"/".join(resolved_path)}"'
     except ValueError as e:
       return str(e)
 
@@ -174,32 +244,7 @@ class Computer(WorldObject):
   '''
   def __init__(self, object_id: str, data: dict) -> None:
     super().__init__(object_id, data)
-    self.drive = data['drives']  # A dictionary representing the drive, e.g., {"C:": ["file1.txt", "file2.exe"]}
-    self.devices = data['devices']  # List of devices attached to the computer, e.g., ["printer", "mouse"]
-    self.screen = "Desktop"  # Initial screen display, representing what is currently shown on the screen
-
-  def list_files(self, drive_letter: str) -> str:
-    ''' List the files in a specified drive. '''
-    if drive_letter in self.drive:
-      files = "\n".join(self.drive[drive_letter])
-      self.screen = f'Files in {drive_letter}:\n{files}'  # Update the screen display
-      return self.screen
-    return f'Drive {drive_letter} not found.'
-
-  def access_file(self, drive_letter: str, file_name: str) -> str:
-    ''' Access a specific file from a drive. '''
-    if drive_letter in self.drive and file_name in self.drive[drive_letter]:
-      self.screen = f'You are viewing the file: {file_name} from {drive_letter}'  # Update the screen display
-      return self.screen
-    return f'File "{file_name}" not found in drive {drive_letter}.'
-
-  def list_devices(self) -> str:
-    ''' List the devices connected to the computer. '''
-    if self.devices:
-      devices_list = "\n".join(self.devices)
-      self.screen = f'Connected devices:\n{devices_list}'  # Update the screen display
-      return self.screen
-    return 'No devices connected.'
+    self.drive = DiskDrive(data['drives'])
 
   def interact(self, input: Union[str, None] = None) -> str:
     '''
@@ -212,15 +257,12 @@ class Computer(WorldObject):
       # Return the current screen display when no input is given
       return f'On the computer screen you read: {self.screen}'
 
-    # Parse the input command
-    command_parts = input.split()
-    command = command_parts[0]
-
-    if command == "list_files" and len(command_parts) == 2:
-      return self.list_files(command_parts[1])
-    elif command == "access_file" and len(command_parts) == 3:
-      return self.access_file(command_parts[1], command_parts[2])
-    elif command == "list_devices":
-      return self.list_devices()
-    else:
-      return f'Unknown command: {input}'
+    # handle commands
+    try:
+      self.screen = self.drive.execute(input)
+    except ValueError as e:
+      print(e)
+    message = f"No viable device found for command: {input}"
+    print(message)
+    message = message + '\n' + self.drive.availible_actions
+    return message
