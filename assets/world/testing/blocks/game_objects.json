@@ -182,5 +182,31 @@
   "32282" : {
     "type_id" : "32282",
     "name" : "pool table"
+  },
+  "73621" : {
+    "type_id" : "73621",
+    "name" : "Robert Ackerman's Work Computer",
+    "status" : "Powered off",
+    "drives" : [
+      {
+        "C:": {
+          "file1.txt" : "data here",
+          "file2.docx" : "plain text in the document",
+          "Projects": {
+            "project1.xlxs": "some data",
+            "project2.xlxs": "other data"
+          },
+          "Reports": {
+            "report1.docx" : "text contained in the docx slightly different from the pdf draft",
+            "report2.docx" : "text contained in the docx slightly different from the pdf",
+            "report1.pdf" : "text contained in the pdf",
+            "report2.pdf": "plain text aswell"
+          }
+        },
+        "D:": {
+          "game.iso" : "some description of what it contains"
+        }
+      }
+    ]
   }
 }

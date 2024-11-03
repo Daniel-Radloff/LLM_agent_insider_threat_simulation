@@ -1,7 +1,8 @@
 {
   "current_location" : [5,5],
   "object_locations" : {
-    "32227" : [3,3]
+    "32227" : [3,3],
+    "73621" : [78,23]
   },
   "agents" : {}
 }

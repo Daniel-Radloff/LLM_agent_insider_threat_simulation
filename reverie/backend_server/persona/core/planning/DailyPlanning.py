@@ -483,7 +483,7 @@ class DailyPlanning:
       prompt = file.read()
       prompt_input = [task.description,"\n".join(object_names)]
     example_response = object_names[0]
-    special_instruction = "If there is no relevant object (such as if the task requires a talk in person with someone else), write: 'None' as your response."
+    special_instruction = "Write the name of the object exactly as it appears in the list. Do not add aditional information to your answer. If there is no object availible that you think would best fit the task, respond with the word: None"
     failsafe = "None"
 
     response = self.__model.run_inference(prompt,

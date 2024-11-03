@@ -7,247 +7,341 @@
     "wake_up_time": "2024-10-23 06:30:00",
     "schedule": [
       {
-        "start": "2024-10-23 06:32:00",
+        "start": "2024-10-23 06:28:00",
         "end": "2024-10-23 07:00:00",
-        "description": "Wake up and roll out of bed",
+        "description": "Wake up and get out of bed",
         "target": "32227"
       },
       {
-        "start": "2024-10-23 07:03:00",
-        "end": "2024-10-23 07:19:00",
-        "description": "Morning routine: Brush teeth, wash face, and use the restroom"
+        "start": "2024-10-23 07:00:00",
+        "end": "2024-10-23 07:02:00",
+        "description": "Morning routine: Brush teeth and wash face"
       },
       {
-        "start": "2024-10-23 07:20:00",
-        "end": "2024-10-23 07:28:00",
-        "description": "Grab a cup of coffee from the kitchen counter and pour myself into my favorite mug."
+        "start": "2024-10-23 07:12:00",
+        "end": "2024-10-23 07:22:00",
+        "description": "Morning routine: Get dressed and ready for the day"
       },
       {
-        "start": "2024-10-23 07:30:00",
-        "end": "2024-10-23 07:38:00",
-        "description": "Unlock my phone and open the email app, scrolling through any unread messages that came in overnight."
+        "start": "2024-10-23 07:25:00",
+        "end": "2024-10-23 07:33:00",
+        "description": "Grab a bowl of cereal from the kitchen and head to the dining table to eat breakfast"
       },
       {
-        "start": "2024-10-23 07:40:00",
-        "end": "2024-10-23 07:42:00",
-        "description": "Scroll through emails on my phone while eating breakfast, possibly responding to a few messages or deleting spam."
+        "start": "2024-10-23 07:32:00",
+        "end": "2024-10-23 07:37:00",
+        "description": "Open the phone and unlock it, then navigate to the email app",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 07:45:00",
+        "start": "2024-10-23 07:36:00",
+        "end": "2024-10-23 07:40:00",
+        "description": "Begin reviewing emails on the phone, scrolling through unread messages and responding to any urgent ones",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 07:42:00",
+        "end": "2024-10-23 07:52:00",
+        "description": "Grab a cup of coffee and head to the living room to sit down at the kitchen table for breakfast"
+      },
+      {
+        "start": "2024-10-23 07:55:00",
+        "end": "2024-10-23 08:00:00",
+        "description": "Quickly scan through emails on phone to see if anything urgent requires my attention before heading to work",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 08:02:00",
+        "end": "2024-10-23 08:03:00",
+        "description": "Double-check that I have all necessary items, such as wallet and keys, before leaving the house",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 08:04:00",
         "end": "2024-10-23 08:05:00",
-        "description": "Quickly pack bag and head out the door"
+        "description": "Lock up the house, grab my bag, and head out the door to start the commute"
       },
       {
-        "start": "2024-10-23 08:10:00",
-        "end": "2024-10-23 09:00:00",
-        "description": "Commute to work (tried a new route today)"
+        "start": "2024-10-23 07:59:00",
+        "end": "2024-10-23 08:15:00",
+        "description": "Get ready for work, pack lunch, and grab any necessary documents or materials for the day.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 08:05:00",
+        "end": "2024-10-23 08:20:00",
+        "description": "Walk out the front door and take a short walk to the bus stop to catch my usual commute bus."
+      },
+      {
+        "start": "2024-10-23 08:18:00",
+        "end": "2024-10-23 08:33:00",
+        "description": "Take the bus and enjoy some quiet time before arriving at work. Listen to music, podcasts, or audiobooks to get in the right mindset for the day."
+      },
+      {
+        "start": "2024-10-23 08:32:00",
+        "end": "2024-10-23 08:52:00",
+        "description": "Arrive at the office building and walk inside. Take a few minutes to collect my thoughts and prepare myself for the day ahead.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 08:53:00",
+        "end": "2024-10-23 09:03:00",
+        "description": "Use the restroom, grab a coffee or water from the break room, and head to my workstation.",
+        "target": "73621"
       },
       {
         "start": "2024-10-23 09:05:00",
-        "end": "2024-10-23 09:13:00",
-        "description": "Review Sarah's emails to understand her workload and identify areas where I can assist her."
+        "end": "2024-10-23 09:10:00",
+        "description": "Set up my computer, log in, and get settled at my desk before any of my colleagues arrive.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 09:14:00",
-        "end": "2024-10-23 09:22:00",
-        "description": "Reach out to Sarah via instant messaging or phone call to discuss how I can help with her tasks, ensuring she knows I'm available for support."
+        "start": "2024-10-23 09:18:00",
+        "end": "2024-10-23 09:25:00",
+        "description": "Open the weekly report document and review the sections completed in the previous sessions to refresh my memory and plan out the next steps.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 09:25:00",
-        "end": "2024-10-23 09:40:00",
-        "description": "Start reviewing and organizing Sarah's tasks, categorizing them into priorities and deadlines to determine which ones need immediate attention."
+        "start": "2024-10-23 09:26:00",
+        "end": "2024-10-23 09:41:00",
+        "description": "Log into the project management tool and check for any new updates or data from team members or system reports, including checking for any outstanding tasks that need to be addressed in the report.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 09:41:00",
-        "end": "2024-10-23 10:08:00",
-        "description": "Assist Sarah in completing a high-priority task by providing guidance or helping her troubleshoot any issues she may be facing."
+        "start": "2024-10-23 09:42:00",
+        "end": "2024-10-23 09:57:00",
+        "description": "Input any new data from the project management tool into the report, updating sections like project milestones, task statuses, and progress metrics, and making sure everything is accurate and up-to-date.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 10:10:00",
+        "start": "2024-10-23 09:58:00",
+        "end": "2024-10-23 10:13:00",
+        "description": "Cross-reference this week\u2019s report against last week\u2019s to ensure that all progress is accurately reflected and major changes are captured, highlighting any significant differences or accomplishments.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 10:15:00",
+        "end": "2024-10-23 10:30:00",
+        "description": "Adjust and update any charts or graphs in the report with the most recent data, making sure they're visually appealing and effectively communicating key information.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 10:31:00",
+        "end": "2024-10-23 10:46:00",
+        "description": "Reformat the document to maintain consistent structure and layout, checking for font consistency and heading formats to ensure it's professional and easy to read.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 10:48:00",
+        "end": "2024-10-23 11:03:00",
+        "description": "Take a short break to grab a snack or stretch, getting back to work refreshed and focused."
+      },
+      {
+        "start": "2024-10-23 09:57:00",
         "end": "2024-10-23 11:00:00",
-        "description": "Continue working on Sarah's tasks, taking on smaller responsibilities such as data entry or research to help alleviate her workload."
+        "description": "Update the executive summary section with new key points from this week\u2019s progress, including any challenges or accomplishments, summarizing the main takeaways for my supervisor.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 10:55:00",
+        "end": "2024-10-23 11:00:00",
+        "description": "Grab a granola bar from the break room vending machine to hold me over until lunchtime.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 11:02:00",
+        "end": "2024-10-23 11:03:00",
+        "description": "Take a quick stretch at my desk and move around to get some blood flow going before the meeting."
       },
       {
         "start": "2024-10-23 11:04:00",
+        "end": "2024-10-23 11:05:00",
+        "description": "Quickly scan emails for any urgent updates or messages.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 11:07:00",
+        "end": "2024-10-23 11:08:00",
+        "description": "Grab a quick coffee from the break room before heading to the meeting area."
+      },
+      {
+        "start": "2024-10-23 11:07:00",
+        "end": "2024-10-23 11:19:00",
+        "description": "Take a seat at the conference table and pull out my laptop to take notes during the meeting.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 11:16:00",
+        "end": "2024-10-23 11:28:00",
+        "description": "Review any emails or messages related to the project status updates that I received prior to the meeting.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 11:25:00",
+        "end": "2024-10-23 11:35:00",
+        "description": "Go over my list of tasks for this week, making sure I'm prepared to discuss any challenges or concerns.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 11:33:00",
+        "end": "2024-10-23 11:48:00",
+        "description": "Listen attentively to the team lead's project status update and take notes on key points.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 11:46:00",
+        "end": "2024-10-23 11:58:00",
+        "description": "Discuss upcoming tasks with team members, addressing any questions or clarifications needed.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 11:52:00",
         "end": "2024-10-23 12:00:00",
-        "description": "Collaborate with Sarah to finalize a report or document that requires input from both of us, ensuring all sections are accurate and up-to-date."
+        "description": "Summarize the main points from the meeting in my notes and prepare for any follow-up actions required.",
+        "target": "73621"
       },
       {
         "start": "2024-10-23 12:02:00",
-        "end": "2024-10-23 12:07:00",
-        "description": "Grab a quick lunch from the cafeteria and join my colleagues at our usual table."
+        "end": "2024-10-23 12:09:00",
+        "description": "Open the notes document from the team meeting and review my own written summary.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 12:06:00",
+        "start": "2024-10-23 12:11:00",
+        "end": "2024-10-23 12:19:00",
+        "description": "Check for any additional comments or insights added by other team members after the meeting.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 12:20:00",
         "end": "2024-10-23 12:22:00",
-        "description": "Engage in small talk with the team about weekend plans, sports events, or recent news."
+        "description": "Update my notes with any new information, clarifying key points and action items.",
+        "target": "73621"
       },
       {
         "start": "2024-10-23 12:23:00",
-        "end": "2024-10-23 12:28:00",
-        "description": "Catch up on some office gossip, such as who's dating whom or whose project is going well."
+        "end": "2024-10-23 12:31:00",
+        "description": "Open project proposal document and review sections already completed by colleagues to identify areas that need revision.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 12:29:00",
-        "end": "2024-10-23 12:32:00",
-        "description": "Share a funny story or joke to lighten the mood and get everyone laughing."
+        "start": "2024-10-23 12:34:00",
+        "end": "2024-10-23 12:49:00",
+        "description": "Review meeting notes from last week's team discussion to refresh memory on agreed-upon changes and action items.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 12:35:00",
-        "end": "2024-10-23 13:20:00",
-        "description": "Fitness class during lunch break (felt a bit out of breath today)"
+        "start": "2024-10-23 12:50:00",
+        "end": "2024-10-23 13:04:00",
+        "description": "Check for any new updates or feedback on the project proposal in the shared document repository or email inbox.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 13:25:00",
-        "end": "2024-10-23 13:43:00",
-        "description": "Open the weekly report document and review the sections completed in the previous sessions."
+        "start": "2024-10-23 13:05:00",
+        "end": "2024-10-23 13:11:00",
+        "description": "Make a list of necessary changes and prioritize them based on importance and urgency.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 13:44:00",
-        "end": "2024-10-23 14:01:00",
-        "description": "Log into the project management tool and check for any new updates or data from team members or system reports."
+        "start": "2024-10-23 13:14:00",
+        "end": "2024-10-23 13:15:00",
+        "description": "Begin making revisions to the project proposal, focusing on high-priority items.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 14:02:00",
-        "end": "2024-10-23 14:21:00",
-        "description": "Input any new data from the project management tool into the report, updating sections like project milestones, task statuses, and progress metrics."
+        "start": "2024-10-23 13:17:00",
+        "end": "2024-10-23 13:22:00",
+        "description": "Grab a quick snack from the break room vending machine to hold me over until lunchtime."
       },
       {
-        "start": "2024-10-23 14:23:00",
-        "end": "2024-10-23 14:38:00",
-        "description": "Cross-reference this week\u2019s report against last week\u2019s to ensure that all progress is accurately reflected and major changes are captured."
+        "start": "2024-10-23 13:24:00",
+        "end": "2024-10-23 13:28:00",
+        "description": "Check my personal email on my phone for any messages from family or friends.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 14:40:00",
-        "end": "2024-10-23 14:48:00",
-        "description": "Adjust and update any charts or graphs in the report with the most recent data."
+        "start": "2024-10-23 13:29:00",
+        "end": "2024-10-23 13:34:00",
+        "description": "Scroll through social media to catch up with what's happening online.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 14:50:00",
-        "end": "2024-10-23 14:52:00",
-        "description": "Reformat the document to maintain consistent structure and layout, checking for font consistency and heading formats."
+        "start": "2024-10-23 13:35:00",
+        "end": "2024-10-23 14:00:00",
+        "description": "Try to find a nearby cafe that can deliver food quickly, place an order for lunch to be picked up.",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 13:27:00",
+        "end": "2024-10-23 14:32:00",
+        "description": "Meet up with Sharon for brunch",
+        "target": "73621"
+      },
+      {
+        "start": "2024-10-23 14:35:00",
+        "end": "2024-10-23 14:50:00",
+        "description": "Commute back to the office from brunch",
+        "target": "73621"
       },
       {
         "start": "2024-10-23 14:53:00",
-        "end": "2024-10-23 14:55:00",
-        "description": "Review the report for any incomplete sections or missing data, ensuring all objectives have been covered."
+        "end": "2024-10-23 15:01:00",
+        "description": "Review sections 2-3 of the weekly report to identify areas that require refinement.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 14:57:00",
-        "end": "2024-10-23 15:02:00",
-        "description": "Check my schedule and confirm I have time to help Sarah with her workload today."
-      },
-      {
-        "start": "2024-10-23 15:03:00",
-        "end": "2024-10-23 15:13:00",
-        "description": "Review Sarah's task list and prioritize which tasks need immediate attention, considering deadlines and urgent requests."
+        "start": "2024-10-23 15:02:00",
+        "end": "2024-10-23 15:12:00",
+        "description": "Address any discrepancies in data between section 1 and section 2, updating numbers and metrics as needed.",
+        "target": "73621"
       },
       {
         "start": "2024-10-23 15:13:00",
-        "end": "2024-10-23 15:22:00",
-        "description": "Begin working on the high-priority tasks assigned to Sarah, focusing on completing them before meeting or taking care of other tasks for her."
+        "end": "2024-10-23 15:24:00",
+        "description": "Revise section 4 to better align with current project objectives and goals.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 15:22:00",
-        "end": "2024-10-23 15:32:00",
-        "description": "Take a quick call with Sarah to discuss any questions she has about the tasks I'm helping her with and clarify any doubts."
+        "start": "2024-10-23 15:25:00",
+        "end": "2024-10-23 15:34:00",
+        "description": "Edit the conclusion of the report to reflect recent developments and key takeaways from this week's progress.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 15:33:00",
-        "end": "2024-10-23 15:41:00",
-        "description": "Complete the remaining tasks assigned to Sarah, ensuring all necessary work is done within the allocated time frame."
+        "start": "2024-10-23 15:35:00",
+        "end": "2024-10-23 15:46:00",
+        "description": "Ensure that all figures, tables, and charts are accurate and up-to-date, double-checking calculations and sources.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 16:00:00",
-        "end": "2024-10-23 16:05:00",
-        "description": "Update the status of any tasks or projects in the project management tool, marking them as completed if they were finished today."
+        "start": "2024-10-23 15:47:00",
+        "end": "2024-10-23 16:00:00",
+        "description": "Review a colleague's feedback on section 5 and incorporate their suggestions into the revised draft.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 16:06:00",
-        "end": "2024-10-23 16:10:00",
-        "description": "Save my work, log out of the system, and shut down my computer to head home."
+        "start": "2024-10-23 16:01:00",
+        "end": "2024-10-23 16:20:00",
+        "description": "Finalize any remaining sections, proofreading for clarity and consistency in language and tone.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 16:12:00",
-        "end": "2024-10-23 17:05:00",
-        "description": "Pick up groceries on the way home (detoured through the park because it was a nice day out)"
+        "start": "2024-10-23 16:22:00",
+        "end": "2024-10-23 16:30:00",
+        "description": "Conduct a final review of the report to ensure it is polished and ready for submission.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 17:08:00",
-        "end": "2024-10-23 18:08:00",
-        "description": "Unload groceries at home and put them away"
+        "start": "2024-10-23 16:38:00",
+        "end": "2024-10-23 16:40:00",
+        "description": "Review my task list on the project management tool to see if any urgent tasks need attention before wrapping up.",
+        "target": "73621"
       },
       {
-        "start": "2024-10-23 18:10:00",
-        "end": "2024-10-23 18:20:00",
-        "description": "Take a few minutes to unwind from the day's activities by making myself comfortable on the couch with a cup of tea."
-      },
-      {
-        "start": "2024-10-23 18:15:00",
-        "end": "2024-10-23 18:30:00",
-        "description": "Check my phone for any missed calls or messages, but mostly scroll through social media to see what I've been missing out on."
-      },
-      {
-        "start": "2024-10-23 18:32:00",
-        "end": "2024-10-23 18:42:00",
-        "description": "Binge-watch a funny video that came up in my scrolling, completely forgetting about calling Emily to catch up on her birthday plans."
-      },
-      {
-        "start": "2024-10-23 18:45:00",
-        "end": "2024-10-23 19:00:00",
-        "description": "Continue watching the video, enjoying some well-deserved relaxation time before getting ready for bed.",
-        "target": "32227"
-      },
-      {
-        "start": "2024-10-23 19:05:00",
-        "end": "2024-10-23 20:35:00",
-        "description": "Dinner"
-      },
-      {
-        "start": "2024-10-23 20:38:00",
-        "end": "2024-10-23 20:42:00",
-        "description": "Start watching a show on my phone while taking breaks to grab snacks or refresh my drink"
-      },
-      {
-        "start": "2024-10-23 21:03:00",
-        "end": "2024-10-23 21:15:00",
-        "description": "Continue watching the show, pausing occasionally to think about the plot and characters"
-      },
-      {
-        "start": "2024-10-23 21:13:00",
-        "end": "2024-10-23 21:25:00",
-        "description": "Get up from the couch to grab another snack or stretch my legs before returning to the show"
-      },
-      {
-        "start": "2024-10-23 21:35:00",
-        "end": "2024-10-23 21:58:00",
-        "description": "Finish the episode I was currently on, making mental notes for what to watch next in the series"
-      },
-      {
-        "start": "2024-10-23 21:59:00",
-        "end": "2024-10-23 22:02:00",
-        "description": "Put down my book and turn off the reading light."
-      },
-      {
-        "start": "2024-10-23 22:01:00",
-        "end": "2024-10-23 22:08:00",
-        "description": "Take a quick walk around the room to get some fresh air and stretch my legs."
-      },
-      {
-        "start": "2024-10-23 22:09:00",
-        "end": "2024-10-23 22:14:00",
-        "description": "Plug in my phone to charge it for the night, thinking about how I'll have to remember to pack it tomorrow morning."
-      },
-      {
-        "start": "2024-10-23 22:13:00",
-        "end": "2024-10-23 22:19:00",
-        "description": "Switch off the lights in the living room and head towards the bedroom."
-      },
-      {
-        "start": "2024-10-23 22:20:00",
-        "end": "2024-10-23 22:25:00",
-        "description": "Get into bed and pull up the covers, feeling a bit tired but still a little wide awake.",
-        "target": "32227"
+        "start": "2024-10-23 16:42:00",
+        "end": "2024-10-23 17:00:00",
+        "description": "Create a quick note in the shared team notebook about my progress and any follow-up actions required, ensuring colleagues are informed of my current status.",
+        "target": "73621"
       }
     ],
     "incompleted_tasks": []

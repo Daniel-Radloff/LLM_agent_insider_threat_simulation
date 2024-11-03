@@ -244,7 +244,7 @@ class Computer(WorldObject):
   '''
   def __init__(self, object_id: str, data: dict) -> None:
     super().__init__(object_id, data)
-    self.drive = DiskDrive(data['drives'])
+    self.drive = DiskDrive(data['drives'][0])
 
   def interact(self, input: Union[str, None] = None) -> str:
     '''
