@@ -28,6 +28,8 @@ class Interactor(ABC):
     self.__current_action = self._select_generator(target,action,parameters)
 
 
+  #this stuff here is kinda weird and I don't remember how it was going to work
+  # Time for a refactor
   @abstractmethod
   def _select_generator(self,target:WorldObject,action:str,parameters:Union[None,list[str]])->Generator:
     '''

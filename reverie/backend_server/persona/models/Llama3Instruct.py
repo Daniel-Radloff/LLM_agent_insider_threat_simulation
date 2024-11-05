@@ -27,4 +27,8 @@ class LLama3Instruct(Model):
     response = requests.post(self._address, json=prompt_arguments).json()
     print(response['response'])
     return response['response']
-
+  
+  def _call_model_with_context(self,prompt_arguments:dict)->dict:
+    response = requests.post(self._address, json=prompt_arguments).json()
+    keep = ['response', 'context']
+    return {key : response[key] for key in keep}

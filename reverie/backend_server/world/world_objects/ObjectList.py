@@ -11,6 +11,7 @@ def default_object(id:str,data:dict):
   return WorldObject(id,data)
 def computer(id:str,data:dict):
   return Computer(id,data)
+
 object_class_initializers:dict[str,Callable[[str,dict],WorldObject]] = {
     'default' : default_object,
     '73621' : computer

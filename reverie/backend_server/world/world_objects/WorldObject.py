@@ -26,6 +26,10 @@ class WorldObject:
       return f'You "{input}" using: {self.__name}'
 
   @property
+  def availible_actions(self)->str:
+    return 'Any action you want'
+
+  @property
   def name(self):
     return self.__name
 

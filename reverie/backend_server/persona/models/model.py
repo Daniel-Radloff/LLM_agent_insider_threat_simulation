@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import re
-from typing import Callable, Union
+from typing import Callable, List, Tuple, Union
 import sys
 
 # this is so that paths are relative to reverie/backend_server/persona
@@ -17,11 +17,13 @@ Often, prompts will ask you how you would react in different situations, or how 
   """
   _prompt_input_pattern = re.compile(r'!<INPUT \d+>')
 
+  def __init__(self) -> None:
+    self._context:List[int] = []
   def __fill_in_prompt(self,prompt:str, prompt_parameters:list)->str:
     '''
     Throws ValueError if list does not fill in all the inputs in the prompt.
     '''
-    # For all the files, there is an optional comment section describing what the inputs do
+    # For all the files, th:ere is an optional comment section describing what the inputs do
     # See templates/action_location_v1.txt as an example
     # All this does is remove those descriptions from the final prompt
     if "<commentblockmarker>###</commentblockmarker>" in prompt: 
@@ -52,6 +54,10 @@ Often, prompts will ask you how you would react in different situations, or how 
     '''
     pass
 
+  @abstractmethod
+  def _call_model_with_context(self,prompt_arguments:dict)->dict:
+    raise NotImplementedError()
+
   def run_inference(self,
                     user_prompt:str,
                     user_prompt_parameters:list[str],
@@ -71,8 +77,6 @@ Often, prompts will ask you how you would react in different situations, or how 
     Throws FileNotFoundError on file not found.
     Throws ValueError on parameter missmatches.
     '''
-    # Memory alloc is expensive in python so im reusing the parameters :(
-    # maybe if i use JIT compiler then i come back and change this
     match system_prompt:
       case str(system_prompt):
         pass
@@ -100,3 +104,48 @@ Often, prompts will ask you how you would react in different situations, or how 
         pass
     print(f"Warning: Failsafe response triggered after {repeat} tries for prompt:{final_prompt}")
     return fail_safe_response
+
+  def run_inference_with_context(self,
+                    user_prompt:str,
+                    user_prompt_parameters:list[str],
+                    system_prompt_parameters:list[str],
+                    example_output:str,
+                    validate:Callable[[str,str],str],
+                    fail_safe_response:str,
+                    special_instruction:Union[str,None]=None,
+                    repeat=3,
+                    system_prompt:Union[str,None]=None,
+                    context:Union[None,List[int]]=None)->Tuple[str,List[int]]:
+    '''
+    TODO bad copy paste practice, refactor later
+    '''
+    match system_prompt:
+      case str(system_prompt):
+        pass
+      case None:
+        system_prompt = self._default_system_prompt
+        if not len(system_prompt_parameters) == 1:
+          raise ValueError("Using the default system prompt requires a prompt_parameter list of length 1, see doc string")
+
+    #TODO refactor so that the prompt is read in as a string and provided by caller
+    user_prompt = f"{self.__fill_in_prompt(user_prompt,user_prompt_parameters)}\n"
+    user_prompt += f"{special_instruction}\n" if special_instruction else ""
+    user_prompt += f"An example response is:\n{example_output}"
+
+    system_prompt = self.__fill_in_prompt(system_prompt, system_prompt_parameters)
+
+    final_prompt = self._format_final_prompt(user_prompt, system_prompt)
+
+    for _ in range(repeat):
+      try:
+        final_prompt['context'] = context
+        response = self._call_model_with_context(final_prompt)
+        final_prompt['context'] = response['context']
+        return validate(response['response'],user_prompt),response['context']
+      except ValueError:
+        final_prompt['prompt'] = 'An invalid response was provided, pay careful attention to the given instructions and try again:\n' + final_prompt['prompt']
+      except:
+        # TODO, impliment something more concrete here
+        pass
+    print(f"Warning: Failsafe response triggered after {repeat} tries for prompt:{final_prompt}")
+    return fail_safe_response,[]

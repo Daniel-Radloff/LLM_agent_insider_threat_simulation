@@ -246,20 +246,31 @@ class Computer(WorldObject):
     super().__init__(object_id, data)
     self.drive = DiskDrive(data['drives'][0])
 
+  @property
+  def availible_actions(self):
+    # TODO needs more complex handling of state for login's etc
+    if self.status != "Powered off":
+      availible_commands = [
+          self.drive.availible_actions
+        ]
+      return '\n'.join(availible_commands)
+    else:
+      return 'Turn on' 
+
   def interact(self, input: Union[str, None] = None) -> str:
-    '''
-      Interact with the computer. Commands can be:
-      - "list_files <drive_letter>"
-      - "access_file <drive_letter> <file_name>"
-      - "list_devices"
-    '''
     if input is None:
       # Return the current screen display when no input is given
       return f'On the computer screen you read: {self.screen}'
-
     # handle commands
+    if self.status == "Powered off":
+      if input == "Turn on":
+        self._status = "Powered on"
+        return "computer is powering on"
+      else:
+        return f"Command {input} is not part of the availible commands:\n{self.availible_actions}"
     try:
       self.screen = self.drive.execute(input)
+      return self.screen
     except ValueError as e:
       print(e)
     message = f"No viable device found for command: {input}"
