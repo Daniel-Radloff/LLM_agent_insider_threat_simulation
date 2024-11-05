@@ -525,7 +525,7 @@ class DailyPlanning:
     '''
     for time,task in self.__data.schedule:
       if self. __short_term_memory.get_current_time() in time:
-        return task
+        return task,time
     return None
 
   @property
@@ -536,7 +536,7 @@ class DailyPlanning:
     '''
     for (time,task) in self.__data.schedule:
       if self. __short_term_memory.get_current_time() in time:
-        return task
+        return task,time
   
   def state(self):
     def return_schedule(x:list):

@@ -47,7 +47,7 @@ class AgentBuilder:
 
     # Make agent
 
-    agent = Agent(personality,emotional_regulator,short_term_memory,spatial_memory,daily_planner,eyes)
+    agent = Agent(personality,emotional_regulator,short_term_memory,spatial_memory,daily_planner,eyes,self.__llm,time_func)
 
     # Attach other objects to agent
     legs = Legs(self.__world,spatial_memory,agent)

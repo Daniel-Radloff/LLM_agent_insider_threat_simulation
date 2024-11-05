@@ -1,13 +1,23 @@
 from abc import ABC, abstractmethod
-from typing import Union,Generator
+from datetime import datetime
+from typing import Callable, Union,Generator
 
+from reverie.backend_server.persona.core.Personality import Personality
+from reverie.backend_server.persona.core.planning.DailyPlanning import DailyPlanning
+from reverie.backend_server.persona.models.model import Model
 from reverie.backend_server.world.world_objects.WorldObject import WorldObject
 
 
 class Interactor(ABC):
+  # TODO: objects with hints is redundant because the object lists the
+  #   availible commands
   def __init__(self,
                identifiers:list[str],
-               options_with_hints:dict[str,str],
+               default_context:list[int],
+               daily_planner:DailyPlanning,
+               personality:Personality,
+               model : Model,
+               time_func:Callable[[],datetime],
                ) -> None:
     '''
     identifiers are the ID's of the objects for which this interactor can
@@ -20,24 +30,13 @@ class Interactor(ABC):
     All commands should only perform a single interaction with the target object.
     '''
     self.__identifiers = identifiers
-    self.__options = options_with_hints
-    self.__current_action:Union[Generator,None] = None
-    pass
-
-  def set_action(self,target:WorldObject,action:str,parameters:Union[None,list[str]]=None):
-    self.__current_action = self._select_generator(target,action,parameters)
-
-
-  #this stuff here is kinda weird and I don't remember how it was going to work
-  # Time for a refactor
-  @abstractmethod
-  def _select_generator(self,target:WorldObject,action:str,parameters:Union[None,list[str]])->Generator:
-    '''
-    Each class may have its own generators that perform actions.
-    Set the generator and then return it. 
-    The reason for this is so that actions can be interupted without worrying about world time.
-    This may in future replace set_action entirely, but for now I'll keep it like this
-    '''
+    self._default_context = default_context
+    self._current_context = default_context
+    self._model = model
+    self.__engaged = False
+    self._personality = personality
+    self._daily_planner = daily_planner
+    self._world_time = time_func
 
   def is_compatible(self,obj:WorldObject):
     '''
@@ -47,7 +46,7 @@ class Interactor(ABC):
       return True
     return False
 
-  def get_object_status(self,target:WorldObject):
+  def inspect_object_closely(self,target:WorldObject):
     '''
     This is used to interact with objects that have more specific information. Such as computers.
     From the outside, ie: the eyes view of a object in the world, the WorldObject.status is called.
@@ -60,27 +59,19 @@ class Interactor(ABC):
     else:
       raise ValueError(f"Incompatible object provided to get_object_status for class {type(self)}")
 
-  @property
-  def finnished(self):
-    '''
-    On each access of finnished, the appropriate generator is called.
-    If the generator has finnished execution, true is returned
-    If the generator has not finnished execution, false is returned
-    '''
-    if self.__current_action is None:
-      return True
-    try:
-      next(self.__current_action)
-      return False
-    except StopIteration:
-      self.__current_action = None
-      return True
+  @abstractmethod
+  def interact_with(self,target:WorldObject):
+    raise NotImplementedError()
+  
+  @abstractmethod
+  def disengage(self):
+    raise NotImplementedError()
 
   @property
-  def commands(self):
+  def engaged(self):
     '''
-    Returns all the commands that are availible for the agent to use:
-    {"command" : "description and example"}
+    This shows if we are busy with a object or not from a task.
+    When a new action starts with a different object, or we do
+    something else, the disengage routine must be called.
     '''
-    return [pair for pair in self.__options.items()]
-
+    return self.__engaged

@@ -17,8 +17,6 @@ Often, prompts will ask you how you would react in different situations, or how 
   """
   _prompt_input_pattern = re.compile(r'!<INPUT \d+>')
 
-  def __init__(self) -> None:
-    self._context:List[int] = []
   def __fill_in_prompt(self,prompt:str, prompt_parameters:list)->str:
     '''
     Throws ValueError if list does not fill in all the inputs in the prompt.

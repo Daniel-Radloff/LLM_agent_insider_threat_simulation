@@ -12,14 +12,19 @@ import math
 import sys
 import datetime
 import random
+from typing import Union
 
 from reverie.backend_server.persona.core.Personality import Personality
 from reverie.backend_server.persona.core.ShortTermMemory import ShortTermMemory
 from reverie.backend_server.persona.core.SpatialMemory import SpatialMemory
 from reverie.backend_server.persona.core.environment.Eyes import Eyes
+from reverie.backend_server.persona.core.environment.interactors.DefaultInteractor import DefaultInteractor
+from reverie.backend_server.persona.core.environment.interactors.Interactor import Interactor
 from reverie.backend_server.persona.core.planning.DailyPlanning import DailyPlanning
 from reverie.backend_server.persona.core.social.EmotionRegulator import EmotionalRegulator
+from reverie.backend_server.persona.models.model import Model
 from reverie.backend_server.world.World import World
+from reverie.backend_server.world.world_objects.WorldObject import WorldObject
 class Agent: 
   def __init__(self,
                personality:Personality, 
@@ -28,6 +33,8 @@ class Agent:
                spatial_memory:SpatialMemory,
                daily_planner:DailyPlanning,
                eyes:Eyes,
+               model:Model,
+               time_func,
                simulate=True):
     self.__personality = personality
     self.__emotional_regulator = emotional_regulator
@@ -36,6 +43,9 @@ class Agent:
     self.__daily_planner = daily_planner
     self.__eyes = eyes
     self.__simulated = simulate
+    self.__default_interactor = DefaultInteractor(self.__daily_planner,self.__personality,model,time_func)
+    self.__availible_interactors:list[Interactor] = []
+    self.__current_interactor:Union[Interactor,None] = None
 
   def save(self, save_folder): 
     """
@@ -54,6 +64,23 @@ class Agent:
     else:
       self.__daily_planner.plan_for_today()
 
+  def select_interactor(self,object:WorldObject):
+    for interactor in self.__availible_interactors:
+      if interactor.is_compatible(object):
+        return interactor
+    return None
+
+  def _check_interactor(self,object:Union[Interactor,None]=None):
+    # TODO potentially more handling here rip
+    if object is None and self.__current_interactor is not None:
+      self.__current_interactor.disengage()
+      self.__current_interactor = None
+    elif object is not None and self.__current_interactor is not None:
+      if object != self.__current_interactor:
+        self.__current_interactor.disengage()
+        self.__current_interactor = None
+    elif object is not None and self.__current_interactor is None:
+      self.__current_interactor = object
   def tick(self):
       """
       This is the main cognitive function where our main sequence is called. 
@@ -66,23 +93,25 @@ class Agent:
       current_action = self.__daily_planner.current_task
 
       if current_action is None:
+        self._check_interactor(None)
         print(f'No action is currently selected.')
         return
       if self.__simulated:
+        action,time = current_action
         # get current action
         # tick current action using object.
-        if current_action.target is None:
+        if action.target is None:
           # here we must mock percieve
-
-          print(f'logs some memory for: {current_action.description}')
+          self._check_interactor(None)
+          print(f'logs some memory for: {action.description}')
           # what, how, and when do we generate memories here, should we even?
           # maybe a method that decides if we should regenerate or continue on from some point? else we can just chill.
           # for this we need to associate task with the completed tasks and keep in mind when it should be completed.
         else:
-          # here we must tick the selected object and generate a memory from that.
-          # start of the interaction must be dealt with seperate to the other interaction.
-          # we interact with the object till we reach the tick bound.
-          print(f'performs interaction with: {current_action.target.name}')
+          specific_interactor = self.select_interactor(action.target)
+          interactor = self.__default_interactor if specific_interactor is None else specific_interactor
+          self._check_interactor(interactor)
+          print(f'{interactor.interact_with(action.target)}')
       else:
         events_around_us = self.__eyes.observe_environment()
         # some importance threshhold is needed to decide the following conditions
