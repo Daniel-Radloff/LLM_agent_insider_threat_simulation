@@ -238,6 +238,147 @@ drive_structure = {
     }
 }
 
+# Note: deadlines are really bad for writing passable code. I have sympathy for the original authors
+
+class Email:
+  '''
+  The LLM realllllly wants to use something that can check emails so we kinda need some mock system to satiate it.
+  '''
+  def __init__(self, structure: Dict) -> None:
+    # Email structure will include inbox, sent, and drafts
+    self.structure = structure
+    self.current_folder = 'inbox'  # Default to inbox
+
+  def add_email(self):
+    '''
+    so we can send them emails.
+    '''
+    raise NotImplementedError()
+
+  def execute(self, action: str):
+    command = action.split(' ',2)
+    match command[0]:
+      case "view_inbox":
+        return self.view_inbox()
+      case "view_sent":
+        return self.view_sent()
+      case "view_drafts":
+        return self.view_drafts()
+      case "read":
+        if len(command) == 2:
+          return self.read_email(command[1])
+        else:
+          return "Usage: read <email_id>"
+      case "compose":
+        if len(command) == 3:
+          recipient = command[1]
+          subject = " ".join(command[2:])
+          return self.compose_email(recipient, subject)
+        else:
+          return "Usage: compose <recipient> <subject>"
+      case "send_draft":
+        if len(command) == 2:
+          return self.send_draft(command[1])
+        else:
+          return "Usage: send_draft <draft_id>"
+      case "delete":
+        if len(command) == 2:
+          return self.delete_email(command[1])
+        else:
+          return "Usage: delete <email_id>"
+      case "edit_draft":
+        if len(command) == 3:
+          draft_id = command[1]
+          body = command[2]
+          return self.edit_draft(draft_id, body)
+        else:
+          return "Usage: edit_draft <draft_id> <new_body>"
+      case _:
+        return f"Command not supported: {action}"
+
+  @property
+  def available_actions(self):
+    return '\n'.join([
+      "Email Operations:",
+      "view_inbox - view all emails in the inbox",
+      "view_sent - view all emails in the sent folder",
+      "view_drafts - view saved drafts",
+      "read <email_id> - read an email",
+      "compose <recipient> <subject> - create a new email and save it as a draft",
+      "edit_draft <draft_id> <new_body> - replace the body/message of a draft with new text",
+      "send_draft <draft_id> - send an email from the drafts",
+      "delete <email_id> - delete an email"
+      ])
+
+  def view_inbox(self) -> str:
+    ''' List the emails in the inbox. '''
+    inbox = self.structure.get('inbox', [])
+    if not inbox:
+      return "Inbox is empty."
+    return "Inbox:\n" + "\n".join(f"{i}: {email['subject']}" for i, email in enumerate(inbox))
+
+  def view_sent(self) -> str:
+    ''' List the emails in the sent folder. '''
+    sent = self.structure.get('sent', [])
+    if not sent:
+      return "Sent folder is empty."
+    return "Sent Emails:\n" + "\n".join(f"{i}: {email['subject']}" for i, email in enumerate(sent))
+
+  def view_drafts(self) -> str:
+    ''' List the emails saved as drafts. '''
+    drafts = self.structure.get('drafts', [])
+    if not drafts:
+      return "No drafts available."
+    return "Drafts:\n" + "\n".join(f"{i}: To {draft['to']}, Subject: {draft['subject']}" for i, draft in enumerate(drafts))
+
+  def edit_draft(self, draft_id: str, body: str) -> str:
+    '''
+    Edit the body of an existing draft email by its ID.
+    '''
+    try:
+        draft = self.structure['drafts'][int(draft_id)]
+        draft['body'] = body
+        return f"Draft ID {draft_id} updated. New body: {body}"
+    except (IndexError, ValueError):
+      return f"Draft ID {draft_id} not found. Current drafts availible:\n{self.view_drafts()}"
+
+  def read_email(self, email_id: str) -> str:
+    ''' Read the content of an email from the inbox. '''
+    try:
+      email = self.structure['inbox'][int(email_id)]
+      return f"From: {email['from']}\nTo: {email['to']}\nSubject: {email['subject']}\n\n{email['body']}"
+    except (IndexError, ValueError):
+      return f"Email ID {email_id} not found in the inbox."
+
+  def compose_email(self, recipient: str, subject: str) -> str:
+    ''' Compose a new email and save it as a draft. '''
+    draft = {
+        "from": "user@example.com",
+        "to": recipient,
+        "subject": subject,
+        "body": "Empty"  # Placeholder body
+    }
+    self.structure['drafts'].append(draft)
+    return f"Draft saved. To: {recipient}, Subject: {subject}.\nPlease edit the draft using 'edit_draft' to add your message."
+
+  def send_draft(self, draft_id: str) -> str:
+    ''' Send a draft email and move it to the sent folder. '''
+    try:
+      draft = self.structure['drafts'].pop(int(draft_id))
+      self.structure['sent'].append(draft)
+      return f"Mail sent to {draft['to']} with subject '{draft['subject']}'."
+    except (IndexError, ValueError):
+      return f"Draft ID {draft_id} not found."
+
+  def delete_email(self, email_id: str) -> str:
+    ''' Delete an email from the inbox. '''
+    try:
+      self.structure['inbox'].pop(int(email_id))
+      return f"Email ID {email_id} deleted from inbox."
+    except (IndexError, ValueError):
+      return f"Email ID {email_id} not found in inbox."
+
+
 class Computer(WorldObject):
   '''
     A computer that an agent can interact with. It includes a simulated drive with different files and devices.
@@ -245,13 +386,15 @@ class Computer(WorldObject):
   def __init__(self, object_id: str, data: dict) -> None:
     super().__init__(object_id, data)
     self.drive = DiskDrive(data['drives'][0])
+    self.email = Email(data['email'])
 
   @property
   def availible_actions(self):
     # TODO needs more complex handling of state for login's etc
     if self.status != "Powered off":
       availible_commands = [
-          self.drive.availible_actions
+          self.drive.availible_actions,
+          self.email.available_actions
         ]
       return '\n'.join(availible_commands)
     else:
@@ -261,6 +404,7 @@ class Computer(WorldObject):
     if input is None:
       # Return the current screen display when no input is given
       return f'On the computer screen you read: {self.screen}'
+
     # handle commands
     if self.status == "Powered off":
       if input == "Turn on":
@@ -268,12 +412,20 @@ class Computer(WorldObject):
         return "computer is powering on"
       else:
         return f"Command {input} is not part of the availible commands:\n{self.availible_actions}"
+
     try:
       self.screen = self.drive.execute(input)
       return self.screen
     except ValueError as e:
       print(e)
+
+    try:
+      self.screen = self.email.execute(input)
+      return self.screen
+    except ValueError as e:
+      print(e)
+
     message = f"No viable device found for command: {input}"
     print(message)
-    message = message + '\n' + self.drive.availible_actions
+    message = message + '\n' + self.availible_actions
     return message
