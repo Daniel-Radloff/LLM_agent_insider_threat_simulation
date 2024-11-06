@@ -9,7 +9,7 @@ from reverie.backend_server.world.world_objects.WorldObject import WorldObject
 
 class DefaultInteractor(Interactor):
   def __init__(self, daily_planner: DailyPlanning,personality:Personality,model:Model,time_func:Callable[[],datetime]) -> None:
-    super().__init__([], [], daily_planner,personality,model,time_func)
+    super().__init__([], daily_planner,personality,model,time_func)
 
   def interact_with(self, target: WorldObject):
     '''

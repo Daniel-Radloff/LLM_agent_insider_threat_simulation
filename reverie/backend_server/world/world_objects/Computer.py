@@ -1,4 +1,6 @@
-from typing import Union, List, Dict
+from datetime import datetime, timedelta
+import random
+from typing import Callable, Tuple, Union, List, Dict
 from reverie.backend_server.world.world_objects.WorldObject import WorldObject
 import copy
 
@@ -14,51 +16,61 @@ class DiskDrive():
     self.structure = structure  # The drive structure containing folders and files
     self.current_path = []  # Keeps track of the current path
 
-  def execute(self,action:str):
+  def execute(self,action:str)->Tuple[str,int]:
     command = action.split(' ')
+    def time_taken() -> int:
+      '''
+      just for testing
+      '''
+      return random.randint(1000, 5000)
     match command[0]:
       case "ls":
-        return self.list_directory(None if len(command) == 1 else command[1])
+        return self.list_directory(None if len(command) == 1 else command[1]),time_taken()
       case "cd":
         if len(command) == 2:
-          return self.change_directory(command[1])
+          return self.change_directory(command[1]),time_taken()
         else:
-          return "Usage: cd <directory>"
+          return "Usage: cd <directory>",time_taken()
+      case "tree":
+        if len(command) == 1:
+          return self.tree_directory(), time_taken()
+        else:
+          return "Usage: tree",time_taken()
       case "touch":
         if len(command) == 2:
-          return self.add_file(command[1])
+          return self.add_file(command[1]),time_taken()
         else:
-          return "Usage: touch <file_name>, no spaces allowed for file names"
+          return "Usage: touch <file_name>, no spaces allowed for file names",time_taken()
       case "mkdir":
         if len(command) == 2:
-          return self.add_folder(command[1])
+          return self.add_folder(command[1]),time_taken()
         else:
-          return "Usage: mkdir <dir_name>, no spaces allowed for directory names"
+          return "Usage: mkdir <dir_name>, no spaces allowed for directory names",time_taken()
       case "open":
         if len(command) == 2:
-          return self.open_file(command[1])
+          return self.open_file(command[1]),time_taken()
         else:
-          return "Usage: open <file_name>"
+          return "Usage: open <file_name>",time_taken()
       case "cp":
         if len(command) == 3:
-          return self.copy_file(command[1], command[2])
+          return self.copy_file(command[1], command[2]),time_taken()
         else:
-            return "Usage: cp <file/dir name> <new location>, no spaces allowed for paths or names"
+            return "Usage: cp <file/dir name> <new location>, no spaces allowed for paths or names",time_taken()
       case "mv":
         if len(command) == 3:
-          return self.move_file(command[1], command[2])
+          return self.move_file(command[1], command[2]),time_taken()
         else:
-          return "Usage: mv <file/dir name> <new location>, no spaces allowed for paths or names"
+          return "Usage: mv <file/dir name> <new location>, no spaces allowed for paths or names",time_taken()
       case "rm":
         if len(command) == 2:
-          return self.delete_file(command[1])
+          return self.delete_file(command[1]),time_taken()
         else:
-          return "Usage: rm <file>"
+          return "Usage: rm <file>",time_taken()
       case "rm -rf":
         if len(command) == 2:
-          return self.delete_folder(command[1])
+          return self.delete_folder(command[1]),time_taken()
         else:
-          return "Usage: rm -rf <directory>"
+          return "Usage: rm -rf <directory>",time_taken()
       case _:
         raise ValueError(f"No supported operation for Disk found, command: '{" ".join(command)}' not supported")
 
@@ -68,6 +80,7 @@ class DiskDrive():
         "Disk Operations",
         "ls - lists the contents in the current directory",
         "cd <directory> - change to a given directory",
+        "tree - recursively lists the contents under the current directory",
         "touch <file_name> - create a new file with a given name",
         "mkdir <dir_name> - create a new directory with given name",
         "open - open file in default editor to view and modify contents",
@@ -92,7 +105,7 @@ class DiskDrive():
       raise ValueError(f'Path not found: {"/".join(path)}')
     return directory
 
-  def _resolve_path(self,current_directory: List[str], target_directory: str) -> List[str]:
+  def _resolve_path(self,current_directory: List[str], target_directory: str,keep_last=False) -> List[str]:
     # if full path
     if target_directory[0] == "/":
       full_path = target_directory.split('/')
@@ -106,7 +119,8 @@ class DiskDrive():
       else:
         resolved_path.append(name)
     # pop last so that original code logic remains unchanged.
-    resolved_path.pop()
+    if not keep_last:
+      resolved_path.pop()
     return resolved_path
 
   def list_directory(self,optional_target:Union[None,str]=None) -> str:
@@ -125,11 +139,30 @@ class DiskDrive():
   def change_directory(self, folder_name: str) -> str:
     ''' Change the current directory to a specified folder. '''
     try:
-      resolved_path = self._resolve_path(self.current_path, folder_name)
+      resolved_path = self._resolve_path(self.current_path, folder_name,True)
       _ = self._get_directory(resolved_path)
-      resolved_path.append(folder_name)
       self.current_path = resolved_path 
       return f'Changed directory to: {"/".join(self.current_path)}'
+    except ValueError as e:
+      return str(e)
+
+  def tree_directory(self) -> str:
+    ''' Display the contents of the current directory and its subdirectories in a tree-like format. '''
+    def recursive_tree(directory: Dict, level: int = 0) -> str:
+      """ Recursively list the contents of the directory in a tree structure. """
+      tree_output = ""
+      for key, value in directory.items():
+        if isinstance(value, dict):  # This is a directory
+          tree_output += "  " * level + f"[DIR] {key}/\n"
+          tree_output += recursive_tree(value, level + 1)
+        else:  # This is a file
+          tree_output += "  " * level + f"[FILE] {key}\n"
+      return tree_output
+
+    try:
+      directory = self._get_directory(self.current_path)  # Get the current directory
+      tree_view = recursive_tree(directory)  # Get the tree structure
+      return f"Tree structure of directory {self.current_path[-1] if self.current_path else '/'}:\n{tree_view}"
     except ValueError as e:
       return str(e)
 
@@ -255,46 +288,56 @@ class Email:
     '''
     raise NotImplementedError()
 
-  def execute(self, action: str):
+  def execute(self, action: str)->Tuple[str,int]:
     command = action.split(' ',2)
+    def time_taken() -> int:
+      '''
+      just for testing
+      '''
+      return random.randint(100, 500)
     match command[0]:
       case "view_inbox":
-        return self.view_inbox()
+        return self.view_inbox(),time_taken()
       case "view_sent":
-        return self.view_sent()
+        return self.view_sent(),time_taken()
       case "view_drafts":
-        return self.view_drafts()
+        return self.view_drafts(),time_taken()
       case "read":
         if len(command) == 2:
-          return self.read_email(command[1])
+          return self.read_email(command[1]),time_taken()
         else:
-          return "Usage: read <email_id>"
+          return "Usage: read <email_id>",time_taken()
+      case "reply":
+        if len(command) == 2:
+          return self.reply_to_email(command[1]), time_taken()
+        else:
+          return "Usage: reply <email_id>", time_taken()
       case "compose":
         if len(command) == 3:
           recipient = command[1]
           subject = " ".join(command[2:])
-          return self.compose_email(recipient, subject)
+          return self.compose_email(recipient, subject),time_taken()
         else:
-          return "Usage: compose <recipient> <subject>"
+          return "Usage: compose <recipient> <subject>",time_taken()
       case "send_draft":
         if len(command) == 2:
-          return self.send_draft(command[1])
+          return self.send_draft(command[1]),time_taken()
         else:
-          return "Usage: send_draft <draft_id>"
+          return "Usage: send_draft <draft_id>",time_taken()
       case "delete":
         if len(command) == 2:
-          return self.delete_email(command[1])
+          return self.delete_email(command[1]),time_taken()
         else:
-          return "Usage: delete <email_id>"
+          return "Usage: delete <email_id>",time_taken()
       case "edit_draft":
         if len(command) == 3:
           draft_id = command[1]
           body = command[2]
-          return self.edit_draft(draft_id, body)
+          return self.edit_draft(draft_id, body),time_taken()
         else:
-          return "Usage: edit_draft <draft_id> <new_body>"
+          return "Usage: edit_draft <draft_id> <new_body>",time_taken()
       case _:
-        return f"Command not supported: {action}"
+        raise ValueError(f"No supported operation for Email found, command: '{" ".join(command)}' not supported")
 
   @property
   def available_actions(self):
@@ -303,6 +346,7 @@ class Email:
       "view_inbox - view all emails in the inbox",
       "view_sent - view all emails in the sent folder",
       "view_drafts - view saved drafts",
+      "reply <email_id> - compose a draft with the recipient and subject filled in.",
       "read <email_id> - read an email",
       "compose <recipient> <subject> - create a new email and save it as a draft",
       "edit_draft <draft_id> <new_body> - replace the body/message of a draft with new text",
@@ -315,7 +359,7 @@ class Email:
     inbox = self.structure.get('inbox', [])
     if not inbox:
       return "Inbox is empty."
-    return "Inbox:\n" + "\n".join(f"{i}: {email['subject']}" for i, email in enumerate(inbox))
+    return "Inbox Contents:\n" + "\n".join(f"{i}: {email['subject']}" for i, email in enumerate(inbox))
 
   def view_sent(self) -> str:
     ''' List the emails in the sent folder. '''
@@ -342,11 +386,24 @@ class Email:
     except (IndexError, ValueError):
       return f"Draft ID {draft_id} not found. Current drafts availible:\n{self.view_drafts()}"
 
+  def reply_to_email(self, email_id: str) -> str:
+    ''' Reply to an email by creating a draft with a predefined reply message. '''
+    try:
+      email = self.structure['inbox'][int(email_id)]
+      reply_subject = f"Re: {email['subject']}"
+      
+      self.compose_email(email['from'], reply_subject)
+      reply_body = f"\n\n--- Original Message ---\nFrom: {email['from']}\nTo: {email['to']}\nSubject: {email['subject']}\n\n{email['body']}\n\nYour reply: "
+      self.edit_draft(str(len(self.structure['draft'])),reply_body)
+      return f"Reply to email {email_id} has been saved as a draft:\n{reply_body}\n You can edit the message using 'edit_draft {len(self.structure['drafts'])} <your message>' and send using 'send {len(self.structure['drafts'])}'"
+    except (IndexError, ValueError):
+      return f"Email ID {email_id} not found in the inbox."
+
   def read_email(self, email_id: str) -> str:
     ''' Read the content of an email from the inbox. '''
     try:
       email = self.structure['inbox'][int(email_id)]
-      return f"From: {email['from']}\nTo: {email['to']}\nSubject: {email['subject']}\n\n{email['body']}"
+      return f"Email ID {email_id} contents:\nFrom: {email['from']}\nTo: {email['to']}\nSubject: {email['subject']}\n\n{email['body']}"
     except (IndexError, ValueError):
       return f"Email ID {email_id} not found in the inbox."
 
@@ -359,7 +416,7 @@ class Email:
         "body": "Empty"  # Placeholder body
     }
     self.structure['drafts'].append(draft)
-    return f"Draft saved. To: {recipient}, Subject: {subject}.\nPlease edit the draft using 'edit_draft' to add your message."
+    return f"Draft saved. To: {recipient}, Subject: {subject}.\nPlease edit the draft using 'edit_draft {len(self.structure['drafts'])} <your message>' to add your message."
 
   def send_draft(self, draft_id: str) -> str:
     ''' Send a draft email and move it to the sent folder. '''
@@ -387,45 +444,74 @@ class Computer(WorldObject):
     super().__init__(object_id, data)
     self.drive = DiskDrive(data['drives'][0])
     self.email = Email(data['email'])
+    self.screen = data['screen']
+    self.__delta = timedelta(
+        milliseconds=data['true_time_offset']
+      )
 
   @property
   def availible_actions(self):
     # TODO needs more complex handling of state for login's etc
-    if self.status != "Powered off":
-      availible_commands = [
-          self.drive.availible_actions,
-          self.email.available_actions
-        ]
-      return '\n'.join(availible_commands)
-    else:
-      return 'Turn on' 
+    availible_commands = [
+        self.drive.availible_actions,
+        '\n',
+        self.email.available_actions,
+        '\n',
+        'poweron - only works when the computer is off',
+        'poweroff - turns off the computer, usually only use at the end of the day'
+      ]
+    return '\n'.join(availible_commands)
 
   def interact(self, input: Union[str, None] = None) -> str:
-    if input is None:
-      # Return the current screen display when no input is given
-      return f'On the computer screen you read: {self.screen}'
+    '''
+    This will now raise an exception when we are done for this iteration
+    '''
 
-    # handle commands
-    if self.status == "Powered off":
-      if input == "Turn on":
+    if self._status == "Powered off":
+      if input == "poweron":
         self._status = "Powered on"
+        self.screen = "Computer powered on. To check email, use the email comands, to do disk operations, use the disk commands."
         return "computer is powering on"
       else:
-        return f"Command {input} is not part of the availible commands:\n{self.availible_actions}"
+        return f"The computer is currently off, you must turn it on using 'poweron'"
 
+    if input is None:
+      # Return the current screen display when no input is given
+      return f'{self.screen}'
+
+    # handle commands
+    time = None
+    no_compatible_dev = []
     try:
-      self.screen = self.drive.execute(input)
-      return self.screen
+      self.screen,time = self.drive.execute(input)
     except ValueError as e:
-      print(e)
-
+      no_compatible_dev.append(str(e))
     try:
-      self.screen = self.email.execute(input)
-      return self.screen
+      self.screen,time = self.email.execute(input)
     except ValueError as e:
-      print(e)
+      no_compatible_dev.append(str(e))
 
-    message = f"No viable device found for command: {input}"
-    print(message)
-    message = message + '\n' + self.availible_actions
-    return message
+    if time is None:
+      message = f"No viable device found for command: {input}"
+      print('\n'.join([message,*no_compatible_dev]))
+      message = message + '\n' + self.availible_actions
+      self.screen = message
+      return message
+    self.__delta = self.__delta + timedelta(milliseconds=time)
+    return self.screen
+
+  @property 
+  def localtime(self):
+    return self.__delta + self.current_world_time
+
+  @property
+  def ready_for_interaction(self):
+    if self.localtime.minute == self.current_world_time.minute:
+      self.__delta = self.__delta - timedelta(seconds=60) if self.__delta.seconds >= 60 else self.__delta
+      return True
+    else:
+      return False
+
+  @property
+  def object_time(self):
+    return self.localtime

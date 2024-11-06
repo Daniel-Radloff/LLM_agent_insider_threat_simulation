@@ -13,7 +13,6 @@ class Interactor(ABC):
   #   availible commands
   def __init__(self,
                identifiers:list[str],
-               default_context:list[int],
                daily_planner:DailyPlanning,
                personality:Personality,
                model : Model,
@@ -30,8 +29,7 @@ class Interactor(ABC):
     All commands should only perform a single interaction with the target object.
     '''
     self.__identifiers = identifiers
-    self._default_context = default_context
-    self._current_context = default_context
+    self._current_context = None
     self._model = model
     self.__engaged = False
     self._personality = personality

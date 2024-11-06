@@ -131,6 +131,8 @@ class World:
     self.__tiles = tiles
     self.__world_time = time
     self.__objects = world_objects
+    for obj in self.__objects.values():
+      obj.attach_time(lambda: self.current_time)
 
   def get_tile(self, tile:Tuple[int,int]): 
     """

@@ -1,4 +1,5 @@
-from typing import Union
+from datetime import datetime
+from typing import Callable, Union
 
 
 class WorldObject:
@@ -15,7 +16,7 @@ class WorldObject:
     try:
       self.__name:str = data['name']
       self.__data = data
-      self.__status:str = self.__data.get('status','idle')
+      self._status:str = self.__data.get('status','idle')
     except:
       raise RuntimeError(f'WorldObject:__init__ for object{object_id}. Object source data does not contain required attributes.')
 
@@ -24,6 +25,17 @@ class WorldObject:
       return f'You observe: {self.__name}'
     else:
       return f'You "{input}" using: {self.__name}'
+
+  def attach_time(self,time_func:Callable[[],datetime]):
+    self._world_time = time_func
+
+  @property
+  def current_world_time(self):
+    return self._world_time()
+
+  @property
+  def object_time(self):
+    return self._world_time()
 
   @property
   def availible_actions(self)->str:
@@ -39,7 +51,11 @@ class WorldObject:
     Provides the status of the object. It is advised to override this
     for more complex objects.
     '''
-    return self.__status
+    return self._status
+
+  @property
+  def ready_for_interaction(self)->bool:
+    return True
 
   @property
   def id(self):

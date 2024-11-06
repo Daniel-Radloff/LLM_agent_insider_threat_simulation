@@ -187,9 +187,23 @@
     "type_id" : "73621",
     "name" : "Robert Ackerman's Work Computer",
     "status" : "Powered off",
+    "screen" : "The screen is black.",
+    "true_time_offset": 4302,
+    "email" : {
+      "inbox": [
+        {"from": "alice@example.com", "to": "robert@example.com", "subject": "Meeting Reminder", "body": "Don't forget the meeting tomorrow."},
+        {"from": "bob@example.com", "to": "robert@example.com", "subject": "Project Update", "body": "Here is the project update."}
+      ],
+      "sent": [
+        {"from": "robert@example.com", "to": "client@example.com", "subject": "Proposal Submission", "body": "Submitted the final proposal."}
+      ],
+      "drafts": [
+        {"from": "robert@example.com", "to": "manager@example.com", "subject": "Request for Leave", "body": "I'd like to request leave for next week."}
+      ]
+    },
     "drives" : [
       {
-        "C:": {
+        "Work": {
           "file1.txt" : "data here",
           "file2.docx" : "plain text in the document",
           "Projects": {
@@ -203,7 +217,7 @@
             "report2.pdf": "plain text aswell"
           }
         },
-        "D:": {
+        "Games": {
           "game.iso" : "some description of what it contains"
         }
       }

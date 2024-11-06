@@ -18,6 +18,7 @@ from reverie.backend_server.persona.core.Personality import Personality
 from reverie.backend_server.persona.core.ShortTermMemory import ShortTermMemory
 from reverie.backend_server.persona.core.SpatialMemory import SpatialMemory
 from reverie.backend_server.persona.core.environment.Eyes import Eyes
+from reverie.backend_server.persona.core.environment.interactors.ComputerInteractor import ComputerInteractor
 from reverie.backend_server.persona.core.environment.interactors.DefaultInteractor import DefaultInteractor
 from reverie.backend_server.persona.core.environment.interactors.Interactor import Interactor
 from reverie.backend_server.persona.core.planning.DailyPlanning import DailyPlanning
@@ -44,7 +45,7 @@ class Agent:
     self.__eyes = eyes
     self.__simulated = simulate
     self.__default_interactor = DefaultInteractor(self.__daily_planner,self.__personality,model,time_func)
-    self.__availible_interactors:list[Interactor] = []
+    self.__availible_interactors:list[Interactor] = [ComputerInteractor(self.__daily_planner,self.__personality,model,time_func)]
     self.__current_interactor:Union[Interactor,None] = None
 
   def save(self, save_folder): 
