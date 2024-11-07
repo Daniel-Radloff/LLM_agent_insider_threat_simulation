@@ -31,6 +31,7 @@ class ComputerInteractor(Interactor):
     while target.ready_for_interaction:
       # Interaction with the object
       screen = target.interact()
+      print(f"SYSTEM RESPONSE:\n{screen}")
       self.current_progress = self.form_context(
           self.current_progress,
           task.description,
