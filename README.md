@@ -11,3 +11,5 @@ The code that the project uses is located under:
 /reverie/backend_server/models
 agent_test.py
 ```
+
+It extends the basic model into something that is meant to simulate insider threats to study their behavior.
